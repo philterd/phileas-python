@@ -1,5 +1,6 @@
 """Tests for individual PII/PHI filters."""
 
+import json
 import pytest
 
 from phileas.policy.filter_strategy import FilterStrategy
@@ -22,6 +23,7 @@ from phileas.policy.identifiers import (
     TrackingNumberFilterConfig,
     IBANCodeFilterConfig,
     PassportNumberFilterConfig,
+    PhEyeFilterConfig,
 )
 from phileas.filters.age_filter import AgeFilter
 from phileas.filters.email_address_filter import EmailAddressFilter
@@ -41,6 +43,7 @@ from phileas.filters.street_address_filter import StreetAddressFilter
 from phileas.filters.tracking_number_filter import TrackingNumberFilter
 from phileas.filters.iban_code_filter import IBANCodeFilter
 from phileas.filters.passport_number_filter import PassportNumberFilter
+from phileas.filters.ph_eye_filter import PhEyeFilter
 
 
 def _default_config(config_cls):
@@ -518,3 +521,146 @@ class TestFilterStrategyReplacements:
     def test_same(self):
         s = FilterStrategy(strategy="SAME")
         assert s.get_replacement("email-address", "test@example.com") == "test@example.com"
+
+
+# ---------------------------------------------------------------------------
+# Ph-Eye Filter
+# ---------------------------------------------------------------------------
+
+class TestPhEyeFilter:
+    def _make_filter(self, **kwargs):
+        config = PhEyeFilterConfig(endpoint="http://pheye:8080", **kwargs)
+        return PhEyeFilter(config)
+
+    def _mock_response(self, spans_data):
+        """Return a context manager that yields a mock HTTP response."""
+        import io
+        import unittest.mock as mock
+
+        body = json.dumps(spans_data).encode("utf-8")
+        mock_resp = mock.MagicMock()
+        mock_resp.read.return_value = body
+        mock_resp.__enter__ = lambda s: s
+        mock_resp.__exit__ = mock.MagicMock(return_value=False)
+        return mock_resp
+
+    def test_no_endpoint_returns_empty(self):
+        config = PhEyeFilterConfig(endpoint="")
+        f = PhEyeFilter(config)
+        spans = f.filter("John Smith was here.")
+        assert spans == []
+
+    def test_person_span_returned(self):
+        import unittest.mock as mock
+        f = self._make_filter(labels=["PERSON"])
+        response_data = [{"start": 0, "end": 10, "label": "PERSON", "text": "John Smith", "score": 0.95}]
+        with mock.patch("urllib.request.urlopen", return_value=self._mock_response(response_data)):
+            spans = f.filter("John Smith was here.")
+        assert len(spans) == 1
+        assert spans[0].text == "John Smith"
+        assert spans[0].filter_type == "person"
+        assert spans[0].confidence == 0.95
+
+    def test_label_filtered_out(self):
+        import unittest.mock as mock
+        f = self._make_filter(labels=["PERSON"])
+        response_data = [{"start": 5, "end": 12, "label": "ORG", "text": "Acme Inc", "score": 0.9}]
+        with mock.patch("urllib.request.urlopen", return_value=self._mock_response(response_data)):
+            spans = f.filter("At Acme Inc today.")
+        assert len(spans) == 0
+
+    def test_threshold_filters_low_score(self):
+        import unittest.mock as mock
+        f = self._make_filter(labels=["PERSON"], thresholds={"PERSON": 0.9})
+        response_data = [{"start": 0, "end": 10, "label": "PERSON", "text": "John Smith", "score": 0.75}]
+        with mock.patch("urllib.request.urlopen", return_value=self._mock_response(response_data)):
+            spans = f.filter("John Smith was here.")
+        assert len(spans) == 0
+
+    def test_threshold_passes_high_score(self):
+        import unittest.mock as mock
+        f = self._make_filter(labels=["PERSON"], thresholds={"PERSON": 0.9})
+        response_data = [{"start": 0, "end": 10, "label": "PERSON", "text": "John Smith", "score": 0.95}]
+        with mock.patch("urllib.request.urlopen", return_value=self._mock_response(response_data)):
+            spans = f.filter("John Smith was here.")
+        assert len(spans) == 1
+
+    def test_ignored_term_excluded(self):
+        import unittest.mock as mock
+        f = self._make_filter(labels=["PERSON"], ignored=["John Smith"])
+        response_data = [{"start": 0, "end": 10, "label": "PERSON", "text": "John Smith", "score": 0.95}]
+        with mock.patch("urllib.request.urlopen", return_value=self._mock_response(response_data)):
+            spans = f.filter("John Smith was here.")
+        assert len(spans) == 0
+
+    def test_default_redact_replacement(self):
+        import unittest.mock as mock
+        f = self._make_filter(labels=["PERSON"])
+        response_data = [{"start": 0, "end": 10, "label": "PERSON", "text": "John Smith", "score": 0.95}]
+        with mock.patch("urllib.request.urlopen", return_value=self._mock_response(response_data)):
+            spans = f.filter("John Smith was here.")
+        assert spans[0].replacement == "{{{REDACTED-person}}}"
+
+    def test_non_person_label_filter_type(self):
+        import unittest.mock as mock
+        f = self._make_filter(labels=["ORG"])
+        response_data = [{"start": 0, "end": 8, "label": "ORG", "text": "Acme Inc", "score": 0.9}]
+        with mock.patch("urllib.request.urlopen", return_value=self._mock_response(response_data)):
+            spans = f.filter("Acme Inc is hiring.")
+        assert len(spans) == 1
+        assert spans[0].filter_type == "org"
+
+    def test_bearer_token_sent(self):
+        import unittest.mock as mock
+        config = PhEyeFilterConfig(endpoint="http://pheye:8080", bearer_token="secret-token")
+        f = PhEyeFilter(config)
+        response_data = []
+        captured_req = {}
+
+        def fake_urlopen(req, timeout=None):
+            captured_req["headers"] = dict(req.headers)
+            return self._mock_response(response_data)
+
+        with mock.patch("urllib.request.urlopen", side_effect=fake_urlopen):
+            f.filter("Some text.")
+
+        assert "Authorization" in captured_req["headers"]
+        assert captured_req["headers"]["Authorization"] == "Bearer secret-token"
+
+    def test_url_error_raises_ioerror(self):
+        import unittest.mock as mock
+        import urllib.error
+        f = self._make_filter()
+        with mock.patch("urllib.request.urlopen", side_effect=urllib.error.URLError("connection refused")):
+            with pytest.raises(IOError):
+                f.filter("John Smith was here.")
+
+    def test_policy_json_ph_eye(self):
+        from phileas.policy.policy import Policy
+        policy_json = json.dumps({
+            "name": "test",
+            "identifiers": {
+                "phEye": {
+                    "endpoint": "http://pheye:8080",
+                    "labels": ["PERSON"],
+                    "phEyeFilterStrategies": [{"strategy": "REDACT", "redactionFormat": "{{{REDACTED-%t}}}"}],
+                }
+            },
+        })
+        policy = Policy.from_json(policy_json)
+        assert policy.identifiers.ph_eye is not None
+        assert policy.identifiers.ph_eye.endpoint == "http://pheye:8080"
+        assert policy.identifiers.ph_eye.labels == ["PERSON"]
+
+    def test_identifiers_to_dict_roundtrip(self):
+        from phileas.policy.identifiers import Identifiers
+        ids = Identifiers()
+        ids.ph_eye = PhEyeFilterConfig(
+            endpoint="http://pheye:8080",
+            labels=["PERSON"],
+            bearer_token="tok",
+        )
+        d = ids.to_dict()
+        assert "phEye" in d
+        assert d["phEye"]["endpoint"] == "http://pheye:8080"
+        assert d["phEye"]["bearerToken"] == "tok"

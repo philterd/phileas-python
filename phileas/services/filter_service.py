@@ -26,6 +26,7 @@ from phileas.filters.tracking_number_filter import TrackingNumberFilter
 from phileas.filters.drivers_license_filter import DriversLicenseFilter
 from phileas.filters.iban_code_filter import IBANCodeFilter
 from phileas.filters.passport_number_filter import PassportNumberFilter
+from phileas.filters.ph_eye_filter import PhEyeFilter
 
 # Maps (identifier_attribute_name, filter_class) pairs in order of application.
 _FILTER_MAP: List[Tuple[str, Type[BaseFilter]]] = [
@@ -48,6 +49,7 @@ _FILTER_MAP: List[Tuple[str, Type[BaseFilter]]] = [
     ("drivers_license", DriversLicenseFilter),
     ("iban_code", IBANCodeFilter),
     ("passport_number", PassportNumberFilter),
+    ("ph_eye", PhEyeFilter),
 ]
 
 

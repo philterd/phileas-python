@@ -27,6 +27,7 @@ class FilterType:
     DRIVERS_LICENSE = "drivers-license"
     IBAN_CODE = "iban-code"
     PASSPORT_NUMBER = "passport-number"
+    PH_EYE = "ph-eye"
 
 
 class BaseFilter(ABC):
