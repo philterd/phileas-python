@@ -640,27 +640,64 @@ class TestPhEyeFilter:
         policy_json = json.dumps({
             "name": "test",
             "identifiers": {
-                "phEye": {
-                    "endpoint": "http://pheye:8080",
-                    "labels": ["PERSON"],
-                    "phEyeFilterStrategies": [{"strategy": "REDACT", "redactionFormat": "{{{REDACTED-%t}}}"}],
-                }
+                "phEye": [
+                    {
+                        "endpoint": "http://pheye:8080",
+                        "labels": ["PERSON"],
+                        "phEyeFilterStrategies": [{"strategy": "REDACT", "redactionFormat": "{{{REDACTED-%t}}}"}],
+                    }
+                ],
             },
         })
         policy = Policy.from_json(policy_json)
-        assert policy.identifiers.ph_eye is not None
-        assert policy.identifiers.ph_eye.endpoint == "http://pheye:8080"
-        assert policy.identifiers.ph_eye.labels == ["PERSON"]
+        assert len(policy.identifiers.ph_eye) == 1
+        assert policy.identifiers.ph_eye[0].endpoint == "http://pheye:8080"
+        assert policy.identifiers.ph_eye[0].labels == ["PERSON"]
 
     def test_identifiers_to_dict_roundtrip(self):
         from phileas.policy.identifiers import Identifiers
         ids = Identifiers()
-        ids.ph_eye = PhEyeFilterConfig(
+        ids.ph_eye.append(PhEyeFilterConfig(
             endpoint="http://pheye:8080",
             labels=["PERSON"],
             bearer_token="tok",
-        )
+        ))
         d = ids.to_dict()
         assert "phEye" in d
-        assert d["phEye"]["endpoint"] == "http://pheye:8080"
-        assert d["phEye"]["bearerToken"] == "tok"
+        assert isinstance(d["phEye"], list)
+        assert d["phEye"][0]["endpoint"] == "http://pheye:8080"
+        assert d["phEye"][0]["bearerToken"] == "tok"
+
+    def test_multiple_ph_eye_filters(self):
+        from phileas.policy.policy import Policy
+        policy_json = json.dumps({
+            "name": "multi-pheye",
+            "identifiers": {
+                "phEye": [
+                    {"endpoint": "http://pheye1:8080", "labels": ["PERSON"]},
+                    {"endpoint": "http://pheye2:8080", "labels": ["ORG"]},
+                ],
+            },
+        })
+        policy = Policy.from_json(policy_json)
+        assert len(policy.identifiers.ph_eye) == 2
+        assert policy.identifiers.ph_eye[0].endpoint == "http://pheye1:8080"
+        assert policy.identifiers.ph_eye[1].endpoint == "http://pheye2:8080"
+        assert policy.identifiers.ph_eye[0].labels == ["PERSON"]
+        assert policy.identifiers.ph_eye[1].labels == ["ORG"]
+
+    def test_ph_eye_backward_compat_single_dict(self):
+        """Single dict (legacy format) should still be parsed as a list with one item."""
+        from phileas.policy.policy import Policy
+        policy_json = json.dumps({
+            "name": "legacy",
+            "identifiers": {
+                "phEye": {
+                    "endpoint": "http://pheye:8080",
+                    "labels": ["PERSON"],
+                },
+            },
+        })
+        policy = Policy.from_json(policy_json)
+        assert len(policy.identifiers.ph_eye) == 1
+        assert policy.identifiers.ph_eye[0].endpoint == "http://pheye:8080"
