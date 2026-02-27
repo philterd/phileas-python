@@ -143,6 +143,19 @@ class PassportNumberFilterConfig:
     ignored: List[str] = field(default_factory=list)
 
 
+@dataclass
+class PhEyeFilterConfig:
+    enabled: bool = True
+    endpoint: str = ""
+    bearer_token: str = ""
+    timeout: int = 30
+    labels: List[str] = field(default_factory=lambda: ["PERSON"])
+    remove_punctuation: bool = False
+    thresholds: dict = field(default_factory=dict)
+    ph_eye_filter_strategies: List[FilterStrategy] = field(default_factory=_default_strategies)
+    ignored: List[str] = field(default_factory=list)
+
+
 def _strategies_from_dict(data: dict, key: str) -> List[FilterStrategy]:
     raw = data.get(key, [])
     if raw:
@@ -171,6 +184,7 @@ class Identifiers:
         self.drivers_license: Optional[DriversLicenseFilterConfig] = None
         self.iban_code: Optional[IBANCodeFilterConfig] = None
         self.passport_number: Optional[PassportNumberFilterConfig] = None
+        self.ph_eye: Optional[PhEyeFilterConfig] = None
 
     @classmethod
     def from_dict(cls, data: dict) -> "Identifiers":
@@ -308,6 +322,19 @@ class Identifiers:
                 passport_number_filter_strategies=_strategies_from_dict(d, "passportNumberFilterStrategies"),
                 ignored=d.get("ignored", []),
             )
+        if "phEye" in data:
+            d = data["phEye"]
+            obj.ph_eye = PhEyeFilterConfig(
+                enabled=d.get("enabled", True),
+                endpoint=d.get("endpoint", ""),
+                bearer_token=d.get("bearerToken", ""),
+                timeout=d.get("timeout", 30),
+                labels=d.get("labels", ["PERSON"]),
+                remove_punctuation=d.get("removePunctuation", False),
+                thresholds=d.get("thresholds", {}),
+                ph_eye_filter_strategies=_strategies_from_dict(d, "phEyeFilterStrategies"),
+                ignored=d.get("ignored", []),
+            )
         return obj
 
     def to_dict(self) -> dict:
@@ -425,5 +452,17 @@ class Identifiers:
                 "enabled": self.passport_number.enabled,
                 "passportNumberFilterStrategies": [s.to_dict() for s in self.passport_number.passport_number_filter_strategies],
                 "ignored": self.passport_number.ignored,
+            }
+        if self.ph_eye is not None:
+            d["phEye"] = {
+                "enabled": self.ph_eye.enabled,
+                "endpoint": self.ph_eye.endpoint,
+                "bearerToken": self.ph_eye.bearer_token,
+                "timeout": self.ph_eye.timeout,
+                "labels": self.ph_eye.labels,
+                "removePunctuation": self.ph_eye.remove_punctuation,
+                "thresholds": self.ph_eye.thresholds,
+                "phEyeFilterStrategies": [s.to_dict() for s in self.ph_eye.ph_eye_filter_strategies],
+                "ignored": self.ph_eye.ignored,
             }
         return d
