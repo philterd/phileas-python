@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phileas"
+version = "1.0.0"
+description = "A Python library to deidentify and redact PII, PHI, and other sensitive information from text"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.9"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+]
