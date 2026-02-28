@@ -4,19 +4,19 @@ A Python port of [Phileas](https://github.com/philterd/phileas) — a library to
 
 Built by [Philterd](https://www.philterd.ai).
 
+## Overview
+
+Phileas analyzes text searching for sensitive information such as email addresses, phone numbers, SSNs, credit card numbers, and many other types of PII/PHI. When sensitive information is identified, Phileas can manipulate it in a variety of ways: the information can be redacted, masked, hashed, or replaced with a static value. The user defines how to handle each type of sensitive information through **policies**.
+
 ## Compatibility Notes
 
 Note that this port of [Phileas](https://github.com/philterd/phileas) is not 1:1 with the Java version. There are some differences:
 
-* This project includes a server that exposes redaction HTTP endpoints.
+* This project includes a server that exposes redaction HTTP endpoints. For the Java version, the API server is [Philter](https://github.com/philterd/philter).
 * This project includes support for policies in YAML as well as JSON.
 * This project does not include all redaction strategies present in the Java version.
 * This project includes a CLI.
 * This project includes the ability to evaluate performance using precision and recall through a built-in evaluation tool.
-
-## Overview
-
-Phileas analyzes text searching for sensitive information such as email addresses, phone numbers, SSNs, credit card numbers, and many other types of PII/PHI. When sensitive information is identified, Phileas can manipulate it in a variety of ways: the information can be redacted, masked, hashed, or replaced with a static value. The user defines how to handle each type of sensitive information through **policies**.
 
 ## Installation
 
