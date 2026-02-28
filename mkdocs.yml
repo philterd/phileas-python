@@ -11,6 +11,7 @@ nav:
   - Policies: policies.md
   - Filters: filters.md
   - Examples: examples.md
+  - REST Server: rest-server.md
   - API Reference: api-reference.md
 
 theme:
