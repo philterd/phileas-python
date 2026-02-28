@@ -10,8 +10,8 @@ from phileas.services.filter_service import FilterService
 from phileas.services.context.base import AbstractContextService
 
 
-def _parse_lapps(data: Union[dict, list]) -> List[GroundTruthSpan]:
-    """Parse ground-truth spans from a LAPPS-style JSON document.
+def _parse_annotations(data: Union[dict, list]) -> List[GroundTruthSpan]:
+    """Parse ground-truth spans from an annotations JSON document.
 
     Accepted formats:
 
@@ -31,7 +31,7 @@ def _parse_lapps(data: Union[dict, list]) -> List[GroundTruthSpan]:
     elif isinstance(data, dict):
         items = data.get("spans", [])
     else:
-        raise ValueError("LAPPS JSON must be a list or an object with a 'spans' key.")
+        raise ValueError("Annotations JSON must be a list or an object with a 'spans' key.")
 
     spans: List[GroundTruthSpan] = []
     for i, item in enumerate(items):
@@ -58,7 +58,7 @@ def _spans_overlap(detected: Span, ground_truth: GroundTruthSpan) -> bool:
 
 
 class EvaluationService:
-    """Evaluate filter performance against LAPPS-format ground-truth spans."""
+    """Evaluate filter performance against provided ground-truth spans."""
 
     def __init__(self, context_service: AbstractContextService | None = None) -> None:
         self._filter_service = FilterService(context_service)
@@ -69,9 +69,9 @@ class EvaluationService:
         context: str,
         document_id: str,
         text: str,
-        lapps_json: Union[str, dict, list],
+        annotations_json: Union[str, dict, list],
     ) -> EvaluationResult:
-        """Run the filter on *text* and compare the result against *lapps_json*.
+        """Run the filter on *text* and compare the result against *annotations_json*.
 
         Parameters
         ----------
@@ -83,7 +83,7 @@ class EvaluationService:
             Document identifier (forwarded to :class:`FilterService`).
         text:
             The plain text to redact.
-        lapps_json:
+        annotations_json:
             Ground-truth annotations as a parsed JSON value (``dict`` or
             ``list``) or a raw JSON string.
 
@@ -92,10 +92,10 @@ class EvaluationService:
         :class:`~phileas.models.evaluation_result.EvaluationResult`
             Evaluation metrics and the raw detected / ground-truth spans.
         """
-        if isinstance(lapps_json, str):
-            lapps_json = json.loads(lapps_json)
+        if isinstance(annotations_json, str):
+            annotations_json = json.loads(annotations_json)
 
-        ground_truth = _parse_lapps(lapps_json)
+        ground_truth = _parse_annotations(annotations_json)
         filter_result = self._filter_service.filter(policy, context, document_id, text)
         detected = [s for s in filter_result.spans if not s.ignored]
 

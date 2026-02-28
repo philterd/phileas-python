@@ -22,7 +22,7 @@ class EvaluationResult:
 
 @dataclass
 class GroundTruthSpan:
-    """A single ground-truth span from a LAPPS JSON annotation file."""
+    """A single ground-truth span from an annotations JSON file."""
 
     start: int
     end: int

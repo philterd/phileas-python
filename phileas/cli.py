@@ -80,7 +80,7 @@ def _build_parser() -> argparse.ArgumentParser:
         default=None,
         dest="evaluate",
         help=(
-            "Path to a LAPPS JSON file containing ground-truth spans. "
+            "Path to a JSON file containing ground-truth spans. "
             "When provided, phileas runs the filter, compares detected spans "
             "against the ground-truth annotations, and prints evaluation "
             "metrics (precision, recall, F1) to stdout."
@@ -151,23 +151,23 @@ def main(argv: list[str] | None = None) -> int:
         ]
         sys.stderr.write(json.dumps(spans_data, indent=2) + "\n")
 
-    # Optionally run evaluation against a LAPPS JSON ground-truth file
+    # Optionally run evaluation against a JSON ground-truth file
     if args.evaluate:
         try:
             with open(args.evaluate, "r", encoding="utf-8") as fh:
-                lapps_data = json.load(fh)
+                annotations_data = json.load(fh)
         except FileNotFoundError:
-            parser.error(f"LAPPS ground-truth file not found: {args.evaluate}")
+            parser.error(f"Ground-truth file not found: {args.evaluate}")
         except json.JSONDecodeError as exc:
-            parser.error(f"Failed to parse LAPPS file '{args.evaluate}' as JSON: {exc}")
+            parser.error(f"Failed to parse ground-truth file '{args.evaluate}' as JSON: {exc}")
         except OSError as exc:
-            parser.error(f"Failed to read LAPPS file '{args.evaluate}': {exc}")
+            parser.error(f"Failed to read ground-truth file '{args.evaluate}': {exc}")
 
         try:
             eval_svc = EvaluationService()
-            eval_result = eval_svc.evaluate(policy, args.context, document_id, text, lapps_data)
+            eval_result = eval_svc.evaluate(policy, args.context, document_id, text, annotations_data)
         except (ValueError, KeyError, TypeError) as exc:
-            parser.error(f"Invalid LAPPS data in '{args.evaluate}': {exc}")
+            parser.error(f"Invalid annotations data in '{args.evaluate}': {exc}")
 
         metrics = {
             "truePositives": eval_result.true_positives,

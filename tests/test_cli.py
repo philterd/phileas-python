@@ -161,7 +161,7 @@ class TestCLIErrors:
 # ---------------------------------------------------------------------------
 
 class TestCLIEvaluate:
-    def _write_lapps(self, tmp_path, spans: list, filename: str = "lapps.json") -> str:
+    def _write_gt_file(self, tmp_path, spans: list, filename: str = "gt.json") -> str:
         path = tmp_path / filename
         path.write_text(json.dumps(spans), encoding="utf-8")
         return str(path)
@@ -170,8 +170,8 @@ class TestCLIEvaluate:
         policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
         # john@example.com is at positions 12..28 in "Email me at john@example.com."
         text = "Email me at john@example.com."
-        lapps_file = self._write_lapps(tmp_path, [{"start": 12, "end": 28}])
-        rc = main(["-p", policy_file, "-c", "ctx", "-t", text, "--evaluate", lapps_file])
+        gt_file = self._write_gt_file(tmp_path, [{"start": 12, "end": 28}])
+        rc = main(["-p", policy_file, "-c", "ctx", "-t", text, "--evaluate", gt_file])
         assert rc == 0
         out = capsys.readouterr().out
         # The evaluate output is printed after the filtered text; parse the last JSON block
@@ -183,11 +183,11 @@ class TestCLIEvaluate:
 
     def test_evaluate_empty_ground_truth_all_fp(self, tmp_path, capsys):
         policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
-        lapps_file = self._write_lapps(tmp_path, [])
+        gt_file = self._write_gt_file(tmp_path, [])
         rc = main([
             "-p", policy_file, "-c", "ctx",
             "-t", "Email john@example.com here.",
-            "--evaluate", lapps_file,
+            "--evaluate", gt_file,
         ])
         assert rc == 0
         out = capsys.readouterr().out
@@ -197,8 +197,8 @@ class TestCLIEvaluate:
 
     def test_evaluate_metrics_keys_present(self, tmp_path, capsys):
         policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
-        lapps_file = self._write_lapps(tmp_path, [])
-        rc = main(["-p", policy_file, "-c", "ctx", "-t", "plain text", "--evaluate", lapps_file])
+        gt_file = self._write_gt_file(tmp_path, [])
+        rc = main(["-p", policy_file, "-c", "ctx", "-t", "plain text", "--evaluate", gt_file])
         assert rc == 0
         out = capsys.readouterr().out
         metrics = json.loads(out.split("\n", 1)[1])
@@ -227,16 +227,16 @@ class TestCLIEvaluate:
             ])
         assert exc_info.value.code != 0
 
-    def test_evaluate_dict_lapps_format(self, tmp_path, capsys):
+    def test_evaluate_dict_annotation_format(self, tmp_path, capsys):
         """The dict format {'spans': [...]} is also accepted."""
         policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
-        lapps_data = {"text": "Email john@example.com.", "spans": [{"start": 6, "end": 22}]}
-        lapps_file = tmp_path / "lapps.json"
-        lapps_file.write_text(json.dumps(lapps_data), encoding="utf-8")
+        annotation_data = {"text": "Email john@example.com.", "spans": [{"start": 6, "end": 22}]}
+        gt_file = tmp_path / "gt.json"
+        gt_file.write_text(json.dumps(annotation_data), encoding="utf-8")
         rc = main([
             "-p", policy_file, "-c", "ctx",
             "-t", "Email john@example.com.",
-            "--evaluate", str(lapps_file),
+            "--evaluate", str(gt_file),
         ])
         assert rc == 0
         out = capsys.readouterr().out

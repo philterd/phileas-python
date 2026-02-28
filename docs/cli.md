@@ -34,7 +34,7 @@ phileas -p POLICY_FILE -c CONTEXT (-t TEXT | -f FILE) [options]
 | `--document-id ID` | `-d` | Document identifier. Auto-generated if omitted. |
 | `--output FILE` | `-o` | Write the redacted text to FILE instead of stdout. |
 | `--spans` | | Print span metadata as JSON to stderr after filtering. |
-| `--evaluate FILE` | | Path to a LAPPS JSON file containing ground-truth spans. Prints evaluation metrics (precision, recall, F1) to stdout. |
+| `--evaluate FILE` | | Path to a JSON file containing ground-truth spans. Prints evaluation metrics (precision, recall, F1) to stdout. |
 
 ## Policy files
 
@@ -154,13 +154,13 @@ phileas -p policy.json -c pipeline -f report.txt
 
 ### Evaluate against ground-truth annotations
 
-Use `--evaluate` to compare the filter's output against a LAPPS JSON file of ground-truth spans. Evaluation metrics are printed to stdout after the redacted text.
+Use `--evaluate` to compare the filter's output against a JSON file of ground-truth spans. Evaluation metrics are printed to stdout after the redacted text.
 
 ```bash
 phileas -p policy.json -c my-context -t "Email john@example.com." --evaluate ground_truth.json
 ```
 
-The LAPPS JSON file must be either a JSON array of span objects or a JSON object with a `"spans"` key. Each span must have `"start"` and `"end"` character positions, and an optional `"type"` field:
+The ground-truth JSON file must be either a JSON array of span objects or a JSON object with a `"spans"` key. Each span must have `"start"` and `"end"` character positions, and an optional `"type"` field:
 
 ```json
 [
