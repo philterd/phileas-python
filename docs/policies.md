@@ -4,24 +4,20 @@ A **policy** is the configuration object that tells phileas-python what to detec
 
 ## Policy structure
 
-```json
-{
-  "name": "my-policy",
-  "identifiers": {
-    "<filterKey>": {
-      "enabled": true,
-      "<filterKey>FilterStrategies": [
-        {
-          "strategy": "REDACT",
-          "redactionFormat": "{{{REDACTED-%t}}}"
-        }
-      ],
-      "ignored": ["value-to-skip"]
-    }
-  },
-  "ignored": ["global-term-to-skip"],
-  "ignoredPatterns": ["\\d{3}-555-\\d{4}"]
-}
+```yaml
+name: my-policy
+identifiers:
+  emailAddress:
+    enabled: true
+    emailAddressFilterStrategies:
+      - strategy: REDACT
+        redactionFormat: "{{{REDACTED-%t}}}"
+    ignored:
+      - value-to-skip
+ignored:
+  - global-term-to-skip
+ignoredPatterns:
+  - "\\d{3}-555-\\d{4}"
 ```
 
 | Field | Type | Description |
@@ -88,18 +84,16 @@ Each enabled filter requires at least one strategy entry in its `*FilterStrategi
 
 ### Strategy options
 
-```json
-{
-  "strategy": "REDACT",
-  "redactionFormat": "{{{REDACTED-%t}}}",
-  "staticReplacement": "[REMOVED]",
-  "maskCharacter": "*",
-  "maskLength": "SAME",
-  "condition": "",
-  "shiftYears": 0,
-  "shiftMonths": 0,
-  "shiftDays": 0
-}
+```yaml
+strategy: REDACT
+redactionFormat: "{{{REDACTED-%t}}}"
+staticReplacement: "[REMOVED]"
+maskCharacter: "*"
+maskLength: SAME
+condition: ""
+shiftYears: 0
+shiftMonths: 0
+shiftDays: 0
 ```
 
 - **`redactionFormat`** — used by `REDACT`. The placeholder `%t` is replaced with the filter type name (e.g. `email-address`).
