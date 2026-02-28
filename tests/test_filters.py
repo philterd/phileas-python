@@ -1636,3 +1636,163 @@ class TestFilterServiceEdgeCases:
         assert len(result.spans) == 1
         span = result.spans[0]
         assert text[span.character_start:span.character_end] == "admin@example.com"
+
+
+# ---------------------------------------------------------------------------
+# Pattern Filter
+# ---------------------------------------------------------------------------
+
+class TestPatternFilter:
+    """Tests for PatternFilter."""
+
+    def _make_filter(self, pattern, label="pattern", strategies=None, ignored=None):
+        from phileas.policy.identifiers import PatternFilterConfig
+        from phileas.policy.filter_strategy import FilterStrategy
+        from phileas.filters.pattern_filter import PatternFilter
+        cfg = PatternFilterConfig(
+            pattern=pattern,
+            label=label,
+            pattern_filter_strategies=strategies or [FilterStrategy()],
+            ignored=ignored or [],
+        )
+        return PatternFilter(cfg)
+
+    def test_basic_match(self):
+        f = self._make_filter(r"\d{3}-\d{3}-\d{3}")
+        spans = f.filter("Call 123-456-789 now.")
+        assert len(spans) == 1
+        assert spans[0].text == "123-456-789"
+
+    def test_no_match(self):
+        f = self._make_filter(r"\d{3}-\d{3}-\d{3}")
+        spans = f.filter("No numbers here.")
+        assert len(spans) == 0
+
+    def test_multiple_matches(self):
+        f = self._make_filter(r"\d{3}-\d{3}-\d{3}")
+        spans = f.filter("First: 111-222-333 and second: 444-555-666.")
+        assert len(spans) == 2
+
+    def test_custom_label_used_as_filter_type(self):
+        f = self._make_filter(r"\d{3}-\d{3}-\d{3}", label="custom-id")
+        spans = f.filter("ID: 123-456-789")
+        assert len(spans) == 1
+        assert spans[0].filter_type == "custom-id"
+
+    def test_default_label_is_pattern(self):
+        f = self._make_filter(r"\d{3}-\d{3}-\d{3}")
+        spans = f.filter("ID: 123-456-789")
+        assert spans[0].filter_type == "pattern"
+
+    def test_redact_replacement(self):
+        f = self._make_filter(r"\d{3}-\d{3}-\d{3}")
+        spans = f.filter("ID: 123-456-789")
+        assert "{REDACTED" in spans[0].replacement
+
+    def test_static_replace_strategy(self):
+        from phileas.policy.filter_strategy import FilterStrategy
+        strat = FilterStrategy(strategy="STATIC_REPLACE", static_replacement="[HIDDEN]")
+        f = self._make_filter(r"\d{3}-\d{3}-\d{3}", strategies=[strat])
+        spans = f.filter("ID: 123-456-789")
+        assert spans[0].replacement == "[HIDDEN]"
+
+    def test_ignored_term_skipped(self):
+        f = self._make_filter(r"\d{3}-\d{3}-\d{3}", ignored=["123-456-789"])
+        spans = f.filter("ID: 123-456-789")
+        assert len(spans) == 0
+
+    def test_empty_pattern_returns_no_spans(self):
+        f = self._make_filter("")
+        spans = f.filter("ID: 123-456-789")
+        assert len(spans) == 0
+
+    def test_span_positions(self):
+        f = self._make_filter(r"\d{3}-\d{3}-\d{3}")
+        text = "Call 123-456-789 now."
+        spans = f.filter(text)
+        assert len(spans) == 1
+        assert text[spans[0].character_start:spans[0].character_end] == "123-456-789"
+
+    def test_disabled_filter_not_applied_via_service(self):
+        from phileas.policy.policy import Policy
+        from phileas.policy.identifiers import PatternFilterConfig
+        from phileas.services.filter_service import FilterService
+
+        policy = Policy(name="test")
+        policy.identifiers.patterns = [PatternFilterConfig(
+            enabled=False,
+            pattern=r"\d{3}-\d{3}-\d{3}",
+        )]
+        result = FilterService().filter(policy, "ctx", "doc", "ID: 123-456-789")
+        assert result.filtered_text == "ID: 123-456-789"
+        assert len(result.spans) == 0
+
+    def test_pattern_filter_via_service(self):
+        from phileas.policy.policy import Policy
+        from phileas.policy.identifiers import PatternFilterConfig
+        from phileas.services.filter_service import FilterService
+
+        policy = Policy(name="test")
+        policy.identifiers.patterns = [PatternFilterConfig(
+            pattern=r"\d{3}-\d{3}-\d{3}",
+            label="custom-id",
+        )]
+        result = FilterService().filter(policy, "ctx", "doc", "ID: 123-456-789")
+        assert "123-456-789" not in result.filtered_text
+        assert len(result.spans) == 1
+        assert result.spans[0].filter_type == "custom-id"
+
+    def test_policy_from_dict_with_patterns(self):
+        from phileas.policy.policy import Policy
+
+        policy = Policy.from_dict({
+            "name": "test",
+            "identifiers": {
+                "patterns": [
+                    {
+                        "pattern": r"\d{3}-\d{3}-\d{3}",
+                        "label": "my-id",
+                        "patternFilterStrategies": [{"strategy": "REDACT"}],
+                    }
+                ]
+            },
+        })
+        assert len(policy.identifiers.patterns) == 1
+        cfg = policy.identifiers.patterns[0]
+        assert cfg.pattern == r"\d{3}-\d{3}-\d{3}"
+        assert cfg.label == "my-id"
+        assert cfg.pattern_filter_strategies[0].strategy == "REDACT"
+
+    def test_policy_round_trip_with_patterns(self):
+        from phileas.policy.policy import Policy
+
+        policy = Policy.from_dict({
+            "name": "test",
+            "identifiers": {
+                "patterns": [
+                    {"pattern": r"\d{3}-\d{3}-\d{3}", "label": "my-id"}
+                ]
+            },
+        })
+        d = policy.to_dict()
+        policy2 = Policy.from_dict(d)
+        assert len(policy2.identifiers.patterns) == 1
+        assert policy2.identifiers.patterns[0].pattern == r"\d{3}-\d{3}-\d{3}"
+        assert policy2.identifiers.patterns[0].label == "my-id"
+
+    def test_multiple_pattern_filters_in_policy(self):
+        from phileas.policy.policy import Policy
+        from phileas.policy.identifiers import PatternFilterConfig
+        from phileas.services.filter_service import FilterService
+
+        policy = Policy(name="test")
+        policy.identifiers.patterns = [
+            PatternFilterConfig(pattern=r"\d{3}-\d{3}-\d{3}", label="id-number"),
+            PatternFilterConfig(pattern=r"[A-Z]{2}\d{6}", label="passport-code"),
+        ]
+        result = FilterService().filter(
+            policy, "ctx", "doc", "ID: 123-456-789 Passport: AB123456"
+        )
+        filter_types = {s.filter_type for s in result.spans}
+        assert "id-number" in filter_types
+        assert "passport-code" in filter_types

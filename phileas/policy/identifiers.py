@@ -164,6 +164,15 @@ class DictionaryFilterConfig:
     ignored: List[str] = field(default_factory=list)
 
 
+@dataclass
+class PatternFilterConfig:
+    enabled: bool = True
+    pattern: str = ""
+    label: str = "pattern"
+    pattern_filter_strategies: List[FilterStrategy] = field(default_factory=_default_strategies)
+    ignored: List[str] = field(default_factory=list)
+
+
 def _strategies_from_dict(data: dict, key: str) -> List[FilterStrategy]:
     raw = data.get(key, [])
     if raw:
@@ -194,6 +203,7 @@ class Identifiers:
         self.passport_number: Optional[PassportNumberFilterConfig] = None
         self.ph_eye: List[PhEyeFilterConfig] = []
         self.dictionaries: List[DictionaryFilterConfig] = []
+        self.patterns: List[PatternFilterConfig] = []
 
     @classmethod
     def from_dict(cls, data: dict) -> "Identifiers":
@@ -358,6 +368,18 @@ class Identifiers:
                     dictionary_filter_strategies=_strategies_from_dict(d, "dictionaryFilterStrategies"),
                     ignored=d.get("ignored", []),
                 ))
+        if "patterns" in data:
+            items = data["patterns"]
+            if isinstance(items, dict):
+                items = [items]
+            for d in items:
+                obj.patterns.append(PatternFilterConfig(
+                    enabled=d.get("enabled", True),
+                    pattern=d.get("pattern", ""),
+                    label=d.get("label", "pattern"),
+                    pattern_filter_strategies=_strategies_from_dict(d, "patternFilterStrategies"),
+                    ignored=d.get("ignored", []),
+                ))
         return obj
 
     def to_dict(self) -> dict:
@@ -500,5 +522,16 @@ class Identifiers:
                     "ignored": cfg.ignored,
                 }
                 for cfg in self.dictionaries
+            ]
+        if self.patterns:
+            d["patterns"] = [
+                {
+                    "enabled": cfg.enabled,
+                    "pattern": cfg.pattern,
+                    "label": cfg.label,
+                    "patternFilterStrategies": [s.to_dict() for s in cfg.pattern_filter_strategies],
+                    "ignored": cfg.ignored,
+                }
+                for cfg in self.patterns
             ]
         return d

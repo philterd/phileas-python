@@ -86,6 +86,7 @@ for span in result.spans:
 | `driversLicense` | `drivers-license` | US driver's license numbers |
 | `ibanCode` | `iban-code` | International Bank Account Numbers (IBANs) |
 | `passportNumber` | `passport-number` | US passport numbers |
+| `patterns` | user-defined | Custom regex-based patterns (list of pattern filters) |
 
 ## Policies
 
@@ -162,6 +163,48 @@ policy_dict = {
     "ignoredPatterns": ["\\d{3}-555-\\d{4}"]
 }
 ```
+
+### Pattern-Based Filters
+
+A policy can include a list of custom regex-based filters. Each pattern filter specifies a `pattern` (a regular expression) and an optional `label` used as the filter type in results. This is useful for identifying domain-specific PII that is not covered by the built-in filters.
+
+```python
+policy_dict = {
+    "name": "my-policy",
+    "identifiers": {
+        "patterns": [
+            {
+                "pattern": "\\d{3}-\\d{3}-\\d{3}",
+                "label": "custom-id",
+                "patternFilterStrategies": [{"strategy": "REDACT"}]
+            }
+        ]
+    }
+}
+
+policy = Policy.from_dict(policy_dict)
+result = service.filter(policy, "ctx", "doc1", "ID: 123-456-789")
+print(result.filtered_text)  # ID: {{{REDACTED-custom-id}}}
+```
+
+Multiple pattern filters can be included in the same policy:
+
+```python
+"patterns": [
+    {"pattern": "\\d{3}-\\d{3}-\\d{3}", "label": "id-number"},
+    {"pattern": "[A-Z]{2}\\d{6}", "label": "passport-number"}
+]
+```
+
+#### Pattern Filter Options
+
+| Field | Type | Description |
+|---|---|---|
+| `pattern` | `str` | Regular expression used to identify PII |
+| `label` | `str` | Filter type label used in spans (defaults to `"pattern"`) |
+| `patternFilterStrategies` | `list` | List of filter strategies (same as other filter types) |
+| `ignored` | `list` | Terms that should not be redacted even if they match |
+| `enabled` | `bool` | Whether the filter is active (default: `true`) |
 
 ## Contexts and Referential Integrity
 
