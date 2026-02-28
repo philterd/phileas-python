@@ -341,6 +341,9 @@ ignoredPatterns:
 Requires a running [ph-eye](https://github.com/philterd/ph-eye) service.
 
 ```python
+from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
 policy = Policy.from_dict({
     "name": "ner-demo",
     "identifiers": {
@@ -355,10 +358,158 @@ policy = Policy.from_dict({
     }
 })
 
+service = FilterService()
 result = service.filter(
     policy, "app", "doc-12",
     "Dr. Alice Johnson reviewed the case."
 )
 print(result.filtered_text)
 # Dr. {{{REDACTED-person}}} reviewed the case.
+```
+
+---
+
+## Redact custom patterns with regex
+
+Use custom pattern filters to detect domain-specific PII not covered by built-in filters.
+
+```python
+from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
+policy = Policy.from_dict({
+    "name": "custom-patterns",
+    "identifiers": {
+        "patterns": [
+            {
+                "pattern": r"EMP-\d{6}",
+                "label": "employee-id",
+                "patternFilterStrategies": [{"strategy": "REDACT"}]
+            },
+            {
+                "pattern": r"[A-Z]{2}\d{6}",
+                "label": "passport-number",
+                "patternFilterStrategies": [{"strategy": "MASK"}]
+            }
+        ]
+    }
+})
+
+service = FilterService()
+result = service.filter(
+    policy, "app", "doc-13",
+    "Employee EMP-123456 has passport AB123456."
+)
+print(result.filtered_text)
+# Employee {{{REDACTED-employee-id}}} has passport *********.
+```
+
+---
+
+## Redact terms from a dictionary
+
+Use the dictionaries filter to redact known names or sensitive terms.
+
+```python
+from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
+policy = Policy.from_dict({
+    "name": "dictionary-demo",
+    "identifiers": {
+        "dictionaries": [
+            {
+                "terms": ["John Smith", "Jane Doe", "confidential", "proprietary"],
+                "dictionaryFilterStrategies": [{"strategy": "REDACT"}]
+            }
+        ]
+    }
+})
+
+service = FilterService()
+result = service.filter(
+    policy, "app", "doc-14",
+    "John Smith shared confidential data with Jane Doe about the proprietary algorithm."
+)
+print(result.filtered_text)
+# {{{REDACTED-dictionary}}} shared {{{REDACTED-dictionary}}} data with {{{REDACTED-dictionary}}} about the {{{REDACTED-dictionary}}} algorithm.
+```
+
+---
+
+## Use conditions to filter selectively
+
+Apply different strategies based on the matched value using condition expressions.
+
+```python
+from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
+policy = Policy.from_dict({
+    "name": "conditional-filtering",
+    "identifiers": {
+        "phoneNumber": {
+            "phoneNumberFilterStrategies": [
+                # Redact phone numbers starting with 555 (test numbers)
+                {"strategy": "REDACT", "condition": 'token startswith "555"'},
+                # Mask all other phone numbers
+                {"strategy": "MASK"}
+            ]
+        }
+    }
+})
+
+service = FilterService()
+result = service.filter(
+    policy, "app", "doc-15",
+    "Test: 555-123-4567, Real: 800-867-5309"
+)
+print(result.filtered_text)
+# Test: {{{REDACTED-phone-number}}}, Real: ***-***-****
+```
+
+---
+
+## Maintain referential integrity across documents
+
+Use contexts to ensure the same PII value gets the same replacement across multiple documents.
+
+```python
+from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
+policy = Policy.from_dict({
+    "name": "context-demo",
+    "identifiers": {
+        "emailAddress": {
+            "emailAddressFilterStrategies": [{"strategy": "HASH_SHA256_REPLACE"}]
+        }
+    }
+})
+
+service = FilterService()
+
+# Filter multiple documents in the same context
+doc1 = service.filter(
+    policy, "patient-123", "note-1",
+    "Patient emailed from john@example.com"
+)
+doc2 = service.filter(
+    policy, "patient-123", "note-2",
+    "Follow-up: john@example.com responded"
+)
+
+# The hash will be identical in both documents
+print(doc1.filtered_text)
+# Patient emailed from 5bb8a5cbf6...
+
+print(doc2.filtered_text)
+# Follow-up: 5bb8a5cbf6... responded
+
+# Different context = different hash
+doc3 = service.filter(
+    policy, "patient-456", "note-1",
+    "Patient emailed from john@example.com"
+)
+# Hash will be different in patient-456 context
 ```

@@ -240,6 +240,9 @@ policy = Policy.from_dict({
 The `dictionaries` filter matches terms from a user-supplied list anywhere in the text. It is useful for redacting known names, keywords, or any other fixed vocabulary.
 
 ```python
+from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
 policy = Policy.from_dict({
     "name": "dictionary-policy",
     "identifiers": {
@@ -251,11 +254,22 @@ policy = Policy.from_dict({
         ]
     }
 })
+
+service = FilterService()
+result = service.filter(
+    policy, "app", "doc-1",
+    "John called Jane Smith about the classified project."
+)
+print(result.filtered_text)
+# {{{REDACTED-dictionary}}} called {{{REDACTED-dictionary}}} about the {{{REDACTED-dictionary}}} project.
 ```
 
 Like `phEye`, `dictionaries` is a list — you can include multiple independent dictionaries in a single policy:
 
 ```python
+from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
 policy = Policy.from_dict({
     "name": "multi-dict-policy",
     "identifiers": {
@@ -273,6 +287,14 @@ policy = Policy.from_dict({
         ]
     }
 })
+
+service = FilterService()
+result = service.filter(
+    policy, "app", "doc-2",
+    "Alice told Bob about the secret project marked classified."
+)
+print(result.filtered_text)
+# [PERSON] told [PERSON] about the {{{REDACTED-dictionary}}} project marked {{{REDACTED-dictionary}}}.
 ```
 
 | Option | Type | Default | Description |
