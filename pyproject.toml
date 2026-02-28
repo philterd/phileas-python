@@ -9,7 +9,9 @@ description = "A Python library to deidentify and redact PII, PHI, and other sen
 readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.9"
-dependencies = []
+dependencies = [
+    "PyYAML>=6.0",
+]
 
 [project.optional-dependencies]
 dev = [
