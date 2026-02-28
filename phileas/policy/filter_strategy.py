@@ -3,6 +3,16 @@ from __future__ import annotations
 import hashlib
 
 
+def _random_replace(filter_type: str, token: str) -> str:
+    """Delegate to the anonymization service for the given filter type."""
+    from phileas.services.anonymization import get_anonymization_service
+    service = get_anonymization_service(filter_type)
+    if service is not None:
+        return service.anonymize(token)
+    # Fallback: return the token unchanged if no service is registered
+    return token
+
+
 class FilterStrategy:
     REDACT = "REDACT"
     RANDOM_REPLACE = "RANDOM_REPLACE"
@@ -52,6 +62,8 @@ class FilterStrategy:
         elif self.strategy == FilterStrategy.ABBREVIATE:
             words = token.split()
             return "".join(w[0].upper() for w in words if w)
+        elif self.strategy == FilterStrategy.RANDOM_REPLACE:
+            return _random_replace(filter_type, token)
         else:
             return self.redaction_format.replace("%t", filter_type)
 
