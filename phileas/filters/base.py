@@ -29,6 +29,7 @@ class FilterType:
     PASSPORT_NUMBER = "passport-number"
     PH_EYE = "ph-eye"
     DICTIONARY = "dictionary"
+    PATTERN = "pattern"
 
 
 class BaseFilter(ABC):

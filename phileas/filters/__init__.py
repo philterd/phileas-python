@@ -20,6 +20,7 @@ from .iban_code_filter import IBANCodeFilter
 from .passport_number_filter import PassportNumberFilter
 from .ph_eye_filter import PhEyeFilter
 from .dictionary_filter import DictionaryFilter
+from .pattern_filter import PatternFilter
 
 __all__ = [
     "BaseFilter", "FilterType",
@@ -28,5 +29,5 @@ __all__ = [
     "VINFilter", "BitcoinAddressFilter", "BankRoutingNumberFilter", "DateFilter",
     "MACAddressFilter", "CurrencyFilter", "StreetAddressFilter",
     "TrackingNumberFilter", "DriversLicenseFilter", "IBANCodeFilter",
-    "PassportNumberFilter", "PhEyeFilter", "DictionaryFilter",
+    "PassportNumberFilter", "PhEyeFilter", "DictionaryFilter", "PatternFilter",
 ]

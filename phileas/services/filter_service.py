@@ -28,6 +28,7 @@ from phileas.filters.iban_code_filter import IBANCodeFilter
 from phileas.filters.passport_number_filter import PassportNumberFilter
 from phileas.filters.ph_eye_filter import PhEyeFilter
 from phileas.filters.dictionary_filter import DictionaryFilter
+from phileas.filters.pattern_filter import PatternFilter
 from phileas.services.context.base import AbstractContextService
 from phileas.services.context.in_memory_context_service import InMemoryContextService
 
@@ -79,6 +80,11 @@ class FilterService:
         for dict_config in identifiers.dictionaries:
             if dict_config.enabled:
                 spans.extend(DictionaryFilter(dict_config).filter(text, context))
+
+        # Apply each pattern filter in the list
+        for pattern_config in identifiers.patterns:
+            if pattern_config.enabled:
+                spans.extend(PatternFilter(pattern_config).filter(text, context))
 
         # Mark spans whose text matches a policy-level ignored term or pattern
         policy_ignored = set(policy.ignored)
