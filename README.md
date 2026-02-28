@@ -1,6 +1,16 @@
-# phileas-python
+# Phileas (python)
 
 A Python port of [Phileas](https://github.com/philterd/phileas) — a library to deidentify and redact PII, PHI, and other sensitive information from text.
+
+Built by [Philterd](https://www.philterd.ai).
+
+## Compatibility Notes
+
+Note that this port of [Phileas](https://github.com/philterd/phileas) is not 1:1 with the Java version. There are some differences:
+
+* This project includes a server that exposes redaction HTTP endpoints.
+* This project includes support for policies in YAML as well as JSON.
+* This project does not include all redaction strategies present in the Java version.
 
 ## Overview
 
@@ -468,7 +478,7 @@ pytest tests/ -v
 
 ## License
 
-Copyright 2025 Philterd, LLC.
+Copyright 2027 Philterd, LLC.
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
 
