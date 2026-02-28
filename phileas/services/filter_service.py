@@ -89,10 +89,17 @@ class FilterService:
         # Remove overlapping spans
         spans = Span.drop_overlapping_spans(spans)
 
-        # Apply replacements in reverse order to maintain indices
+        # Apply replacements in reverse order to maintain indices.
+        # Use the context service to ensure referential integrity: the same token
+        # always receives the same replacement within a given context.
         filtered_text = text
         for span in sorted(spans, key=lambda s: s.character_start, reverse=True):
             if not span.ignored:
+                cached = self._context_service.get(context, span.text)
+                if cached is not None:
+                    span.replacement = cached
+                else:
+                    self._context_service.put(context, span.text, span.replacement)
                 filtered_text = (
                     filtered_text[: span.character_start]
                     + span.replacement
