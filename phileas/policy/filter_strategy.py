@@ -203,6 +203,24 @@ class FilterStrategy:
             }
             return ops[op](confidence, val)
 
+        # population <op> numeric_value
+        m = re.fullmatch(r"population\s*(>=|<=|!=|>|<|==)\s*([0-9]+)", condition)
+        if m:
+            from phileas.policy.zip_code_population import get_population
+            op, threshold = m.group(1), int(m.group(2))
+            population = get_population(token)
+            if population is None:
+                return False
+            ops = {
+                ">": lambda a, b: a > b,
+                "<": lambda a, b: a < b,
+                ">=": lambda a, b: a >= b,
+                "<=": lambda a, b: a <= b,
+                "==": lambda a, b: a == b,
+                "!=": lambda a, b: a != b,
+            }
+            return ops[op](population, threshold)
+
         raise ValueError(f"Unrecognized condition syntax: {condition!r}")
 
     def get_replacement(self, filter_type: str, token: str) -> str:

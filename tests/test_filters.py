@@ -271,6 +271,22 @@ class TestZipCodeFilter:
         spans = self.f.filter("No zip here.")
         assert len(spans) == 0
 
+    def test_population_condition_below_threshold_redacted(self):
+        # zip 90210 satisfies population < 25000 per 2020 Census data
+        strategy = FilterStrategy(strategy="REDACT", condition="population < 25000")
+        config = ZipCodeFilterConfig(zip_code_filter_strategies=[strategy])
+        f = ZipCodeFilter(config)
+        spans = f.filter("ZIP: 90210")
+        assert any("90210" in s.text for s in spans)
+
+    def test_population_condition_above_threshold_skipped(self):
+        # zip 10001 does NOT satisfy population < 25000 per 2020 Census data
+        strategy = FilterStrategy(strategy="REDACT", condition="population < 25000")
+        config = ZipCodeFilterConfig(zip_code_filter_strategies=[strategy])
+        f = ZipCodeFilter(config)
+        spans = f.filter("ZIP: 10001")
+        assert len(spans) == 0
+
 
 # ---------------------------------------------------------------------------
 # VIN Filter
@@ -802,6 +818,36 @@ class TestFilterStrategyConditions:
         spans = f.filter("Card: 5500005555555559")
         matched = [s for s in spans if s.text == "5500005555555559"]
         assert matched and matched[0].replacement == "[CARD-B]"
+
+    def test_population_less_than_match(self):
+        # zip 90210 satisfies population < 25000 per 2020 Census data
+        s = FilterStrategy(condition="population < 25000")
+        assert s.evaluate_condition("90210", "ctx", 1.0) is True
+
+    def test_population_less_than_no_match(self):
+        # zip 10001 does NOT satisfy population < 25000 per 2020 Census data
+        s = FilterStrategy(condition="population < 25000")
+        assert s.evaluate_condition("10001", "ctx", 1.0) is False
+
+    def test_population_greater_than_match(self):
+        # zip 10001 satisfies population > 25000 per 2020 Census data
+        s = FilterStrategy(condition="population > 25000")
+        assert s.evaluate_condition("10001", "ctx", 1.0) is True
+
+    def test_population_greater_than_no_match(self):
+        # zip 90210 does NOT satisfy population > 25000 per 2020 Census data
+        s = FilterStrategy(condition="population > 25000")
+        assert s.evaluate_condition("90210", "ctx", 1.0) is False
+
+    def test_population_unknown_zip_returns_false(self):
+        # An unknown zip code should not match
+        s = FilterStrategy(condition="population < 50000")
+        assert s.evaluate_condition("00000", "ctx", 1.0) is False
+
+    def test_population_five_plus_four_zip_uses_prefix(self):
+        # 5+4 zip code: the 5-digit prefix (90210) is used for population lookup
+        s = FilterStrategy(condition="population < 25000")
+        assert s.evaluate_condition("90210-1234", "ctx", 1.0) is True
 
     def test_policy_json_with_condition(self):
         import json as _json
