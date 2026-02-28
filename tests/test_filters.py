@@ -1003,3 +1003,123 @@ class TestPhEyeFilter:
         policy = Policy.from_json(policy_json)
         assert len(policy.identifiers.ph_eye) == 1
         assert policy.identifiers.ph_eye[0].endpoint == "http://pheye:8080"
+
+
+# ---------------------------------------------------------------------------
+# Dictionary Filter
+# ---------------------------------------------------------------------------
+
+class TestDictionaryFilter:
+    """Tests for DictionaryFilter and the embedded BloomFilter."""
+
+    def _make_filter(self, terms, strategies=None):
+        from phileas.policy.identifiers import DictionaryFilterConfig
+        from phileas.policy.filter_strategy import FilterStrategy
+        from phileas.filters.dictionary_filter import DictionaryFilter
+        cfg = DictionaryFilterConfig(
+            terms=terms,
+            dictionary_filter_strategies=strategies or [FilterStrategy()],
+        )
+        return DictionaryFilter(cfg)
+
+    def test_single_term_found(self):
+        f = self._make_filter(["John"])
+        spans = f.filter("My name is John Smith.")
+        assert len(spans) == 1
+        assert spans[0].text == "John"
+
+    def test_term_not_in_text(self):
+        f = self._make_filter(["Alice"])
+        spans = f.filter("My name is John Smith.")
+        assert len(spans) == 0
+
+    def test_multiple_terms(self):
+        f = self._make_filter(["John", "Smith"])
+        spans = f.filter("My name is John Smith.")
+        assert len(spans) == 2
+
+    def test_case_insensitive(self):
+        f = self._make_filter(["john"])
+        spans = f.filter("My name is JOHN Smith.")
+        assert len(spans) == 1
+        assert spans[0].text == "JOHN"
+
+    def test_empty_terms_list(self):
+        f = self._make_filter([])
+        spans = f.filter("My name is John Smith.")
+        assert len(spans) == 0
+
+    def test_multiword_term(self):
+        f = self._make_filter(["John Smith"])
+        spans = f.filter("My name is John Smith today.")
+        assert len(spans) == 1
+        assert spans[0].text == "John Smith"
+
+    def test_longer_term_preferred_over_partial(self):
+        f = self._make_filter(["John Smith", "John"])
+        spans = f.filter("My name is John Smith.")
+        texts = [s.text for s in spans]
+        # "John Smith" should match, not just "John"
+        assert "John Smith" in texts
+        assert "John" not in texts
+
+    def test_ignored_term_skipped(self):
+        from phileas.policy.identifiers import DictionaryFilterConfig
+        from phileas.policy.filter_strategy import FilterStrategy
+        from phileas.filters.dictionary_filter import DictionaryFilter
+        cfg = DictionaryFilterConfig(
+            terms=["John", "Smith"],
+            dictionary_filter_strategies=[FilterStrategy()],
+            ignored=["John"],
+        )
+        f = DictionaryFilter(cfg)
+        spans = f.filter("My name is John Smith.")
+        texts = [s.text for s in spans]
+        assert "John" not in texts
+        assert "Smith" in texts
+
+    def test_redact_replacement(self):
+        f = self._make_filter(["John"])
+        spans = f.filter("My name is John.")
+        assert len(spans) == 1
+        assert "{REDACTED" in spans[0].replacement
+
+    def test_static_replace_strategy(self):
+        from phileas.policy.filter_strategy import FilterStrategy
+        strat = FilterStrategy(strategy="STATIC_REPLACE", static_replacement="[NAME]")
+        f = self._make_filter(["John"], strategies=[strat])
+        spans = f.filter("My name is John.")
+        assert spans[0].replacement == "[NAME]"
+
+    def test_filter_type_is_dictionary(self):
+        f = self._make_filter(["John"])
+        spans = f.filter("My name is John.")
+        assert spans[0].filter_type == "dictionary"
+
+    def test_span_positions(self):
+        f = self._make_filter(["John"])
+        text = "Hi John!"
+        spans = f.filter(text)
+        assert len(spans) == 1
+        assert text[spans[0].character_start:spans[0].character_end] == "John"
+
+    def test_bloom_filter_no_false_negatives(self):
+        """Items added to BloomFilter must always be found (no false negatives)."""
+        from phileas.filters.dictionary_filter import BloomFilter
+        bf = BloomFilter(capacity=100, error_rate=0.01)
+        terms = ["alpha", "beta", "gamma", "delta", "epsilon"]
+        for t in terms:
+            bf.add(t)
+        for t in terms:
+            assert t in bf
+
+    def test_bloom_filter_absent_items(self):
+        """Items never added should (with high probability) not be in the filter."""
+        from phileas.filters.dictionary_filter import BloomFilter
+        bf = BloomFilter(capacity=100, error_rate=0.01)
+        bf.add("present")
+        # Highly unlikely that all of these produce false positives with 1% error rate
+        absent = ["absent1", "absent2", "absent3", "absent4", "absent5"]
+        false_positives = sum(1 for t in absent if t in bf)
+        # Allow at most 1 false positive out of 5 at 1% error rate
+        assert false_positives <= 1

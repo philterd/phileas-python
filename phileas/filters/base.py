@@ -28,6 +28,7 @@ class FilterType:
     IBAN_CODE = "iban-code"
     PASSPORT_NUMBER = "passport-number"
     PH_EYE = "ph-eye"
+    DICTIONARY = "dictionary"
 
 
 class BaseFilter(ABC):

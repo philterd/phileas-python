@@ -156,6 +156,14 @@ class PhEyeFilterConfig:
     ignored: List[str] = field(default_factory=list)
 
 
+@dataclass
+class DictionaryFilterConfig:
+    enabled: bool = True
+    terms: List[str] = field(default_factory=list)
+    dictionary_filter_strategies: List[FilterStrategy] = field(default_factory=_default_strategies)
+    ignored: List[str] = field(default_factory=list)
+
+
 def _strategies_from_dict(data: dict, key: str) -> List[FilterStrategy]:
     raw = data.get(key, [])
     if raw:
@@ -185,6 +193,7 @@ class Identifiers:
         self.iban_code: Optional[IBANCodeFilterConfig] = None
         self.passport_number: Optional[PassportNumberFilterConfig] = None
         self.ph_eye: List[PhEyeFilterConfig] = []
+        self.dictionaries: List[DictionaryFilterConfig] = []
 
     @classmethod
     def from_dict(cls, data: dict) -> "Identifiers":
@@ -338,6 +347,17 @@ class Identifiers:
                     ph_eye_filter_strategies=_strategies_from_dict(d, "phEyeFilterStrategies"),
                     ignored=d.get("ignored", []),
                 ))
+        if "dictionaries" in data:
+            items = data["dictionaries"]
+            if isinstance(items, dict):
+                items = [items]
+            for d in items:
+                obj.dictionaries.append(DictionaryFilterConfig(
+                    enabled=d.get("enabled", True),
+                    terms=d.get("terms", []),
+                    dictionary_filter_strategies=_strategies_from_dict(d, "dictionaryFilterStrategies"),
+                    ignored=d.get("ignored", []),
+                ))
         return obj
 
     def to_dict(self) -> dict:
@@ -470,5 +490,15 @@ class Identifiers:
                     "ignored": cfg.ignored,
                 }
                 for cfg in self.ph_eye
+            ]
+        if self.dictionaries:
+            d["dictionaries"] = [
+                {
+                    "enabled": cfg.enabled,
+                    "terms": cfg.terms,
+                    "dictionaryFilterStrategies": [s.to_dict() for s in cfg.dictionary_filter_strategies],
+                    "ignored": cfg.ignored,
+                }
+                for cfg in self.dictionaries
             ]
         return d
