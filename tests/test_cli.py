@@ -1,0 +1,156 @@
+"""Tests for the phileas CLI."""
+
+from __future__ import annotations
+
+import json
+import os
+
+import pytest
+
+from phileas.cli import main
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _write_policy(tmp_path, data: dict, ext: str = ".json") -> str:
+    """Write *data* as a policy file and return the path."""
+    path = tmp_path / f"policy{ext}"
+    if ext in (".yaml", ".yml"):
+        import yaml
+        path.write_text(yaml.dump(data), encoding="utf-8")
+    else:
+        path.write_text(json.dumps(data), encoding="utf-8")
+    return str(path)
+
+
+_EMAIL_POLICY = {
+    "name": "test",
+    "identifiers": {
+        "emailAddress": {
+            "emailAddressFilterStrategies": [
+                {"strategy": "REDACT", "redactionFormat": "{{{REDACTED-%t}}}"}
+            ]
+        }
+    },
+}
+
+
+# ---------------------------------------------------------------------------
+# Basic invocation
+# ---------------------------------------------------------------------------
+
+class TestCLIBasic:
+    def test_email_redacted_with_text_arg(self, tmp_path, capsys):
+        policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
+        rc = main(["-p", policy_file, "-c", "ctx", "-t", "Email me at john@example.com."])
+        assert rc == 0
+        out = capsys.readouterr().out
+        assert "john@example.com" not in out
+        assert "{{{REDACTED-email-address}}}" in out
+
+    def test_no_pii_text_unchanged(self, tmp_path, capsys):
+        policy_file = _write_policy(tmp_path, {"name": "empty"})
+        rc = main(["-p", policy_file, "-c", "ctx", "-t", "Nothing sensitive."])
+        assert rc == 0
+        out = capsys.readouterr().out
+        assert out.strip() == "Nothing sensitive."
+
+    def test_yaml_policy_file(self, tmp_path, capsys):
+        policy_file = _write_policy(tmp_path, _EMAIL_POLICY, ext=".yaml")
+        rc = main(["-p", policy_file, "-c", "ctx", "-t", "Email me at john@example.com."])
+        assert rc == 0
+        out = capsys.readouterr().out
+        assert "john@example.com" not in out
+
+    def test_file_input(self, tmp_path, capsys):
+        policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
+        input_file = tmp_path / "input.txt"
+        input_file.write_text("Contact admin@corp.com for help.", encoding="utf-8")
+        rc = main(["-p", policy_file, "-c", "ctx", "-f", str(input_file)])
+        assert rc == 0
+        out = capsys.readouterr().out
+        assert "admin@corp.com" not in out
+        assert "{{{REDACTED-email-address}}}" in out
+
+    def test_output_file(self, tmp_path):
+        policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
+        output_file = tmp_path / "out.txt"
+        rc = main([
+            "-p", policy_file,
+            "-c", "ctx",
+            "-t", "Email me at john@example.com.",
+            "-o", str(output_file),
+        ])
+        assert rc == 0
+        result = output_file.read_text(encoding="utf-8")
+        assert "john@example.com" not in result
+        assert "{{{REDACTED-email-address}}}" in result
+
+    def test_custom_document_id(self, tmp_path, capsys):
+        policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
+        rc = main(["-p", policy_file, "-c", "ctx", "-d", "my-doc", "-t", "plain text"])
+        assert rc == 0
+
+    def test_spans_flag_writes_json_to_stderr(self, tmp_path, capsys):
+        policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
+        rc = main(["-p", policy_file, "-c", "ctx", "-t", "Email john@example.com.", "--spans"])
+        assert rc == 0
+        err = capsys.readouterr().err
+        spans = json.loads(err)
+        assert isinstance(spans, list)
+        assert len(spans) == 1
+        span = spans[0]
+        assert span["filterType"] == "email-address"
+        assert span["text"] == "john@example.com"
+
+    def test_spans_flag_empty_list_when_no_pii(self, tmp_path, capsys):
+        policy_file = _write_policy(tmp_path, {"name": "empty"})
+        rc = main(["-p", policy_file, "-c", "ctx", "-t", "No PII here.", "--spans"])
+        assert rc == 0
+        err = capsys.readouterr().err
+        spans = json.loads(err)
+        assert spans == []
+
+
+# ---------------------------------------------------------------------------
+# Error handling
+# ---------------------------------------------------------------------------
+
+class TestCLIErrors:
+    def test_missing_policy_file_exits(self, tmp_path):
+        with pytest.raises(SystemExit) as exc_info:
+            main(["-p", str(tmp_path / "nonexistent.json"), "-c", "ctx", "-t", "hello"])
+        assert exc_info.value.code != 0
+
+    def test_missing_input_file_exits(self, tmp_path):
+        policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
+        with pytest.raises(SystemExit) as exc_info:
+            main(["-p", policy_file, "-c", "ctx", "-f", str(tmp_path / "no_such_file.txt")])
+        assert exc_info.value.code != 0
+
+    def test_text_and_file_mutually_exclusive(self, tmp_path):
+        policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
+        input_file = tmp_path / "input.txt"
+        input_file.write_text("hello")
+        with pytest.raises(SystemExit) as exc_info:
+            main(["-p", policy_file, "-c", "ctx", "-t", "hello", "-f", str(input_file)])
+        assert exc_info.value.code != 0
+
+    def test_missing_policy_arg_exits(self, tmp_path):
+        with pytest.raises(SystemExit) as exc_info:
+            main(["-c", "ctx", "-t", "hello"])
+        assert exc_info.value.code != 0
+
+    def test_missing_context_arg_exits(self, tmp_path):
+        policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
+        with pytest.raises(SystemExit) as exc_info:
+            main(["-p", policy_file, "-t", "hello"])
+        assert exc_info.value.code != 0
+
+    def test_missing_input_arg_exits(self, tmp_path):
+        policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
+        with pytest.raises(SystemExit) as exc_info:
+            main(["-p", policy_file, "-c", "ctx"])
+        assert exc_info.value.code != 0

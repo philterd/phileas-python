@@ -419,6 +419,47 @@ policy_dict = {
 }
 ```
 
+## CLI
+
+phileas ships a `phileas` command that performs redaction directly from the terminal.
+
+### Usage
+
+```
+phileas -p POLICY_FILE -c CONTEXT (-t TEXT | -f FILE) [options]
+```
+
+| Argument | Description |
+|---|---|
+| `-p / --policy FILE` | Path to a policy file (JSON or YAML). |
+| `-c / --context CONTEXT` | Context name for referential integrity. |
+| `-t / --text TEXT` | Text to redact (mutually exclusive with `--file`). |
+| `-f / --file FILE` | Path to a file to redact (mutually exclusive with `--text`). |
+| `-d / --document-id ID` | Optional document identifier (auto-generated if omitted). |
+| `-o / --output FILE` | Write redacted text to a file instead of stdout. |
+| `--spans` | Print span metadata as JSON to stderr. |
+
+### Examples
+
+Redact a string:
+
+```bash
+phileas -p policy.json -c my-context -t "Contact john@example.com or call 800-555-1234."
+# Contact {{{REDACTED-email-address}}} or call {{{REDACTED-phone-number}}}.
+```
+
+Redact a file and write output to a new file:
+
+```bash
+phileas -p policy.yaml -c my-context -f report.txt -o report_redacted.txt
+```
+
+View span metadata for each detected item:
+
+```bash
+phileas -p policy.json -c my-context -t "Email john@example.com." --spans
+```
+
 ## Running Tests
 
 ```bash
