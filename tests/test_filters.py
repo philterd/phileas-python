@@ -1003,3 +1003,159 @@ class TestPhEyeFilter:
         policy = Policy.from_json(policy_json)
         assert len(policy.identifiers.ph_eye) == 1
         assert policy.identifiers.ph_eye[0].endpoint == "http://pheye:8080"
+
+
+# ---------------------------------------------------------------------------
+# Custom Filter
+# ---------------------------------------------------------------------------
+
+class TestCustomFilter:
+    def _make_custom_impl(self, spans_to_return):
+        """Return a simple CustomFilter implementation that returns fixed spans."""
+        from phileas.filters.custom_filter import CustomFilter
+
+        class _Impl(CustomFilter):
+            def filter(self, policy, context, text):
+                return spans_to_return
+
+        return _Impl()
+
+    def test_custom_filter_interface_abstract(self):
+        from phileas.filters.custom_filter import CustomFilter
+        with pytest.raises(TypeError):
+            CustomFilter()  # cannot instantiate abstract class
+
+    def test_custom_filter_wrapper_no_implementation(self):
+        from phileas.filters.custom_filter import CustomFilterWrapper
+        from phileas.policy.identifiers import CustomFilterConfig
+        cfg = CustomFilterConfig(enabled=True, implementation=None)
+        wrapper = CustomFilterWrapper(cfg)
+        spans = wrapper.filter("some text")
+        assert spans == []
+
+    def test_custom_filter_wrapper_calls_implementation(self):
+        from phileas.filters.custom_filter import CustomFilterWrapper
+        from phileas.policy.identifiers import CustomFilterConfig
+        from phileas.models.span import Span
+
+        expected_span = Span(
+            character_start=0, character_end=4,
+            filter_type="custom", context="default",
+            confidence=1.0, text="John", replacement="{{{REDACTED-custom}}}",
+        )
+        impl = self._make_custom_impl([expected_span])
+        cfg = CustomFilterConfig(enabled=True, implementation=impl)
+        wrapper = CustomFilterWrapper(cfg)
+        spans = wrapper.filter("John went to the store")
+        assert len(spans) == 1
+        assert spans[0].text == "John"
+
+    def test_custom_filter_receives_policy_and_context(self):
+        from phileas.filters.custom_filter import CustomFilter, CustomFilterWrapper
+        from phileas.policy.identifiers import CustomFilterConfig
+        from phileas.policy.policy import Policy
+
+        received = {}
+
+        class _CapturingImpl(CustomFilter):
+            def filter(self, policy, context, text):
+                received["policy"] = policy
+                received["context"] = context
+                received["text"] = text
+                return []
+
+        policy = Policy(name="test-policy")
+        cfg = CustomFilterConfig(enabled=True, implementation=_CapturingImpl())
+        wrapper = CustomFilterWrapper(cfg, policy=policy)
+        wrapper.filter("hello world", context="my-context")
+        assert received["policy"] is policy
+        assert received["context"] == "my-context"
+        assert received["text"] == "hello world"
+
+    def test_custom_filter_config_from_dict(self):
+        from phileas.policy.policy import Policy
+        policy_json = json.dumps({
+            "name": "custom-test",
+            "identifiers": {
+                "custom": [
+                    {
+                        "enabled": True,
+                        "customFilterStrategies": [{"strategy": "REDACT"}],
+                    }
+                ]
+            },
+        })
+        policy = Policy.from_json(policy_json)
+        assert len(policy.identifiers.custom) == 1
+        cfg = policy.identifiers.custom[0]
+        assert cfg.enabled is True
+        assert cfg.custom_filter_strategies[0].strategy == "REDACT"
+
+    def test_custom_filter_config_round_trip_json(self):
+        from phileas.policy.policy import Policy
+        from phileas.policy.identifiers import CustomFilterConfig
+        p = Policy(name="rt-custom")
+        p.identifiers.custom = [CustomFilterConfig(enabled=True)]
+        j = p.to_json()
+        p2 = Policy.from_json(j)
+        assert len(p2.identifiers.custom) == 1
+        assert p2.identifiers.custom[0].enabled is True
+
+    def test_custom_filter_config_round_trip_yaml(self):
+        from phileas.policy.policy import Policy
+        from phileas.policy.identifiers import CustomFilterConfig
+        p = Policy(name="rt-yaml-custom")
+        p.identifiers.custom = [CustomFilterConfig(enabled=True)]
+        y = p.to_yaml()
+        p2 = Policy.from_yaml(y)
+        assert len(p2.identifiers.custom) == 1
+        assert p2.identifiers.custom[0].enabled is True
+
+    def test_custom_filter_applied_by_filter_service(self):
+        from phileas.filters.custom_filter import CustomFilter
+        from phileas.policy.identifiers import CustomFilterConfig
+        from phileas.policy.policy import Policy
+        from phileas.services.filter_service import FilterService
+        from phileas.models.span import Span
+
+        class _NameFilter(CustomFilter):
+            def filter(self, policy, context, text):
+                spans = []
+                import re
+                for m in re.finditer(r"\bJohn\b", text):
+                    spans.append(Span(
+                        character_start=m.start(), character_end=m.end(),
+                        filter_type="person", context=context,
+                        confidence=0.99, text=m.group(0),
+                        replacement="{{{REDACTED-person}}}",
+                    ))
+                return spans
+
+        policy = Policy(name="svc-custom")
+        policy.identifiers.custom = [
+            CustomFilterConfig(enabled=True, implementation=_NameFilter())
+        ]
+        svc = FilterService()
+        result = svc.filter(policy, "ctx", "doc1", "Hello, John. How are you, John?")
+        assert "John" not in result.filtered_text
+        assert len(result.spans) == 2
+
+    def test_custom_filter_disabled_skipped(self):
+        from phileas.filters.custom_filter import CustomFilter
+        from phileas.policy.identifiers import CustomFilterConfig
+        from phileas.policy.policy import Policy
+        from phileas.services.filter_service import FilterService
+        from phileas.models.span import Span
+
+        class _AlwaysMatches(CustomFilter):
+            def filter(self, policy, context, text):
+                return [Span(0, len(text), "custom", context, 1.0, text, "[REDACTED]")]
+
+        policy = Policy(name="disabled-custom")
+        policy.identifiers.custom = [
+            CustomFilterConfig(enabled=False, implementation=_AlwaysMatches())
+        ]
+        svc = FilterService()
+        result = svc.filter(policy, "ctx", "doc1", "some text")
+        assert result.filtered_text == "some text"
+        assert result.spans == []

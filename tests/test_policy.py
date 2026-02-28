@@ -201,6 +201,7 @@ class TestPolicy:
                 "ibanCode": {},
                 "passportNumber": {},
                 "phEye": [{"endpoint": "http://pheye:8080"}],
+                "custom": [{"enabled": True}],
             },
         }
         p = Policy.from_dict(d)
@@ -226,3 +227,5 @@ class TestPolicy:
         assert ids.passport_number is not None
         assert len(ids.ph_eye) == 1
         assert ids.ph_eye[0].endpoint == "http://pheye:8080"
+        assert len(ids.custom) == 1
+        assert ids.custom[0].enabled is True

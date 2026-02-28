@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from .filter_strategy import FilterStrategy
+
+if TYPE_CHECKING:
+    from phileas.filters.custom_filter import CustomFilter
 
 
 def _default_strategies():
@@ -156,6 +159,14 @@ class PhEyeFilterConfig:
     ignored: List[str] = field(default_factory=list)
 
 
+@dataclass
+class CustomFilterConfig:
+    enabled: bool = True
+    implementation: Optional["CustomFilter"] = None
+    custom_filter_strategies: List[FilterStrategy] = field(default_factory=_default_strategies)
+    ignored: List[str] = field(default_factory=list)
+
+
 def _strategies_from_dict(data: dict, key: str) -> List[FilterStrategy]:
     raw = data.get(key, [])
     if raw:
@@ -185,6 +196,7 @@ class Identifiers:
         self.iban_code: Optional[IBANCodeFilterConfig] = None
         self.passport_number: Optional[PassportNumberFilterConfig] = None
         self.ph_eye: List[PhEyeFilterConfig] = []
+        self.custom: List[CustomFilterConfig] = []
 
     @classmethod
     def from_dict(cls, data: dict) -> "Identifiers":
@@ -338,6 +350,16 @@ class Identifiers:
                     ph_eye_filter_strategies=_strategies_from_dict(d, "phEyeFilterStrategies"),
                     ignored=d.get("ignored", []),
                 ))
+        if "custom" in data:
+            items = data["custom"]
+            if isinstance(items, dict):
+                items = [items]
+            for d in items:
+                obj.custom.append(CustomFilterConfig(
+                    enabled=d.get("enabled", True),
+                    custom_filter_strategies=_strategies_from_dict(d, "customFilterStrategies"),
+                    ignored=d.get("ignored", []),
+                ))
         return obj
 
     def to_dict(self) -> dict:
@@ -470,5 +492,14 @@ class Identifiers:
                     "ignored": cfg.ignored,
                 }
                 for cfg in self.ph_eye
+            ]
+        if self.custom:
+            d["custom"] = [
+                {
+                    "enabled": cfg.enabled,
+                    "customFilterStrategies": [s.to_dict() for s in cfg.custom_filter_strategies],
+                    "ignored": cfg.ignored,
+                }
+                for cfg in self.custom
             ]
         return d

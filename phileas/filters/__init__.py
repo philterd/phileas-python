@@ -19,6 +19,7 @@ from .drivers_license_filter import DriversLicenseFilter
 from .iban_code_filter import IBANCodeFilter
 from .passport_number_filter import PassportNumberFilter
 from .ph_eye_filter import PhEyeFilter
+from .custom_filter import CustomFilter, CustomFilterWrapper
 
 __all__ = [
     "BaseFilter", "FilterType",
@@ -27,5 +28,5 @@ __all__ = [
     "VINFilter", "BitcoinAddressFilter", "BankRoutingNumberFilter", "DateFilter",
     "MACAddressFilter", "CurrencyFilter", "StreetAddressFilter",
     "TrackingNumberFilter", "DriversLicenseFilter", "IBANCodeFilter",
-    "PassportNumberFilter", "PhEyeFilter",
+    "PassportNumberFilter", "PhEyeFilter", "CustomFilter", "CustomFilterWrapper",
 ]
