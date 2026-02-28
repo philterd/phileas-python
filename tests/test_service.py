@@ -237,3 +237,34 @@ class TestFilterServiceFromJSON:
         result = svc.filter(policy, "ctx", "doc", text)
         assert "test@x.com" not in result.filtered_text
         assert "10.0.0.1" not in result.filtered_text
+
+
+# ---------------------------------------------------------------------------
+# ContextService injection
+# ---------------------------------------------------------------------------
+
+class TestFilterServiceContextService:
+    def test_default_context_service_is_in_memory(self):
+        from phileas.services.context import InMemoryContextService
+        svc = FilterService()
+        assert isinstance(svc._context_service, InMemoryContextService)
+
+    def test_custom_context_service_is_used(self):
+        from phileas.services.context import AbstractContextService, InMemoryContextService
+
+        class CustomContextService(AbstractContextService):
+            def put(self, context, token, replacement): pass
+            def get(self, context, token): return None
+            def contains(self, context, token): return False
+
+        custom = CustomContextService()
+        svc = FilterService(context_service=custom)
+        assert svc._context_service is custom
+
+    def test_filter_with_custom_context_service(self):
+        from phileas.services.context import InMemoryContextService
+        ctx_svc = InMemoryContextService()
+        svc = FilterService(context_service=ctx_svc)
+        policy = _policy_with(email_address=EmailAddressFilterConfig())
+        result = svc.filter(policy, "ctx", "doc", "Email: user@example.com")
+        assert "user@example.com" not in result.filtered_text

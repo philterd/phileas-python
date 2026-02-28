@@ -27,6 +27,8 @@ from phileas.filters.drivers_license_filter import DriversLicenseFilter
 from phileas.filters.iban_code_filter import IBANCodeFilter
 from phileas.filters.passport_number_filter import PassportNumberFilter
 from phileas.filters.ph_eye_filter import PhEyeFilter
+from phileas.services.context.base import AbstractContextService
+from phileas.services.context.in_memory_context_service import InMemoryContextService
 
 # Maps (identifier_attribute_name, filter_class) pairs in order of application.
 _FILTER_MAP: List[Tuple[str, Type[BaseFilter]]] = [
@@ -53,6 +55,9 @@ _FILTER_MAP: List[Tuple[str, Type[BaseFilter]]] = [
 
 
 class FilterService:
+    def __init__(self, context_service: AbstractContextService | None = None) -> None:
+        self._context_service = context_service if context_service is not None else InMemoryContextService()
+
     def filter(self, policy: Policy, context: str, document_id: str, text: str) -> FilterResult:
         """Apply the policy filters to the text and return a FilterResult."""
         spans: List[Span] = []
