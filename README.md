@@ -450,6 +450,7 @@ phileas -p POLICY_FILE -c CONTEXT (-t TEXT | -f FILE) [options]
 | `-d / --document-id ID` | Optional document identifier (auto-generated if omitted). |
 | `-o / --output FILE` | Write redacted text to a file instead of stdout. |
 | `--spans` | Print span metadata as JSON to stderr. |
+| `--evaluate FILE` | Evaluate redaction quality against a JSON ground-truth file. Prints precision, recall, and F1 metrics to stdout. |
 
 ### Examples
 
@@ -470,6 +471,34 @@ View span metadata for each detected item:
 
 ```bash
 phileas -p policy.json -c my-context -t "Email john@example.com." --spans
+```
+
+### Evaluation Mode
+
+Use `--evaluate FILE` to measure the redaction quality of a policy against a set of ground-truth annotations. Phileas runs the filter on the input text, compares the detected spans against the ground-truth spans, and prints precision, recall, and F1 metrics to stdout.
+
+```bash
+phileas -p policy.json -c my-context -t "Email john@example.com." --evaluate gt.json
+```
+
+The ground-truth file must be a JSON array of span objects, or a JSON object with a `"spans"` key. Each span must have `"start"` and `"end"` character positions; `"type"` is optional:
+
+```json
+[{"start": 6, "end": 22, "type": "email-address"}]
+```
+
+**Example output:**
+
+```
+Email {{{REDACTED-email-address}}}.
+{
+  "truePositives": 1,
+  "falsePositives": 0,
+  "falseNegatives": 0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0
+}
 ```
 
 ## Running Tests

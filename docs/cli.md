@@ -34,6 +34,7 @@ phileas -p POLICY_FILE -c CONTEXT (-t TEXT | -f FILE) [options]
 | `--document-id ID` | `-d` | Document identifier. Auto-generated if omitted. |
 | `--output FILE` | `-o` | Write the redacted text to FILE instead of stdout. |
 | `--spans` | | Print span metadata as JSON to stderr after filtering. |
+| `--evaluate FILE` | | Path to a JSON file containing ground-truth spans. Prints evaluation metrics (precision, recall, F1) to stdout. |
 
 ## Policy files
 
@@ -149,4 +150,45 @@ Pass a file to phileas with the `--file` flag:
 
 ```bash
 phileas -p policy.json -c pipeline -f report.txt
+```
+
+### Evaluate against ground-truth annotations
+
+Use `--evaluate` to compare the filter's output against a JSON file of ground-truth spans. Evaluation metrics are printed to stdout after the redacted text.
+
+```bash
+phileas -p policy.json -c my-context -t "Email john@example.com." --evaluate ground_truth.json
+```
+
+The ground-truth JSON file must be either a JSON array of span objects or a JSON object with a `"spans"` key. Each span must have `"start"` and `"end"` character positions, and an optional `"type"` field:
+
+```json
+[
+  {"start": 6, "end": 22, "type": "email-address"}
+]
+```
+
+Or using the object format:
+
+```json
+{
+  "text": "Email john@example.com.",
+  "spans": [
+    {"start": 6, "end": 22, "type": "email-address"}
+  ]
+}
+```
+
+Stdout (redacted text followed by metrics):
+
+```
+Email {{{REDACTED-email-address}}}.
+{
+  "truePositives": 1,
+  "falsePositives": 0,
+  "falseNegatives": 0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0
+}
 ```
