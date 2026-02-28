@@ -79,7 +79,7 @@ identifiers:
 ### Redact a text string
 
 ```bash
-phileas -p policy.json -c my-context -t "Contact john@example.com or call 800-555-1234."
+phileas -p policy.yaml -c my-context -t "Contact john@example.com or call 800-555-1234."
 ```
 
 Output:
@@ -91,7 +91,7 @@ Contact {{{REDACTED-email-address}}} or call {{{REDACTED-phone-number}}}.
 ### Redact the contents of a file
 
 ```bash
-phileas -p policy.json -c my-context -f report.txt
+phileas -p policy.yaml -c my-context -f report.txt
 ```
 
 The redacted text is written to stdout.
@@ -99,7 +99,7 @@ The redacted text is written to stdout.
 ### Write redacted output to a file
 
 ```bash
-phileas -p policy.json -c my-context -f report.txt -o report_redacted.txt
+phileas -p policy.yaml -c my-context -f report.txt -o report_redacted.txt
 ```
 
 ### Use a YAML policy file
@@ -111,7 +111,7 @@ phileas -p policy.yaml -c my-context -t "Patient SSN is 123-45-6789."
 ### Supply a custom document ID
 
 ```bash
-phileas -p policy.json -c my-context -d doc-001 -t "Email: admin@example.com"
+phileas -p policy.yaml -c my-context -d doc-001 -t "Email: admin@example.com"
 ```
 
 ### View span metadata
@@ -119,7 +119,7 @@ phileas -p policy.json -c my-context -d doc-001 -t "Email: admin@example.com"
 Use `--spans` to print details about each detected piece of sensitive information as JSON on stderr:
 
 ```bash
-phileas -p policy.json -c my-context -t "Email john@example.com." --spans
+phileas -p policy.yaml -c my-context -t "Email john@example.com." --spans
 ```
 
 Stdout:
@@ -148,5 +148,5 @@ Stderr:
 Pass a file to phileas with the `--file` flag:
 
 ```bash
-phileas -p policy.json -c pipeline -f report.txt
+phileas -p policy.yaml -c pipeline -f report.txt
 ```

@@ -35,11 +35,10 @@ pip install -e ".[dev]"
 ## Quick Start
 
 ```python
-import json
 from phileas.policy.policy import Policy
 from phileas.services.filter_service import FilterService
 
-# Define a policy as a Python dict (or load from JSON)
+# Define a policy as a Python dict (or load from YAML)
 policy_dict = {
     "name": "my-policy",
     "identifiers": {
@@ -102,28 +101,24 @@ for span in result.spans:
 
 ## Policies
 
-A **policy** is a JSON (or Python dict) object that defines what sensitive information to identify and how to handle it.
+A **policy** is a YAML (or Python dict) object that defines what sensitive information to identify and how to handle it.
 
 ### Policy Structure
 
-```json
-{
-  "name": "my-policy",
-  "identifiers": {
-    "emailAddress": {
-      "enabled": true,
-      "emailAddressFilterStrategies": [
-        {
-          "strategy": "REDACT",
-          "redactionFormat": "{{{REDACTED-%t}}}"
-        }
-      ],
-      "ignored": ["noreply@example.com"]
-    }
-  },
-  "ignored": ["safe-term"],
-  "ignoredPatterns": ["\\d{3}-test-\\d{4}"]
-}
+```yaml
+name: my-policy
+identifiers:
+  emailAddress:
+    enabled: true
+    emailAddressFilterStrategies:
+      - strategy: REDACT
+        redactionFormat: "{{{REDACTED-%t}}}"
+    ignored:
+      - noreply@example.com
+ignored:
+  - safe-term
+ignoredPatterns:
+  - "\\d{3}-test-\\d{4}"
 ```
 
 ### Filter Strategies
@@ -143,17 +138,15 @@ Each filter type supports one or more strategies that define what to do with the
 
 ### Strategy Options
 
-```json
-{
-  "strategy": "REDACT",
-  "redactionFormat": "{{{REDACTED-%t}}}",
-  "staticReplacement": "[REMOVED]",
-  "maskCharacter": "*",
-  "maskLength": "SAME",
-  "truncateLeaveCharacters": 4,
-  "truncateDirection": "LEADING",
-  "condition": ""
-}
+```yaml
+strategy: REDACT
+redactionFormat: "{{{REDACTED-%t}}}"
+staticReplacement: "[REMOVED]"
+maskCharacter: "*"
+maskLength: SAME
+truncateLeaveCharacters: 4
+truncateDirection: LEADING
+condition: ""
 ```
 
 - `%t` in `redactionFormat` is replaced by the filter type name.
@@ -456,7 +449,7 @@ phileas -p POLICY_FILE -c CONTEXT (-t TEXT | -f FILE) [options]
 Redact a string:
 
 ```bash
-phileas -p policy.json -c my-context -t "Contact john@example.com or call 800-555-1234."
+phileas -p policy.yaml -c my-context -t "Contact john@example.com or call 800-555-1234."
 # Contact {{{REDACTED-email-address}}} or call {{{REDACTED-phone-number}}}.
 ```
 
@@ -469,7 +462,7 @@ phileas -p policy.yaml -c my-context -f report.txt -o report_redacted.txt
 View span metadata for each detected item:
 
 ```bash
-phileas -p policy.json -c my-context -t "Email john@example.com." --spans
+phileas -p policy.yaml -c my-context -t "Email john@example.com." --spans
 ```
 
 ## Running Tests
