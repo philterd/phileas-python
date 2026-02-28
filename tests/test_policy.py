@@ -226,3 +226,79 @@ class TestPolicy:
         assert ids.passport_number is not None
         assert len(ids.ph_eye) == 1
         assert ids.ph_eye[0].endpoint == "http://pheye:8080"
+
+
+class TestDictionaryFilterPolicy:
+    """Tests for DictionaryFilterConfig serialization through Policy."""
+
+    def test_from_dict_single_dictionary(self):
+        from phileas.policy.policy import Policy
+        d = {
+            "name": "dict-test",
+            "identifiers": {
+                "dictionaries": [
+                    {
+                        "enabled": True,
+                        "terms": ["John", "Jane", "Smith"],
+                        "dictionaryFilterStrategies": [{"strategy": "REDACT"}],
+                    }
+                ]
+            },
+        }
+        p = Policy.from_dict(d)
+        assert len(p.identifiers.dictionaries) == 1
+        cfg = p.identifiers.dictionaries[0]
+        assert cfg.enabled is True
+        assert cfg.terms == ["John", "Jane", "Smith"]
+        assert cfg.dictionary_filter_strategies[0].strategy == "REDACT"
+
+    def test_from_dict_multiple_dictionaries(self):
+        from phileas.policy.policy import Policy
+        d = {
+            "name": "multi-dict",
+            "identifiers": {
+                "dictionaries": [
+                    {"terms": ["Alice", "Bob"]},
+                    {"terms": ["foo", "bar"], "enabled": False},
+                ]
+            },
+        }
+        p = Policy.from_dict(d)
+        assert len(p.identifiers.dictionaries) == 2
+        assert p.identifiers.dictionaries[0].terms == ["Alice", "Bob"]
+        assert p.identifiers.dictionaries[1].enabled is False
+
+    def test_to_dict_round_trip(self):
+        from phileas.policy.policy import Policy
+        from phileas.policy.identifiers import DictionaryFilterConfig
+        p = Policy(name="round-trip-dict")
+        p.identifiers.dictionaries.append(DictionaryFilterConfig(terms=["secret", "classified"]))
+        j = p.to_json()
+        p2 = Policy.from_json(j)
+        assert len(p2.identifiers.dictionaries) == 1
+        assert p2.identifiers.dictionaries[0].terms == ["secret", "classified"]
+
+    def test_yaml_round_trip(self):
+        import yaml
+        from phileas.policy.policy import Policy
+        from phileas.policy.identifiers import DictionaryFilterConfig
+        p = Policy(name="yaml-dict")
+        p.identifiers.dictionaries.append(DictionaryFilterConfig(terms=["redact-me"]))
+        y = p.to_yaml()
+        p2 = Policy.from_yaml(y)
+        assert len(p2.identifiers.dictionaries) == 1
+        assert "redact-me" in p2.identifiers.dictionaries[0].terms
+
+    def test_all_identifier_types_includes_dictionaries(self):
+        from phileas.policy.policy import Policy
+        d = {
+            "name": "all",
+            "identifiers": {
+                "age": {},
+                "dictionaries": [{"terms": ["test-term"]}],
+            },
+        }
+        p = Policy.from_dict(d)
+        assert p.identifiers.age is not None
+        assert len(p.identifiers.dictionaries) == 1
+        assert p.identifiers.dictionaries[0].terms == ["test-term"]

@@ -179,3 +179,50 @@ policy = Policy.from_dict({
 | `labels` | list of strings | `["PERSON"]` | NER label types to process |
 | `thresholds` | object | `{}` | Minimum confidence per label, e.g. `{"PERSON": 0.9}` |
 | `removePunctuation` | bool | `false` | Strip punctuation from entity text before replacement |
+
+## Dictionary filter
+
+The `dictionaries` filter matches terms from a user-supplied list anywhere in the text. It is useful for redacting known names, keywords, or any other fixed vocabulary.
+
+```python
+policy = Policy.from_dict({
+    "name": "dictionary-policy",
+    "identifiers": {
+        "dictionaries": [
+            {
+                "terms": ["John", "Jane Smith", "classified"],
+                "dictionaryFilterStrategies": [{"strategy": "REDACT"}]
+            }
+        ]
+    }
+})
+```
+
+Like `phEye`, `dictionaries` is a list — you can include multiple independent dictionaries in a single policy:
+
+```python
+policy = Policy.from_dict({
+    "name": "multi-dict-policy",
+    "identifiers": {
+        "dictionaries": [
+            {
+                "terms": ["Alice", "Bob"],
+                "dictionaryFilterStrategies": [
+                    {"strategy": "STATIC_REPLACE", "staticReplacement": "[PERSON]"}
+                ]
+            },
+            {
+                "terms": ["secret", "classified"],
+                "dictionaryFilterStrategies": [{"strategy": "REDACT"}]
+            }
+        ]
+    }
+})
+```
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `enabled` | bool | `true` | Whether this dictionary is active |
+| `terms` | array of strings | `[]` | The list of terms to detect (case-insensitive, whole-word) |
+| `dictionaryFilterStrategies` | array | `[{"strategy": "REDACT"}]` | Replacement strategies |
+| `ignored` | array of strings | `[]` | Terms to skip even if present in `terms` |

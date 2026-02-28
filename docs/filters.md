@@ -26,6 +26,7 @@ The table below lists every supported filter, the policy key used to enable it, 
 | `ibanCode` | `iban-code` | `GB82 WEST 1234 5698 7654 32` |
 | `passportNumber` | `passport-number` | US passport numbers (e.g. `A12345678`) |
 | `phEye` | `person`, `location`, etc. | Any NER entity returned by [ph-eye](https://github.com/philterd/ph-eye) |
+| `dictionaries` | `dictionary` | Any term from a user-supplied list (e.g. `John`, `classified`) |
 
 ---
 
@@ -322,3 +323,52 @@ Multiple `phEye` configurations can be listed in an array (for example, to call 
 ```
 
 See [Policies – ph-eye integration](policies.md#ph-eye-integration) for all configuration options.
+
+---
+
+## dictionaries
+
+The `dictionaries` filter lets you supply a list of terms that should be detected and replaced in text. Matching is case-insensitive and is constrained to whole-word boundaries so that a term like `John` does not match inside `Johnson`.
+
+Internally the filter uses a **Bloom filter** for fast O(1) rejection of tokens that are definitely not in the dictionary, followed by an exact-set lookup to eliminate any Bloom false-positives. This makes the filter efficient even for large term lists.
+
+Multiple independent dictionaries can be listed in an array. Each entry may have its own term list, strategy, and ignored terms.
+
+```python
+"identifiers": {
+    "dictionaries": [
+        {
+            "enabled": true,
+            "terms": ["John", "Jane Smith", "classified"],
+            "dictionaryFilterStrategies": [{"strategy": "REDACT"}],
+            "ignored": []
+        }
+    ]
+}
+```
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `enabled` | bool | `true` | Whether this dictionary is active |
+| `terms` | array of strings | `[]` | The list of terms to detect |
+| `dictionaryFilterStrategies` | array | `[{"strategy": "REDACT"}]` | Replacement strategies (same as other filters) |
+| `ignored` | array of strings | `[]` | Terms to skip even if found in the `terms` list |
+
+### Multiple dictionaries
+
+You can define several dictionaries in the same policy — for example, one for person names and another for sensitive keywords:
+
+```python
+"identifiers": {
+    "dictionaries": [
+        {
+            "terms": ["Alice", "Bob", "Charlie"],
+            "dictionaryFilterStrategies": [{"strategy": "STATIC_REPLACE", "staticReplacement": "[PERSON]"}]
+        },
+        {
+            "terms": ["secret", "classified", "top-secret"],
+            "dictionaryFilterStrategies": [{"strategy": "REDACT"}]
+        }
+    ]
+}
+```
