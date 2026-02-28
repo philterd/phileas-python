@@ -24,3 +24,4 @@ server = [
 
 [project.scripts]
 phileas-server = "phileas.server:main"
+phileas = "phileas.cli:main"
