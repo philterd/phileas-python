@@ -26,4 +26,3 @@ jobs:
             mkdocs-material-
       - run: pip install -e ".[dev]"
       - run: mkdocs gh-deploy --force
-        working-directory: ./docs
