@@ -1,0 +1,17 @@
+site_name: phileas-python
+site_description: A Python library to deidentify and redact PII, PHI, and other sensitive information from text
+site_url: https://philterd.github.io/phileas-python/
+repo_url: https://github.com/philterd/phileas-python
+repo_name: philterd/phileas-python
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Quick Start: quickstart.md
+  - Policies: policies.md
+  - Filters: filters.md
+  - Examples: examples.md
+  - API Reference: api-reference.md
+
+theme:
+  name: readthedocs
