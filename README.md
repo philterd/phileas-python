@@ -12,6 +12,8 @@ Phileas analyzes text searching for sensitive information such as email addresse
 
 Other capabilities include referential integrity for redactions, conditional logic for redactions, and a CLI.
 
+Phileas requires no external dependencies (e.g. no ChatGPT/etc.) and is intended to be lightweight and easy to use.
+
 ## Compatibility Notes
 
 Note that this port of [Phileas](https://github.com/philterd/phileas) is not 1:1 with the Java version. There are some differences:
