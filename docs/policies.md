@@ -7,9 +7,9 @@ A **policy** is the configuration object that tells phileas-python what to detec
 ```yaml
 name: my-policy
 identifiers:
-  <filterKey>:
+  emailAddress:
     enabled: true
-    <filterKey>FilterStrategies:
+    emailAddressFilterStrategies:
       - strategy: REDACT
         redactionFormat: "{{{REDACTED-%t}}}"
     ignored:
