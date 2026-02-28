@@ -23,9 +23,26 @@ _PATTERNS = [
 ]
 
 
+def _luhn_check(number: str) -> bool:
+    """Return True if *number* (digits only) passes the Luhn algorithm."""
+    digits = [int(d) for d in number]
+    odd_digits = digits[-1::-2]
+    even_digits = digits[-2::-2]
+    total = sum(odd_digits)
+    for d in even_digits:
+        total += sum(divmod(d * 2, 10))
+    return total % 10 == 0
+
+
 class CreditCardFilter(BaseFilter):
     def __init__(self, filter_config):
         super().__init__(FilterType.CREDIT_CARD, filter_config)
 
     def filter(self, text: str, context: str = "default") -> List[Span]:
-        return self._find_spans(_PATTERNS, text, context)
+        luhn_check_enabled = getattr(self.filter_config, "luhn_check", False)
+        if not luhn_check_enabled:
+            return self._find_spans(_PATTERNS, text, context)
+
+        # When Luhn check is enabled, only include spans that pass validation
+        spans = self._find_spans(_PATTERNS, text, context)
+        return [s for s in spans if _luhn_check("".join(c for c in s.text if c.isdigit()))]
