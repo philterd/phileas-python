@@ -1,6 +1,6 @@
 from .models import Span, FilterResult
 from .policy import FilterStrategy, Identifiers, Policy
-from .services import FilterService
+from .services import FilterService, AbstractContextService, InMemoryContextService
 
 __all__ = [
     "Span",
@@ -9,4 +9,6 @@ __all__ = [
     "Identifiers",
     "Policy",
     "FilterService",
+    "AbstractContextService",
+    "InMemoryContextService",
 ]
