@@ -44,6 +44,8 @@ from phileas.filters.tracking_number_filter import TrackingNumberFilter
 from phileas.filters.iban_code_filter import IBANCodeFilter
 from phileas.filters.passport_number_filter import PassportNumberFilter
 from phileas.filters.ph_eye_filter import PhEyeFilter
+from phileas.filters.drivers_license_filter import DriversLicenseFilter
+from phileas.policy.identifiers import DriversLicenseFilterConfig
 
 
 def _default_config(config_cls):
@@ -1123,3 +1125,468 @@ class TestDictionaryFilter:
         false_positives = sum(1 for t in absent if t in bf)
         # Allow at most 1 false positive out of 5 at 1% error rate
         assert false_positives <= 1
+
+
+# ---------------------------------------------------------------------------
+# Drivers License Filter
+# ---------------------------------------------------------------------------
+
+class TestDriversLicenseFilter:
+    def setup_method(self):
+        self.f = DriversLicenseFilter(_default_config(DriversLicenseFilterConfig))
+
+    def test_letter_prefix_format(self):
+        spans = self.f.filter("License: A12345678")
+        assert any("A12345678" in s.text for s in spans)
+
+    def test_two_letter_prefix_format(self):
+        spans = self.f.filter("DL: AB1234567")
+        assert len(spans) >= 1
+
+    def test_all_digit_format(self):
+        spans = self.f.filter("License number: 12345678")
+        assert len(spans) >= 1
+
+    def test_nine_digit_format(self):
+        spans = self.f.filter("DL 123456789")
+        assert len(spans) >= 1
+
+    def test_no_drivers_license(self):
+        spans = self.f.filter("No license here.")
+        assert len(spans) == 0
+
+    def test_filter_type_is_drivers_license(self):
+        spans = self.f.filter("License: A12345678")
+        assert all(s.filter_type == "drivers-license" for s in spans)
+
+    def test_replacement_default(self):
+        spans = self.f.filter("License: A12345678")
+        assert any("{REDACTED" in s.replacement for s in spans)
+
+
+# ---------------------------------------------------------------------------
+# Additional SSN edge cases
+# ---------------------------------------------------------------------------
+
+class TestSSNFilterEdgeCases:
+    def setup_method(self):
+        self.f = SSNFilter(_default_config(SSNFilterConfig))
+
+    def test_invalid_area_000(self):
+        spans = self.f.filter("SSN: 000-45-6789")
+        assert len(spans) == 0
+
+    def test_invalid_area_666(self):
+        spans = self.f.filter("SSN: 666-45-6789")
+        assert len(spans) == 0
+
+    def test_invalid_area_9xx(self):
+        spans = self.f.filter("SSN: 987-45-6789")
+        assert len(spans) == 0
+
+    def test_invalid_group_00(self):
+        spans = self.f.filter("SSN: 123-00-6789")
+        assert len(spans) == 0
+
+    def test_invalid_serial_0000(self):
+        spans = self.f.filter("SSN: 123-45-0000")
+        assert len(spans) == 0
+
+    def test_excluded_078_05_1120(self):
+        spans = self.f.filter("SSN: 078-05-1120")
+        assert len(spans) == 0
+
+    def test_valid_ssn_at_start_of_text(self):
+        spans = self.f.filter("123-45-6789 is the SSN.")
+        assert len(spans) == 1
+
+    def test_valid_ssn_at_end_of_text(self):
+        spans = self.f.filter("The SSN is 123-45-6789")
+        assert len(spans) == 1
+
+    def test_multiple_ssns(self):
+        spans = self.f.filter("SSN1: 123-45-6789 SSN2: 234-56-7890")
+        assert len(spans) == 2
+
+
+# ---------------------------------------------------------------------------
+# Additional Email Address edge cases
+# ---------------------------------------------------------------------------
+
+class TestEmailAddressFilterEdgeCases:
+    def setup_method(self):
+        self.f = EmailAddressFilter(_default_config(EmailAddressFilterConfig))
+
+    def test_email_with_plus_tag(self):
+        spans = self.f.filter("Email: user+tag@example.com")
+        assert len(spans) == 1
+
+    def test_email_at_start_of_text(self):
+        spans = self.f.filter("user@example.com is my address.")
+        assert len(spans) == 1
+
+    def test_email_at_end_of_text(self):
+        spans = self.f.filter("Contact: user@example.com")
+        assert len(spans) == 1
+
+    def test_email_with_numbers_in_local(self):
+        spans = self.f.filter("Email: user123@example.com")
+        assert len(spans) == 1
+
+    def test_email_with_hyphen_in_domain(self):
+        spans = self.f.filter("Reply to me@my-company.org")
+        assert len(spans) == 1
+
+    def test_span_position_accuracy(self):
+        text = "Contact john@example.com for help."
+        spans = self.f.filter(text)
+        assert len(spans) == 1
+        assert text[spans[0].character_start:spans[0].character_end] == "john@example.com"
+
+
+# ---------------------------------------------------------------------------
+# Additional Phone Number edge cases
+# ---------------------------------------------------------------------------
+
+class TestPhoneNumberFilterEdgeCases:
+    def setup_method(self):
+        self.f = PhoneNumberFilter(_default_config(PhoneNumberFilterConfig))
+
+    def test_plus1_format(self):
+        spans = self.f.filter("Call +1 800 555 1234 now.")
+        assert len(spans) >= 1
+
+    def test_plus1_dashes(self):
+        spans = self.f.filter("Phone: +1-800-555-1234")
+        assert len(spans) >= 1
+
+    def test_ten_digit_no_separator(self):
+        spans = self.f.filter("Call 8005551234 today.")
+        assert len(spans) >= 1
+
+    def test_span_positions(self):
+        text = "Phone: 800-555-1234."
+        spans = self.f.filter(text)
+        assert len(spans) >= 1
+        assert "800-555-1234" in text[spans[0].character_start:spans[0].character_end]
+
+
+# ---------------------------------------------------------------------------
+# Additional IP Address edge cases
+# ---------------------------------------------------------------------------
+
+class TestIPAddressFilterEdgeCases:
+    def setup_method(self):
+        self.f = IPAddressFilter(_default_config(IPAddressFilterConfig))
+
+    def test_all_zeros(self):
+        spans = self.f.filter("Address: 0.0.0.0")
+        assert len(spans) >= 1
+
+    def test_all_255(self):
+        spans = self.f.filter("Broadcast: 255.255.255.255")
+        assert any("255.255.255.255" in s.text for s in spans)
+
+    def test_loopback(self):
+        spans = self.f.filter("Loopback: 127.0.0.1")
+        assert any("127.0.0.1" in s.text for s in spans)
+
+    def test_invalid_octet_over_255_not_matched(self):
+        spans = self.f.filter("Address: 256.0.0.0")
+        assert not any("256.0.0.0" in s.text for s in spans)
+
+    def test_multiple_ips(self):
+        spans = self.f.filter("Source: 10.0.0.1 Dest: 192.168.1.1")
+        assert len(spans) == 2
+
+    def test_ip_span_position(self):
+        text = "Server at 10.0.0.1 is down."
+        spans = self.f.filter(text)
+        assert len(spans) >= 1
+        assert text[spans[0].character_start:spans[0].character_end] == "10.0.0.1"
+
+
+# ---------------------------------------------------------------------------
+# Additional URL edge cases
+# ---------------------------------------------------------------------------
+
+class TestURLFilterEdgeCases:
+    def setup_method(self):
+        self.f = URLFilter(_default_config(URLFilterConfig))
+
+    def test_url_with_path(self):
+        spans = self.f.filter("Visit https://example.com/path/to/page")
+        assert len(spans) >= 1
+        assert "https://example.com/path/to/page" in spans[0].text
+
+    def test_url_with_query_params(self):
+        spans = self.f.filter("Search at https://example.com/search?q=test&lang=en")
+        assert len(spans) >= 1
+
+    def test_url_with_fragment(self):
+        spans = self.f.filter("Docs at https://example.com/docs#section-1")
+        assert len(spans) >= 1
+
+    def test_url_case_insensitive_scheme(self):
+        spans = self.f.filter("Visit HTTP://EXAMPLE.COM")
+        assert len(spans) >= 1
+
+    def test_url_with_port(self):
+        spans = self.f.filter("API at http://api.example.com:8080/v1")
+        assert len(spans) >= 1
+
+    def test_multiple_urls(self):
+        spans = self.f.filter("See http://a.com and https://b.com for details.")
+        assert len(spans) == 2
+
+
+# ---------------------------------------------------------------------------
+# Additional VIN edge cases
+# ---------------------------------------------------------------------------
+
+class TestVINFilterEdgeCases:
+    def setup_method(self):
+        self.f = VINFilter(_default_config(VINFilterConfig))
+
+    def test_too_short_not_matched(self):
+        spans = self.f.filter("VIN: 1HGCM82633A12345")  # 16 chars
+        assert not any("1HGCM82633A12345" == s.text for s in spans)
+
+    def test_too_long_not_matched(self):
+        spans = self.f.filter("VIN: 1HGCM82633A12345678")  # 18 chars
+        assert not any("1HGCM82633A12345678" == s.text for s in spans)
+
+    def test_invalid_char_i_not_matched(self):
+        # VINs do not use I, O, or Q
+        spans = self.f.filter("VIN: 1HGCM82633I123456")
+        assert len(spans) == 0
+
+    def test_invalid_char_o_not_matched(self):
+        spans = self.f.filter("VIN: 1HGCM82633O123456")
+        assert len(spans) == 0
+
+    def test_invalid_char_q_not_matched(self):
+        spans = self.f.filter("VIN: 1HGCM82633Q123456")
+        assert len(spans) == 0
+
+    def test_span_position(self):
+        text = "My car VIN is 1HGCM82633A123456."
+        spans = self.f.filter(text)
+        assert len(spans) >= 1
+        assert text[spans[0].character_start:spans[0].character_end] == "1HGCM82633A123456"
+
+
+# ---------------------------------------------------------------------------
+# Additional Bitcoin Address edge cases
+# ---------------------------------------------------------------------------
+
+class TestBitcoinAddressFilterEdgeCases:
+    def setup_method(self):
+        self.f = BitcoinAddressFilter(_default_config(BitcoinAddressFilterConfig))
+
+    def test_p2sh_address(self):
+        spans = self.f.filter("Pay to 3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy")
+        assert len(spans) >= 1
+
+    def test_bech32_address(self):
+        spans = self.f.filter("Pay to bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq")
+        assert len(spans) >= 1
+
+    def test_p2pkh_and_p2sh_in_same_text(self):
+        spans = self.f.filter(
+            "Send from 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa "
+            "to 3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy"
+        )
+        assert len(spans) == 2
+
+
+# ---------------------------------------------------------------------------
+# Additional Tracking Number edge cases
+# ---------------------------------------------------------------------------
+
+class TestTrackingNumberFilterEdgeCases:
+    def setup_method(self):
+        self.f = TrackingNumberFilter(_default_config(TrackingNumberFilterConfig))
+
+    def test_fedex_12_digit(self):
+        spans = self.f.filter("FedEx tracking: 123456789012")
+        assert len(spans) >= 1
+
+    def test_fedex_15_digit(self):
+        spans = self.f.filter("FedEx: 123456789012345")
+        assert len(spans) >= 1
+
+    def test_usps_22_digit_prefix_92(self):
+        spans = self.f.filter("USPS: 9234567890123456789012")
+        assert len(spans) >= 1
+
+    def test_ups_lowercase(self):
+        # UPS pattern is case-insensitive
+        spans = self.f.filter("UPS: 1z999aa10123456784")
+        assert len(spans) >= 1
+
+
+# ---------------------------------------------------------------------------
+# Additional Street Address edge cases
+# ---------------------------------------------------------------------------
+
+class TestStreetAddressFilterEdgeCases:
+    def setup_method(self):
+        self.f = StreetAddressFilter(_default_config(StreetAddressFilterConfig))
+
+    def test_boulevard(self):
+        spans = self.f.filter("Lives at 789 Sunset Boulevard.")
+        assert len(spans) >= 1
+
+    def test_road(self):
+        spans = self.f.filter("Office: 100 Old Post Road")
+        assert len(spans) >= 1
+
+    def test_lane(self):
+        spans = self.f.filter("Mailing: 55 Willow Lane")
+        assert len(spans) >= 1
+
+    def test_drive(self):
+        spans = self.f.filter("Home: 202 Pine Drive")
+        assert len(spans) >= 1
+
+    def test_court(self):
+        spans = self.f.filter("Delivery to 12 Oak Court.")
+        assert len(spans) >= 1
+
+    def test_span_contains_number(self):
+        text = "She lives at 42 Elm Street."
+        spans = self.f.filter(text)
+        assert len(spans) >= 1
+        assert "42" in spans[0].text
+
+
+# ---------------------------------------------------------------------------
+# Additional Date Filter edge cases
+# ---------------------------------------------------------------------------
+
+class TestDateFilterEdgeCases:
+    def setup_method(self):
+        self.f = DateFilter(_default_config(DateFilterConfig))
+
+    def test_dd_month_yyyy(self):
+        spans = self.f.filter("Born 15 January 1990.")
+        assert len(spans) >= 1
+
+    def test_various_months_spelled_out(self):
+        for month in ["February", "March", "April", "May", "June",
+                      "July", "August", "September", "October", "November", "December"]:
+            spans = self.f.filter(f"Date: 1 {month} 2000")
+            assert len(spans) >= 1, f"Expected match for month: {month}"
+
+    def test_single_digit_day_slash(self):
+        spans = self.f.filter("Date: 1/5/2020")
+        assert len(spans) >= 1
+
+    def test_multiple_dates(self):
+        spans = self.f.filter("From 2023-01-01 to 2023-12-31.")
+        assert len(spans) == 2
+
+    def test_year_out_of_range_not_matched(self):
+        # Dates before 1900 or after 2099 should not match
+        spans = self.f.filter("Year 1800-01-01 is old.")
+        assert not any("1800-01-01" in s.text for s in spans)
+
+
+# ---------------------------------------------------------------------------
+# Additional Currency edge cases
+# ---------------------------------------------------------------------------
+
+class TestCurrencyFilterEdgeCases:
+    def setup_method(self):
+        self.f = CurrencyFilter(_default_config(CurrencyFilterConfig))
+
+    def test_billion_amount(self):
+        spans = self.f.filter("Worth $2 billion in assets.")
+        assert len(spans) >= 1
+
+    def test_trillion_amount(self):
+        spans = self.f.filter("GDP of $1 trillion.")
+        assert len(spans) >= 1
+
+    def test_thousand_amount(self):
+        spans = self.f.filter("Salary: $50 thousand per year.")
+        assert len(spans) >= 1
+
+    def test_dollar_with_comma_separator(self):
+        spans = self.f.filter("Cost: $1,000,000")
+        assert len(spans) >= 1
+
+    def test_no_false_positive_for_plain_text(self):
+        spans = self.f.filter("The price is reasonable.")
+        assert len(spans) == 0
+
+
+# ---------------------------------------------------------------------------
+# Additional FilterService edge cases
+# ---------------------------------------------------------------------------
+
+class TestFilterServiceEdgeCases:
+    def test_empty_string_input(self):
+        from phileas.policy.policy import Policy
+        from phileas.policy.identifiers import EmailAddressFilterConfig
+        from phileas.services.filter_service import FilterService
+
+        policy = Policy(name="test")
+        policy.identifiers.email_address = EmailAddressFilterConfig()
+        result = FilterService().filter(policy, "ctx", "doc", "")
+        assert result.filtered_text == ""
+        assert result.spans == []
+
+    def test_whitespace_only_input(self):
+        from phileas.policy.policy import Policy
+        from phileas.policy.identifiers import SSNFilterConfig
+        from phileas.services.filter_service import FilterService
+
+        policy = Policy(name="test")
+        policy.identifiers.ssn = SSNFilterConfig()
+        result = FilterService().filter(policy, "ctx", "doc", "   ")
+        assert result.filtered_text == "   "
+        assert result.spans == []
+
+    def test_repeated_token_replaced_consistently(self):
+        from phileas.policy.policy import Policy
+        from phileas.policy.identifiers import EmailAddressFilterConfig
+        from phileas.services.filter_service import FilterService
+
+        policy = Policy(name="test")
+        policy.identifiers.email_address = EmailAddressFilterConfig()
+        text = "Email user@example.com again: user@example.com"
+        result = FilterService().filter(policy, "ctx", "doc", text)
+        assert "user@example.com" not in result.filtered_text
+        # Both occurrences should be replaced with the same replacement
+        assert len(result.spans) == 2
+        assert result.spans[0].replacement == result.spans[1].replacement
+        replacement = result.spans[0].replacement
+        assert result.filtered_text.count(replacement) == 2
+
+    def test_text_with_no_pii_unchanged(self):
+        from phileas.policy.policy import Policy
+        from phileas.policy.identifiers import EmailAddressFilterConfig, SSNFilterConfig
+        from phileas.services.filter_service import FilterService
+
+        policy = Policy(name="test")
+        policy.identifiers.email_address = EmailAddressFilterConfig()
+        policy.identifiers.ssn = SSNFilterConfig()
+        text = "This text has no personal information."
+        result = FilterService().filter(policy, "ctx", "doc", text)
+        assert result.filtered_text == text
+        assert result.spans == []
+
+    def test_span_positions_are_correct(self):
+        from phileas.policy.policy import Policy
+        from phileas.policy.identifiers import EmailAddressFilterConfig
+        from phileas.services.filter_service import FilterService
+
+        policy = Policy(name="test")
+        policy.identifiers.email_address = EmailAddressFilterConfig()
+        text = "Contact admin@example.com for help."
+        result = FilterService().filter(policy, "ctx", "doc", text)
+        assert len(result.spans) == 1
+        span = result.spans[0]
+        assert text[span.character_start:span.character_end] == "admin@example.com"
