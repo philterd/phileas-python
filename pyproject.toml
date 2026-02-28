@@ -18,3 +18,9 @@ dev = [
     "pytest>=7.0",
     "mkdocs>=1.5",
 ]
+server = [
+    "flask>=3.0",
+]
+
+[project.scripts]
+phileas-server = "phileas.server:main"
