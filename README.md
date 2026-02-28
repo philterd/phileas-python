@@ -8,7 +8,9 @@ A Python port of [Phileas (Java)](https://github.com/philterd/phileas) — a lib
 
 ## Overview
 
-Phileas analyzes text searching for sensitive information such as email addresses, phone numbers, SSNs, credit card numbers, and many other types of PII/PHI. When sensitive information is identified, Phileas can manipulate it in a variety of ways: the information can be redacted, masked, hashed, or replaced with a static value. The user defines how to handle each type of sensitive information through **policies**. Other capabilities include referential integrity for redactions, conditional logic for redactions, and a CLI.
+Phileas analyzes text searching for sensitive information such as email addresses, phone numbers, SSNs, credit card numbers, and many other types of PII/PHI. When sensitive information is identified, Phileas can manipulate it in a variety of ways: the information can be redacted, masked, hashed, or replaced with a static value. The user defines how to handle each type of sensitive information through policies (YAML or JSON).
+
+Other capabilities include referential integrity for redactions, conditional logic for redactions, and a CLI.
 
 ## Compatibility Notes
 
