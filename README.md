@@ -19,6 +19,7 @@ Note that this port of [Phileas](https://github.com/philterd/phileas) is not 1:1
 * This project does not include all redaction strategies present in the Java version.
 * This project includes a CLI.
 * This project includes the ability to evaluate performance using precision and recall through a built-in evaluation tool.
+* This project does not include support for PDF documents which is present in the Java version.
 
 ## Installation
 
