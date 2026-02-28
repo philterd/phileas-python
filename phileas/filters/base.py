@@ -61,7 +61,6 @@ class BaseFilter(ABC):
         """Find all pattern matches in text and return Span objects."""
         spans: List[Span] = []
         strategies = self._get_strategies()
-        strategy = strategies[0] if strategies else None
         ignored = self._get_ignored()
 
         for pattern in patterns:
@@ -70,8 +69,22 @@ class BaseFilter(ABC):
                 # Skip ignored terms
                 if token in ignored:
                     continue
+
+                # Find the first strategy whose condition is satisfied
+                matched_strategy = None
+                for s in strategies:
+                    if s.evaluate_condition(token, context, confidence):
+                        matched_strategy = s
+                        break
+
+                # If strategies are configured but none matched, skip this token
+                if strategies and matched_strategy is None:
+                    continue
+
                 replacement = (
-                    strategy.get_replacement(self.filter_type, token) if strategy else token
+                    matched_strategy.get_replacement(self.filter_type, token)
+                    if matched_strategy
+                    else token
                 )
                 span = Span(
                     character_start=match.start(),

@@ -123,6 +123,88 @@ class FilterStrategy:
         self.shift_months = shift_months
         self.shift_days = shift_days
 
+    def evaluate_condition(self, token: str, context: str, confidence: float) -> bool:
+        """Return True if this strategy's condition is satisfied (or if no condition is set)."""
+        if not self.condition:
+            return True
+        parts = self._split_on_and(self.condition)
+        for part in parts:
+            if not self._evaluate_single_condition(part.strip(), token, context, confidence):
+                return False
+        return True
+
+    @staticmethod
+    def _split_on_and(condition: str) -> list:
+        """Split condition on the 'and' keyword, respecting quoted string boundaries."""
+        parts: list = []
+        current: list = []
+        i = 0
+        while i < len(condition):
+            if condition[i] == '"':
+                current.append(condition[i])
+                i += 1
+                while i < len(condition) and condition[i] != '"':
+                    current.append(condition[i])
+                    i += 1
+                if i < len(condition):
+                    current.append(condition[i])
+                    i += 1
+            else:
+                m = re.match(r"\s+and\s+", condition[i:], re.IGNORECASE)
+                if m:
+                    parts.append("".join(current).strip())
+                    current = []
+                    i += len(m.group(0))
+                else:
+                    current.append(condition[i])
+                    i += 1
+        parts.append("".join(current).strip())
+        return [p for p in parts if p]
+
+    def _evaluate_single_condition(
+        self, condition: str, token: str, context: str, confidence: float
+    ) -> bool:
+        """Evaluate a single condition expression against the given values."""
+        # token/context == "value"  or  token/context != "value"
+        m = re.fullmatch(r'(token|context)\s*(==|!=)\s*"([^"]*)"', condition)
+        if m:
+            actual = token if m.group(1) == "token" else context
+            return (actual == m.group(3)) if m.group(2) == "==" else (actual != m.group(3))
+
+        # token/context startswith "value"
+        m = re.fullmatch(r'(token|context)\s+startswith\s+"([^"]*)"', condition)
+        if m:
+            actual = token if m.group(1) == "token" else context
+            return actual.startswith(m.group(2))
+
+        # token/context endswith "value"
+        m = re.fullmatch(r'(token|context)\s+endswith\s+"([^"]*)"', condition)
+        if m:
+            actual = token if m.group(1) == "token" else context
+            return actual.endswith(m.group(2))
+
+        # token/context contains "value"
+        m = re.fullmatch(r'(token|context)\s+contains\s+"([^"]*)"', condition)
+        if m:
+            actual = token if m.group(1) == "token" else context
+            return m.group(2) in actual
+
+        # confidence <op> numeric_value
+        m = re.fullmatch(r"confidence\s*(>=|<=|!=|>|<|==)\s*([0-9]*\.?[0-9]+)", condition)
+        if m:
+            op, val = m.group(1), float(m.group(2))
+            ops = {
+                ">": lambda a, b: a > b,
+                "<": lambda a, b: a < b,
+                ">=": lambda a, b: a >= b,
+                "<=": lambda a, b: a <= b,
+                "==": lambda a, b: a == b,
+                "!=": lambda a, b: a != b,
+            }
+            return ops[op](confidence, val)
+
+        raise ValueError(f"Unrecognized condition syntax: {condition!r}")
+
     def get_replacement(self, filter_type: str, token: str) -> str:
         """Return the replacement value for a token based on the strategy."""
         if self.strategy == FilterStrategy.REDACT:

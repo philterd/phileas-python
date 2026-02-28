@@ -621,6 +621,211 @@ class TestShiftDateStrategy:
 
 
 # ---------------------------------------------------------------------------
+# Filter Strategy Conditions
+# ---------------------------------------------------------------------------
+
+class TestFilterStrategyConditions:
+    # --- evaluate_condition unit tests ---
+
+    def test_no_condition_always_matches(self):
+        s = FilterStrategy()
+        assert s.evaluate_condition("anything", "default", 1.0) is True
+
+    def test_token_equals_match(self):
+        s = FilterStrategy(condition='token == "hello"')
+        assert s.evaluate_condition("hello", "ctx", 1.0) is True
+
+    def test_token_equals_no_match(self):
+        s = FilterStrategy(condition='token == "hello"')
+        assert s.evaluate_condition("world", "ctx", 1.0) is False
+
+    def test_token_not_equals(self):
+        s = FilterStrategy(condition='token != "123-45-6789"')
+        assert s.evaluate_condition("123-45-6789", "ctx", 1.0) is False
+        assert s.evaluate_condition("999-99-9999", "ctx", 1.0) is True
+
+    def test_token_startswith_match(self):
+        s = FilterStrategy(condition='token startswith "3000"')
+        assert s.evaluate_condition("3000123456789012", "ctx", 1.0) is True
+
+    def test_token_startswith_no_match(self):
+        s = FilterStrategy(condition='token startswith "3000"')
+        assert s.evaluate_condition("4111111111111111", "ctx", 1.0) is False
+
+    def test_token_endswith(self):
+        s = FilterStrategy(condition='token endswith "1111"')
+        assert s.evaluate_condition("4111111111111111", "ctx", 1.0) is True
+        assert s.evaluate_condition("4111111111112222", "ctx", 1.0) is False
+
+    def test_token_contains(self):
+        s = FilterStrategy(condition='token contains "example"')
+        assert s.evaluate_condition("test@example.com", "ctx", 1.0) is True
+        assert s.evaluate_condition("test@other.com", "ctx", 1.0) is False
+
+    def test_context_equals(self):
+        s = FilterStrategy(condition='context == "my-context"')
+        assert s.evaluate_condition("tok", "my-context", 1.0) is True
+        assert s.evaluate_condition("tok", "other-context", 1.0) is False
+
+    def test_context_not_equals(self):
+        s = FilterStrategy(condition='context != "my-context"')
+        assert s.evaluate_condition("tok", "my-context", 1.0) is False
+        assert s.evaluate_condition("tok", "other-context", 1.0) is True
+
+    def test_confidence_greater_than(self):
+        s = FilterStrategy(condition="confidence > 0.8")
+        assert s.evaluate_condition("tok", "ctx", 0.9) is True
+        assert s.evaluate_condition("tok", "ctx", 0.5) is False
+
+    def test_confidence_less_than(self):
+        s = FilterStrategy(condition="confidence < 0.5")
+        assert s.evaluate_condition("tok", "ctx", 0.3) is True
+        assert s.evaluate_condition("tok", "ctx", 0.8) is False
+
+    def test_confidence_greater_than_or_equal(self):
+        s = FilterStrategy(condition="confidence >= 0.8")
+        assert s.evaluate_condition("tok", "ctx", 0.8) is True
+        assert s.evaluate_condition("tok", "ctx", 0.79) is False
+
+    def test_confidence_less_than_or_equal(self):
+        s = FilterStrategy(condition="confidence <= 0.5")
+        assert s.evaluate_condition("tok", "ctx", 0.5) is True
+        assert s.evaluate_condition("tok", "ctx", 0.51) is False
+
+    def test_and_condition_both_true(self):
+        s = FilterStrategy(condition='token != "123-45-6789" and context == "my-context"')
+        assert s.evaluate_condition("999-99-9999", "my-context", 1.0) is True
+
+    def test_and_condition_first_false(self):
+        s = FilterStrategy(condition='token != "123-45-6789" and context == "my-context"')
+        assert s.evaluate_condition("123-45-6789", "my-context", 1.0) is False
+
+    def test_and_condition_second_false(self):
+        s = FilterStrategy(condition='token != "123-45-6789" and context == "my-context"')
+        assert s.evaluate_condition("999-99-9999", "other-context", 1.0) is False
+
+    def test_and_in_quoted_value_not_split(self):
+        # "and" inside a quoted value must not be treated as a logical operator
+        s = FilterStrategy(condition='token == "foo and bar"')
+        assert s.evaluate_condition("foo and bar", "ctx", 1.0) is True
+        assert s.evaluate_condition("foo", "ctx", 1.0) is False
+
+    def test_unknown_condition_syntax_raises(self):
+        s = FilterStrategy(condition="invalid condition")
+        with pytest.raises(ValueError):
+            s.evaluate_condition("tok", "ctx", 1.0)
+
+    # --- Integration tests with filters ---
+
+    def test_credit_card_condition_startswith_matches(self):
+        strategy = FilterStrategy(
+            strategy="REDACT",
+            condition='token startswith "3000"',
+        )
+        config = CreditCardFilterConfig(credit_card_filter_strategies=[strategy])
+        f = CreditCardFilter(config)
+        # Diners Club card starting with "3000" (14 digits)
+        spans = f.filter("Card: 30001234567890")
+        assert len(spans) >= 1
+
+    def test_credit_card_condition_startswith_no_match_skipped(self):
+        strategy = FilterStrategy(
+            strategy="REDACT",
+            condition='token startswith "3000"',
+        )
+        config = CreditCardFilterConfig(credit_card_filter_strategies=[strategy])
+        f = CreditCardFilter(config)
+        # A Visa card (starts with 4) should be skipped
+        spans = f.filter("Card: 4111111111111111")
+        assert len(spans) == 0
+
+    def test_ssn_condition_token_not_equals(self):
+        strategy = FilterStrategy(
+            strategy="REDACT",
+            condition='token != "123-45-6789"',
+        )
+        config = SSNFilterConfig(ssn_filter_strategies=[strategy])
+        f = SSNFilter(config)
+        # Excluded value should be skipped
+        spans = f.filter("SSN: 123-45-6789")
+        assert len(spans) == 0
+        # Other SSNs should still be redacted
+        spans = f.filter("SSN: 456-78-9012")
+        assert len(spans) == 1
+
+    def test_context_condition_filters_by_context(self):
+        strategy = FilterStrategy(
+            strategy="REDACT",
+            condition='context == "sensitive"',
+        )
+        config = EmailAddressFilterConfig(email_address_filter_strategies=[strategy])
+        f = EmailAddressFilter(config)
+        # Wrong context – should be skipped
+        spans = f.filter("Email: user@example.com", context="default")
+        assert len(spans) == 0
+        # Correct context – should be redacted
+        spans = f.filter("Email: user@example.com", context="sensitive")
+        assert len(spans) == 1
+
+    def test_multiple_strategies_first_condition_matches(self):
+        s1 = FilterStrategy(
+            strategy="STATIC_REPLACE",
+            static_replacement="[CARD-A]",
+            condition='token startswith "4"',
+        )
+        s2 = FilterStrategy(
+            strategy="STATIC_REPLACE",
+            static_replacement="[CARD-B]",
+            condition='token startswith "5"',
+        )
+        config = CreditCardFilterConfig(credit_card_filter_strategies=[s1, s2])
+        f = CreditCardFilter(config)
+        spans = f.filter("Card: 4111111111111111")
+        matched = [s for s in spans if s.text == "4111111111111111"]
+        assert matched and matched[0].replacement == "[CARD-A]"
+
+    def test_multiple_strategies_second_condition_matches(self):
+        s1 = FilterStrategy(
+            strategy="STATIC_REPLACE",
+            static_replacement="[CARD-A]",
+            condition='token startswith "4"',
+        )
+        s2 = FilterStrategy(
+            strategy="STATIC_REPLACE",
+            static_replacement="[CARD-B]",
+            condition='token startswith "5"',
+        )
+        config = CreditCardFilterConfig(credit_card_filter_strategies=[s1, s2])
+        f = CreditCardFilter(config)
+        spans = f.filter("Card: 5500005555555559")
+        matched = [s for s in spans if s.text == "5500005555555559"]
+        assert matched and matched[0].replacement == "[CARD-B]"
+
+    def test_policy_json_with_condition(self):
+        import json as _json
+        from phileas.policy.policy import Policy
+        policy_json = _json.dumps({
+            "name": "test",
+            "identifiers": {
+                "creditCard": {
+                    "creditCardFilterStrategies": [
+                        {
+                            "condition": 'token startswith "3000"',
+                            "strategy": "REDACT",
+                            "redactionFormat": "{{{REDACTED-%t}}}",
+                        }
+                    ]
+                }
+            },
+        })
+        policy = Policy.from_json(policy_json)
+        strategy = policy.identifiers.credit_card.credit_card_filter_strategies[0]
+        assert strategy.condition == 'token startswith "3000"'
+        assert strategy.evaluate_condition("3000123456789012", "ctx", 1.0) is True
+        assert strategy.evaluate_condition("4111111111111111", "ctx", 1.0) is False
+
+
+# ---------------------------------------------------------------------------
 # Ph-Eye Filter
 # ---------------------------------------------------------------------------
 
