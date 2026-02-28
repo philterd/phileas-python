@@ -7,7 +7,7 @@ phileas includes a built-in HTTP server that exposes the redaction pipeline as a
 The server depends on [Flask](https://flask.palletsprojects.com/). Install phileas with the `server` extra to pull it in automatically:
 
 ```bash
-pip install "phileas[server]"
+pip install "phileas-redact[server]"
 ```
 
 If you are working from a local clone, install in editable mode:

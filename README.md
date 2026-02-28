@@ -28,7 +28,7 @@ Note that this port of [Phileas](https://github.com/philterd/phileas) is not 1:1
 ## Installation
 
 ```bash
-pip install phileas
+pip install phileas-redact
 ```
 
 Or, to install in development mode from source:

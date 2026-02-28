@@ -3,7 +3,7 @@
 The following examples demonstrate common use cases. All examples assume you have phileas-python installed:
 
 ```bash
-pip install phileas
+pip install phileas-redact
 ```
 
 ---

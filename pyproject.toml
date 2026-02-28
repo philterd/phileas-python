@@ -3,15 +3,61 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "phileas"
+name = "phileas-redact"
 version = "1.0.0"
 description = "A Python library to deidentify and redact PII, PHI, and other sensitive information from text"
 readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.9"
+authors = [
+    {name = "Philterd, LLC", email = "support@philterd.ai"},
+]
+maintainers = [
+    {name = "Philterd, LLC", email = "support@philterd.ai"},
+]
+keywords = [
+    "pii",
+    "phi",
+    "redaction",
+    "deidentification",
+    "anonymization",
+    "privacy",
+    "security",
+    "nlp",
+    "text-processing",
+    "data-protection",
+    "gdpr",
+    "hipaa",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Legal Industry",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing",
+    "Topic :: Text Processing :: Filters",
+    "Typing :: Typed",
+]
 dependencies = [
     "PyYAML>=6.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/philterd/phileas-python"
+Documentation = "https://philterd.github.io/phileas-python/"
+Repository = "https://github.com/philterd/phileas-python"
+Issues = "https://github.com/philterd/phileas-python/issues"
+Changelog = "https://github.com/philterd/phileas-python/releases"
 
 [project.optional-dependencies]
 dev = [
@@ -25,3 +71,13 @@ server = [
 [project.scripts]
 phileas-server = "phileas.server:main"
 phileas = "phileas.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["phileas*"]
+
+[tool.setuptools.package-data]
+phileas = [
+    "py.typed",
+    "resources/*.csv",
+]

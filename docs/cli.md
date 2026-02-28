@@ -7,7 +7,7 @@ phileas includes a command-line interface (CLI) that lets you redact sensitive i
 The CLI is installed automatically with the phileas package:
 
 ```bash
-pip install phileas
+pip install phileas-redact
 ```
 
 After installation, the `phileas` command is available in your shell.

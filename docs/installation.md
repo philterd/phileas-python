@@ -8,7 +8,7 @@
 ## Install from PyPI
 
 ```bash
-pip install phileas
+pip install phileas-redact
 ```
 
 ## Install in development mode
@@ -26,7 +26,7 @@ pip install -e ".[dev]"
 To also install the optional Flask-based REST server:
 
 ```bash
-pip install "phileas[server]"
+pip install "phileas-redact[server]"
 ```
 
 See [REST Server](rest-server.md) for usage details.
