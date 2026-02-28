@@ -524,6 +524,103 @@ class TestFilterStrategyReplacements:
 
 
 # ---------------------------------------------------------------------------
+# SHIFT_DATE Strategy
+# ---------------------------------------------------------------------------
+
+class TestShiftDateStrategy:
+    def test_shift_days_iso(self):
+        s = FilterStrategy(strategy="SHIFT_DATE", shift_days=10)
+        assert s.get_replacement("date", "2023-07-04") == "2023-07-14"
+
+    def test_shift_days_mmddyyyy_slash(self):
+        s = FilterStrategy(strategy="SHIFT_DATE", shift_days=5)
+        assert s.get_replacement("date", "01/15/1990") == "01/20/1990"
+
+    def test_shift_days_mmddyyyy_dash(self):
+        s = FilterStrategy(strategy="SHIFT_DATE", shift_days=1)
+        assert s.get_replacement("date", "12-31-2000") == "01-01-2001"
+
+    def test_shift_months_iso(self):
+        s = FilterStrategy(strategy="SHIFT_DATE", shift_months=3)
+        assert s.get_replacement("date", "2020-01-15") == "2020-04-15"
+
+    def test_shift_years_iso(self):
+        s = FilterStrategy(strategy="SHIFT_DATE", shift_years=2)
+        assert s.get_replacement("date", "2020-06-01") == "2022-06-01"
+
+    def test_shift_negative_days_iso(self):
+        s = FilterStrategy(strategy="SHIFT_DATE", shift_days=-10)
+        assert s.get_replacement("date", "2023-01-01") == "2022-12-22"
+
+    def test_shift_month_name_format(self):
+        s = FilterStrategy(strategy="SHIFT_DATE", shift_days=1)
+        result = s.get_replacement("date", "January 15, 1990")
+        assert result == "January 16, 1990"
+
+    def test_shift_dd_month_yyyy_format(self):
+        s = FilterStrategy(strategy="SHIFT_DATE", shift_days=5)
+        result = s.get_replacement("date", "15 January 1990")
+        assert result == "20 January 1990"
+
+    def test_shift_end_of_month_clamped(self):
+        # Shifting Jan 31 by one month → Feb 28 (non-leap) or Feb 29 (leap)
+        s = FilterStrategy(strategy="SHIFT_DATE", shift_months=1)
+        result = s.get_replacement("date", "2023-01-31")
+        assert result == "2023-02-28"
+
+    def test_shift_months_year_boundary(self):
+        s = FilterStrategy(strategy="SHIFT_DATE", shift_months=3)
+        assert s.get_replacement("date", "2020-11-15") == "2021-02-15"
+
+    def test_from_dict_shift_date(self):
+        data = {"strategy": "SHIFT_DATE", "shiftYears": 1, "shiftMonths": 2, "shiftDays": 3}
+        s = FilterStrategy.from_dict(data)
+        assert s.strategy == "SHIFT_DATE"
+        assert s.shift_years == 1
+        assert s.shift_months == 2
+        assert s.shift_days == 3
+
+    def test_to_dict_includes_shift_fields(self):
+        s = FilterStrategy(strategy="SHIFT_DATE", shift_years=1, shift_months=2, shift_days=3)
+        d = s.to_dict()
+        assert d["strategy"] == "SHIFT_DATE"
+        assert d["shiftYears"] == 1
+        assert d["shiftMonths"] == 2
+        assert d["shiftDays"] == 3
+
+    def test_policy_json_shift_date(self):
+        from phileas.policy.policy import Policy
+        policy_json = json.dumps({
+            "name": "test",
+            "identifiers": {
+                "date": {
+                    "dateFilterStrategies": [
+                        {"strategy": "SHIFT_DATE", "shiftYears": 0, "shiftMonths": 0, "shiftDays": 30}
+                    ]
+                }
+            },
+        })
+        policy = Policy.from_json(policy_json)
+        strategy = policy.identifiers.date.date_filter_strategies[0]
+        assert strategy.strategy == "SHIFT_DATE"
+        assert strategy.shift_days == 30
+
+    def test_date_filter_uses_shift_date_strategy(self):
+        from phileas.filters.date_filter import DateFilter
+        from phileas.policy.identifiers import DateFilterConfig
+        strategy = FilterStrategy(strategy="SHIFT_DATE", shift_days=10)
+        config = DateFilterConfig(date_filter_strategies=[strategy])
+        f = DateFilter(config)
+        spans = f.filter("DOB: 2020-01-01")
+        assert len(spans) == 1
+        assert spans[0].replacement == "2020-01-11"
+
+    def test_unrecognized_date_token_returned_unchanged(self):
+        s = FilterStrategy(strategy="SHIFT_DATE", shift_days=5)
+        assert s.get_replacement("date", "not-a-date") == "not-a-date"
+
+
+# ---------------------------------------------------------------------------
 # Ph-Eye Filter
 # ---------------------------------------------------------------------------
 
