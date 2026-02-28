@@ -11,6 +11,8 @@ Note that this port of [Phileas](https://github.com/philterd/phileas) is not 1:1
 * This project includes a server that exposes redaction HTTP endpoints.
 * This project includes support for policies in YAML as well as JSON.
 * This project does not include all redaction strategies present in the Java version.
+* This project includes a CLI.
+* This project includes the ability to evaluate performance using precision and recall through a built-in evaluation tool.
 
 ## Overview
 
