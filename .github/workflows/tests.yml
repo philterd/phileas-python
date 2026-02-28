@@ -24,6 +24,6 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install ".[dev]"
+          pip install ".[dev,server]"
       - name: Run tests
         run: pytest tests/
