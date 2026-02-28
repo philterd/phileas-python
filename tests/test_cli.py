@@ -154,3 +154,91 @@ class TestCLIErrors:
         with pytest.raises(SystemExit) as exc_info:
             main(["-p", policy_file, "-c", "ctx"])
         assert exc_info.value.code != 0
+
+
+# ---------------------------------------------------------------------------
+# Evaluation (--evaluate) tests
+# ---------------------------------------------------------------------------
+
+class TestCLIEvaluate:
+    def _write_lapps(self, tmp_path, spans: list, filename: str = "lapps.json") -> str:
+        path = tmp_path / filename
+        path.write_text(json.dumps(spans), encoding="utf-8")
+        return str(path)
+
+    def test_evaluate_perfect_match(self, tmp_path, capsys):
+        policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
+        # john@example.com is at positions 12..28 in "Email me at john@example.com."
+        text = "Email me at john@example.com."
+        lapps_file = self._write_lapps(tmp_path, [{"start": 12, "end": 28}])
+        rc = main(["-p", policy_file, "-c", "ctx", "-t", text, "--evaluate", lapps_file])
+        assert rc == 0
+        out = capsys.readouterr().out
+        # The evaluate output is printed after the filtered text; parse the last JSON block
+        metrics = json.loads(out.split("\n", 1)[1])
+        assert metrics["truePositives"] == 1
+        assert metrics["falsePositives"] == 0
+        assert metrics["falseNegatives"] == 0
+        assert metrics["f1"] == 1.0
+
+    def test_evaluate_empty_ground_truth_all_fp(self, tmp_path, capsys):
+        policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
+        lapps_file = self._write_lapps(tmp_path, [])
+        rc = main([
+            "-p", policy_file, "-c", "ctx",
+            "-t", "Email john@example.com here.",
+            "--evaluate", lapps_file,
+        ])
+        assert rc == 0
+        out = capsys.readouterr().out
+        metrics = json.loads(out.split("\n", 1)[1])
+        assert metrics["falsePositives"] == 1
+        assert metrics["truePositives"] == 0
+
+    def test_evaluate_metrics_keys_present(self, tmp_path, capsys):
+        policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
+        lapps_file = self._write_lapps(tmp_path, [])
+        rc = main(["-p", policy_file, "-c", "ctx", "-t", "plain text", "--evaluate", lapps_file])
+        assert rc == 0
+        out = capsys.readouterr().out
+        metrics = json.loads(out.split("\n", 1)[1])
+        for key in ("truePositives", "falsePositives", "falseNegatives", "precision", "recall", "f1"):
+            assert key in metrics
+
+    def test_evaluate_missing_file_exits(self, tmp_path):
+        policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
+        with pytest.raises(SystemExit) as exc_info:
+            main([
+                "-p", policy_file, "-c", "ctx",
+                "-t", "hello",
+                "--evaluate", str(tmp_path / "nonexistent.json"),
+            ])
+        assert exc_info.value.code != 0
+
+    def test_evaluate_invalid_json_exits(self, tmp_path):
+        policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
+        bad_file = tmp_path / "bad.json"
+        bad_file.write_text("NOT JSON", encoding="utf-8")
+        with pytest.raises(SystemExit) as exc_info:
+            main([
+                "-p", policy_file, "-c", "ctx",
+                "-t", "hello",
+                "--evaluate", str(bad_file),
+            ])
+        assert exc_info.value.code != 0
+
+    def test_evaluate_dict_lapps_format(self, tmp_path, capsys):
+        """The dict format {'spans': [...]} is also accepted."""
+        policy_file = _write_policy(tmp_path, _EMAIL_POLICY)
+        lapps_data = {"text": "Email john@example.com.", "spans": [{"start": 6, "end": 22}]}
+        lapps_file = tmp_path / "lapps.json"
+        lapps_file.write_text(json.dumps(lapps_data), encoding="utf-8")
+        rc = main([
+            "-p", policy_file, "-c", "ctx",
+            "-t", "Email john@example.com.",
+            "--evaluate", str(lapps_file),
+        ])
+        assert rc == 0
+        out = capsys.readouterr().out
+        metrics = json.loads(out.split("\n", 1)[1])
+        assert metrics["truePositives"] == 1

@@ -12,6 +12,7 @@ import yaml
 
 from phileas.policy.policy import Policy
 from phileas.services.filter_service import FilterService
+from phileas.services.evaluation_service import EvaluationService
 
 
 def _load_policy(policy_path: str) -> Policy:
@@ -72,6 +73,18 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         default=False,
         help="Print span metadata as JSON to stderr after filtering.",
+    )
+    parser.add_argument(
+        "--evaluate",
+        metavar="FILE",
+        default=None,
+        dest="evaluate",
+        help=(
+            "Path to a LAPPS JSON file containing ground-truth spans. "
+            "When provided, phileas runs the filter, compares detected spans "
+            "against the ground-truth annotations, and prints evaluation "
+            "metrics (precision, recall, F1) to stdout."
+        ),
     )
     return parser
 
@@ -137,6 +150,34 @@ def main(argv: list[str] | None = None) -> int:
             for s in result.spans
         ]
         sys.stderr.write(json.dumps(spans_data, indent=2) + "\n")
+
+    # Optionally run evaluation against a LAPPS JSON ground-truth file
+    if args.evaluate:
+        try:
+            with open(args.evaluate, "r", encoding="utf-8") as fh:
+                lapps_data = json.load(fh)
+        except FileNotFoundError:
+            parser.error(f"LAPPS ground-truth file not found: {args.evaluate}")
+        except json.JSONDecodeError as exc:
+            parser.error(f"Failed to parse LAPPS file '{args.evaluate}' as JSON: {exc}")
+        except OSError as exc:
+            parser.error(f"Failed to read LAPPS file '{args.evaluate}': {exc}")
+
+        try:
+            eval_svc = EvaluationService()
+            eval_result = eval_svc.evaluate(policy, args.context, document_id, text, lapps_data)
+        except (ValueError, KeyError, TypeError) as exc:
+            parser.error(f"Invalid LAPPS data in '{args.evaluate}': {exc}")
+
+        metrics = {
+            "truePositives": eval_result.true_positives,
+            "falsePositives": eval_result.false_positives,
+            "falseNegatives": eval_result.false_negatives,
+            "precision": eval_result.precision,
+            "recall": eval_result.recall,
+            "f1": eval_result.f1,
+        }
+        print(json.dumps(metrics, indent=2))
 
     return 0
 
