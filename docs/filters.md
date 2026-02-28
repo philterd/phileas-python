@@ -141,6 +141,25 @@ Detects 5-digit ZIP codes (`90210`) and ZIP+4 codes (`90210-1234`).
 }
 ```
 
+### Population condition
+
+The `zipCode` filter supports a `population` condition that limits redaction to ZIP codes whose 2020 US Census population satisfies a numeric threshold. ZIP codes not present in the dataset are treated as non-matching.
+
+```python
+# Redact only ZIP codes with a population below 20,000
+"identifiers": {
+    "zipCode": {
+        "zipCodeFilterStrategies": [
+            {"strategy": "REDACT", "condition": "population < 20000"}
+        ]
+    }
+}
+```
+
+Supported operators: `<`, `>`, `<=`, `>=`, `==`, `!=`. The condition also works with ZIP+4 codes — the 5-digit prefix is used for the lookup (`90210-1234` → `90210`).
+
+See [Conditions](policies.md#conditions) for details on combining conditions with `and` and using other condition types.
+
 ---
 
 ## vin

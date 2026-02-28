@@ -242,6 +242,51 @@ print(result.filtered_text)
 
 ---
 
+## Redact ZIP codes based on population
+
+Use the `population` condition to redact only ZIP codes whose 2020 US Census population falls below (or above) a threshold. ZIP codes not found in the dataset are not redacted.
+
+```python
+policy = Policy.from_dict({
+    "name": "zip-population",
+    "identifiers": {
+        "zipCode": {
+            "zipCodeFilterStrategies": [
+                {"strategy": "REDACT", "condition": "population < 20000"}
+            ]
+        }
+    }
+})
+
+result = service.filter(
+    policy, "app", "doc-zip",
+    "Offices in 90210 and 10001."
+)
+print(result.filtered_text)
+# Offices in {{{REDACTED-zip-code}}} and 10001.
+# (90210 population ≈ 21,134 — below 20,000 threshold → redacted;
+#  10001 population ≈ 32,612 — above threshold → kept)
+```
+
+Multiple strategies can handle different population ranges differently:
+
+```python
+policy = Policy.from_dict({
+    "name": "zip-tiered",
+    "identifiers": {
+        "zipCode": {
+            "zipCodeFilterStrategies": [
+                {"strategy": "REDACT",             "condition": "population < 20000"},
+                {"strategy": "STATIC_REPLACE",
+                 "staticReplacement": "[LARGE-ZIP]", "condition": "population >= 20000"},
+            ]
+        }
+    }
+})
+```
+
+---
+
 ## Load a policy from a JSON file
 
 ```python

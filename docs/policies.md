@@ -95,6 +95,7 @@ Each enabled filter requires at least one strategy entry in its `*FilterStrategi
   "staticReplacement": "[REMOVED]",
   "maskCharacter": "*",
   "maskLength": "SAME",
+  "condition": "",
   "shiftYears": 0,
   "shiftMonths": 0,
   "shiftDays": 0
@@ -105,6 +106,7 @@ Each enabled filter requires at least one strategy entry in its `*FilterStrategi
 - **`staticReplacement`** — used by `STATIC_REPLACE`.
 - **`maskCharacter`** — character used by `MASK` (default: `*`).
 - **`shiftYears` / `shiftMonths` / `shiftDays`** — offsets used by `SHIFT_DATE`.
+- **`condition`** — optional expression that must evaluate to `true` for this strategy to be applied. See [Conditions](#conditions) below.
 
 ### Examples
 
@@ -120,6 +122,65 @@ Each enabled filter requires at least one strategy entry in its `*FilterStrategi
 
 # Shift a date forward by 2 years and 3 days
 {"strategy": "SHIFT_DATE", "shiftYears": 2, "shiftDays": 3}
+```
+
+## Conditions
+
+A `condition` expression is an optional string attached to a strategy that gates its application. The strategy is only applied when the condition evaluates to `true`. When multiple strategies are listed, the first one whose condition is satisfied is used.
+
+Multiple sub-expressions may be combined with `and`:
+
+```python
+{"strategy": "REDACT", "condition": 'token startswith "4" and confidence >= 0.9'}
+```
+
+### Supported condition expressions
+
+| Expression | Description |
+|---|---|
+| `token == "value"` | Matched text equals `value` (case-sensitive) |
+| `token != "value"` | Matched text does not equal `value` |
+| `token startswith "prefix"` | Matched text starts with `prefix` |
+| `token endswith "suffix"` | Matched text ends with `suffix` |
+| `token contains "substring"` | Matched text contains `substring` |
+| `context == "value"` | Current context equals `value` |
+| `context != "value"` | Current context does not equal `value` |
+| `confidence <op> 0.9` | Match confidence compared to a threshold (`>`, `<`, `>=`, `<=`, `==`, `!=`) |
+| `population <op> 20000` | ZIP code population compared to a threshold — see [Population condition](#population-condition) |
+
+### Population condition
+
+The `population` condition is specific to the `zipCode` filter. It evaluates to `true` when the 2020 US Census population of the matched ZIP code satisfies the given comparison. ZIP codes not found in the dataset evaluate to `false`.
+
+Supported operators: `<`, `>`, `<=`, `>=`, `==`, `!=`.
+
+```python
+# Only redact ZIP codes with a population below 20,000
+{
+    "zipCode": {
+        "zipCodeFilterStrategies": [
+            {"strategy": "REDACT", "condition": "population < 20000"}
+        ]
+    }
+}
+```
+
+```python
+# Redact small ZIP codes; leave large ones unchanged (identify-only)
+s_small = {"strategy": "REDACT",  "condition": "population < 20000"}
+s_large = {"strategy": "SAME",    "condition": "population >= 20000"}
+
+{
+    "zipCode": {
+        "zipCodeFilterStrategies": [s_small, s_large]
+    }
+}
+```
+
+The condition can also be combined with other expressions using `and`:
+
+```python
+{"strategy": "REDACT", "condition": 'population < 20000 and context == "medical"'}
 ```
 
 ## Ignored terms
