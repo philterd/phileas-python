@@ -49,7 +49,6 @@ _FILTER_MAP: List[Tuple[str, Type[BaseFilter]]] = [
     ("drivers_license", DriversLicenseFilter),
     ("iban_code", IBANCodeFilter),
     ("passport_number", PassportNumberFilter),
-    ("ph_eye", PhEyeFilter),
 ]
 
 
@@ -64,6 +63,11 @@ class FilterService:
             config = getattr(identifiers, attr, None)
             if config is not None and getattr(config, "enabled", True):
                 spans.extend(filter_cls(config).filter(text, context))
+
+        # Apply each ph-eye filter in the list
+        for ph_eye_config in identifiers.ph_eye:
+            if ph_eye_config.enabled:
+                spans.extend(PhEyeFilter(ph_eye_config).filter(text, context))
 
         # Mark spans whose text matches a policy-level ignored term or pattern
         policy_ignored = set(policy.ignored)
