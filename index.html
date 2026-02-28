@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="A Python library to deidentify and redact PII, PHI, and other sensitive information from text" /><link rel="canonical" href="https://philterd.github.io/phileas-python/" />
+      <link rel="shortcut icon" href="img/favicon.ico" />
+    <title>phileas-python</title>
+    <link rel="stylesheet" href="css/theme.css" />
+    <link rel="stylesheet" href="css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Home";
+        var mkdocs_page_input_path = "index.md";
+        var mkdocs_page_url = "/phileas-python/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="." class="icon icon-home"> phileas-python
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Home</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#what-phileas-python-does">What phileas-python does</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#supported-pii-phi-types">Supported PII / PHI Types</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next steps</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="installation/">Installation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="quickstart/">Quick Start</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="policies/">Policies</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="filters/">Filters</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="rest-server/">REST Server</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="cli/">CLI</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="api-reference/">API Reference</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href=".">phileas-python</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Home</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/philterd/phileas-python/edit/master/docs/index.md">Edit on philterd/phileas-python</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="phileas-python">phileas-python</h1>
+<p><strong>phileas-python</strong> is a Python library for deidentifying and redacting PII (Personally Identifiable Information), PHI (Protected Health Information), and other sensitive data from text.</p>
+<p>It is a Python port of <a href="https://github.com/philterd/phileas">Phileas</a>, an Apache-licensed open source project by <a href="https://www.philterd.ai">Philterd</a>.</p>
+<h2 id="what-phileas-python-does">What phileas-python does</h2>
+<p>phileas-python scans text for sensitive information — email addresses, phone numbers, Social Security Numbers, credit card numbers, dates, and <a href="#supported-pii-phi-types">many more types</a> — and replaces each match with a configurable replacement value. You control what to detect and how to replace it through <strong>policies</strong>.</p>
+<pre><code class="language-python">from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
+policy = Policy.from_dict({
+    &quot;name&quot;: &quot;my-policy&quot;,
+    &quot;identifiers&quot;: {
+        &quot;emailAddress&quot;: {
+            &quot;emailAddressFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+        },
+        &quot;phoneNumber&quot;: {
+            &quot;phoneNumberFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;MASK&quot;}]
+        }
+    }
+})
+
+service = FilterService()
+result = service.filter(policy, &quot;app&quot;, &quot;doc-1&quot;, &quot;Call me at 555-867-5309 or email me at john@example.com.&quot;)
+
+print(result.filtered_text)
+# Call me at ***-***-**** or email me at {{{REDACTED-email-address}}}.
+</code></pre>
+<h2 id="supported-pii-phi-types">Supported PII / PHI Types</h2>
+<table>
+<thead>
+<tr>
+<th>Policy Key</th>
+<th>Filter Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>age</code></td>
+<td><code>age</code></td>
+<td>Age references (e.g., "35 years old")</td>
+</tr>
+<tr>
+<td><code>emailAddress</code></td>
+<td><code>email-address</code></td>
+<td>Email addresses</td>
+</tr>
+<tr>
+<td><code>creditCard</code></td>
+<td><code>credit-card</code></td>
+<td>Credit card numbers</td>
+</tr>
+<tr>
+<td><code>ssn</code></td>
+<td><code>ssn</code></td>
+<td>Social Security Numbers and TINs</td>
+</tr>
+<tr>
+<td><code>phoneNumber</code></td>
+<td><code>phone-number</code></td>
+<td>US phone numbers</td>
+</tr>
+<tr>
+<td><code>ipAddress</code></td>
+<td><code>ip-address</code></td>
+<td>IPv4 and IPv6 addresses</td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td><code>url</code></td>
+<td>HTTP/HTTPS URLs</td>
+</tr>
+<tr>
+<td><code>zipCode</code></td>
+<td><code>zip-code</code></td>
+<td>US ZIP codes</td>
+</tr>
+<tr>
+<td><code>vin</code></td>
+<td><code>vin</code></td>
+<td>Vehicle Identification Numbers</td>
+</tr>
+<tr>
+<td><code>bitcoinAddress</code></td>
+<td><code>bitcoin-address</code></td>
+<td>Bitcoin addresses</td>
+</tr>
+<tr>
+<td><code>bankRoutingNumber</code></td>
+<td><code>bank-routing-number</code></td>
+<td>US ABA bank routing numbers</td>
+</tr>
+<tr>
+<td><code>date</code></td>
+<td><code>date</code></td>
+<td>Dates in common formats</td>
+</tr>
+<tr>
+<td><code>macAddress</code></td>
+<td><code>mac-address</code></td>
+<td>Network MAC addresses</td>
+</tr>
+<tr>
+<td><code>currency</code></td>
+<td><code>currency</code></td>
+<td>USD currency amounts</td>
+</tr>
+<tr>
+<td><code>streetAddress</code></td>
+<td><code>street-address</code></td>
+<td>US street addresses</td>
+</tr>
+<tr>
+<td><code>trackingNumber</code></td>
+<td><code>tracking-number</code></td>
+<td>UPS, FedEx, and USPS tracking numbers</td>
+</tr>
+<tr>
+<td><code>driversLicense</code></td>
+<td><code>drivers-license</code></td>
+<td>US driver's license numbers</td>
+</tr>
+<tr>
+<td><code>ibanCode</code></td>
+<td><code>iban-code</code></td>
+<td>International Bank Account Numbers</td>
+</tr>
+<tr>
+<td><code>passportNumber</code></td>
+<td><code>passport-number</code></td>
+<td>US passport numbers</td>
+</tr>
+<tr>
+<td><code>phEye</code></td>
+<td><code>person</code> (and others)</td>
+<td>Named entities via the <a href="https://github.com/philterd/ph-eye">ph-eye</a> NER service</td>
+</tr>
+</tbody>
+</table>
+<h2 id="next-steps">Next steps</h2>
+<ul>
+<li><a href="installation/">Install phileas-python</a></li>
+<li><a href="quickstart/">Run your first filter</a></li>
+<li><a href="policies/">Understand policies</a></li>
+<li><a href="examples/">Browse code examples</a></li>
+<li><a href="api-reference/">Read the API reference</a></li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="installation/" class="btn btn-neutral float-right" title="Installation">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/philterd/phileas-python" class="fa fa-code-fork" style="color: #fcfcfc"> philterd/phileas-python</a>
+        </span>
+    
+    
+    
+      <span><a href="installation/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = ".";</script>
+    <script src="js/theme_extra.js"></script>
+    <script src="js/theme.js"></script>
+      <script src="search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
+
+<!--
+MkDocs version : 1.6.1
+Build Date UTC : 2026-02-28 17:29:15.753779+00:00
+-->

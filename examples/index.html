@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://philterd.github.io/phileas-python/examples/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Examples - phileas-python</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Examples";
+        var mkdocs_page_input_path = "examples.md";
+        var mkdocs_page_url = "/phileas-python/examples/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> phileas-python
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quick Start</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../policies/">Policies</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../filters/">Filters</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Examples</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#redact-email-addresses">Redact email addresses</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#mask-credit-card-numbers-show-last-4-digits">Mask credit card numbers (show last 4 digits)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#hash-social-security-numbers">Hash Social Security Numbers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#use-a-custom-redaction-format">Use a custom redaction format</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#replace-with-a-static-value">Replace with a static value</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#shift-a-date-forward">Shift a date forward</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#filter-multiple-pii-types-at-once">Filter multiple PII types at once</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#inspect-spans">Inspect spans</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#skip-specific-values-with-an-ignore-list">Skip specific values with an ignore list</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#skip-values-matching-a-regex-pattern">Skip values matching a regex pattern</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#redact-zip-codes-based-on-population">Redact ZIP codes based on population</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#load-a-policy-from-a-json-file">Load a policy from a JSON file</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#load-a-policy-from-a-yaml-file">Load a policy from a YAML file</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ner-based-person-detection-with-ph-eye">NER-based person detection with ph-eye</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#redact-custom-patterns-with-regex">Redact custom patterns with regex</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#redact-terms-from-a-dictionary">Redact terms from a dictionary</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#use-conditions-to-filter-selectively">Use conditions to filter selectively</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#maintain-referential-integrity-across-documents">Maintain referential integrity across documents</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rest-server/">REST Server</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../cli/">CLI</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../api-reference/">API Reference</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">phileas-python</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Examples</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/philterd/phileas-python/edit/master/docs/examples.md">Edit on philterd/phileas-python</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="examples">Examples</h1>
+<p>The following examples demonstrate common use cases. All examples assume you have phileas-python installed:</p>
+<pre><code class="language-bash">pip install phileas-redact
+</code></pre>
+<hr />
+<h2 id="redact-email-addresses">Redact email addresses</h2>
+<pre><code class="language-python">from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
+policy = Policy.from_dict({
+    &quot;name&quot;: &quot;email-redact&quot;,
+    &quot;identifiers&quot;: {
+        &quot;emailAddress&quot;: {
+            &quot;emailAddressFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+        }
+    }
+})
+
+service = FilterService()
+result = service.filter(
+    policy, &quot;app&quot;, &quot;doc-1&quot;,
+    &quot;Please contact john.doe@example.com or support@company.org for help.&quot;
+)
+print(result.filtered_text)
+# Please contact {{{REDACTED-email-address}}} or {{{REDACTED-email-address}}} for help.
+</code></pre>
+<hr />
+<h2 id="mask-credit-card-numbers-show-last-4-digits">Mask credit card numbers (show last 4 digits)</h2>
+<pre><code class="language-python">policy = Policy.from_dict({
+    &quot;name&quot;: &quot;cc-last4&quot;,
+    &quot;identifiers&quot;: {
+        &quot;creditCard&quot;: {
+            &quot;creditCardFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;LAST_4&quot;}]
+        }
+    }
+})
+
+result = service.filter(policy, &quot;app&quot;, &quot;doc-2&quot;, &quot;Charged to card 4111 1111 1111 1111.&quot;)
+print(result.filtered_text)
+# Charged to card ************1111.
+</code></pre>
+<hr />
+<h2 id="hash-social-security-numbers">Hash Social Security Numbers</h2>
+<p>Replace an SSN with its SHA-256 hash to maintain referential consistency without exposing the value.</p>
+<pre><code class="language-python">policy = Policy.from_dict({
+    &quot;name&quot;: &quot;ssn-hash&quot;,
+    &quot;identifiers&quot;: {
+        &quot;ssn&quot;: {
+            &quot;ssnFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;HASH_SHA256_REPLACE&quot;}]
+        }
+    }
+})
+
+result = service.filter(policy, &quot;app&quot;, &quot;doc-3&quot;, &quot;SSN: 123-45-6789&quot;)
+print(result.filtered_text)
+# SSN: 01a54629efb952287e554eb23ef69c52097a75aecc0e3a93ca0855ab6d7a31a0
+</code></pre>
+<hr />
+<h2 id="use-a-custom-redaction-format">Use a custom redaction format</h2>
+<p>The <code>%t</code> placeholder in <code>redactionFormat</code> is replaced with the filter type name.</p>
+<pre><code class="language-python">policy = Policy.from_dict({
+    &quot;name&quot;: &quot;custom-format&quot;,
+    &quot;identifiers&quot;: {
+        &quot;phoneNumber&quot;: {
+            &quot;phoneNumberFilterStrategies&quot;: [
+                {&quot;strategy&quot;: &quot;REDACT&quot;, &quot;redactionFormat&quot;: &quot;[PHONE-REDACTED]&quot;}
+            ]
+        }
+    }
+})
+
+result = service.filter(policy, &quot;app&quot;, &quot;doc-4&quot;, &quot;Call me at 555-867-5309.&quot;)
+print(result.filtered_text)
+# Call me at [PHONE-REDACTED].
+</code></pre>
+<hr />
+<h2 id="replace-with-a-static-value">Replace with a static value</h2>
+<pre><code class="language-python">policy = Policy.from_dict({
+    &quot;name&quot;: &quot;static-ip&quot;,
+    &quot;identifiers&quot;: {
+        &quot;ipAddress&quot;: {
+            &quot;ipAddressFilterStrategies&quot;: [
+                {&quot;strategy&quot;: &quot;STATIC_REPLACE&quot;, &quot;staticReplacement&quot;: &quot;0.0.0.0&quot;}
+            ]
+        }
+    }
+})
+
+result = service.filter(policy, &quot;app&quot;, &quot;doc-5&quot;, &quot;Server at 10.0.0.42 is down.&quot;)
+print(result.filtered_text)
+# Server at 0.0.0.0 is down.
+</code></pre>
+<hr />
+<h2 id="shift-a-date-forward">Shift a date forward</h2>
+<p>Move detected dates forward by 2 years and 15 days for de-identification.</p>
+<pre><code class="language-python">policy = Policy.from_dict({
+    &quot;name&quot;: &quot;date-shift&quot;,
+    &quot;identifiers&quot;: {
+        &quot;date&quot;: {
+            &quot;dateFilterStrategies&quot;: [
+                {&quot;strategy&quot;: &quot;SHIFT_DATE&quot;, &quot;shiftYears&quot;: 2, &quot;shiftDays&quot;: 15}
+            ]
+        }
+    }
+})
+
+result = service.filter(policy, &quot;app&quot;, &quot;doc-6&quot;, &quot;Born on 01/15/1990.&quot;)
+print(result.filtered_text)
+# Born on 01/30/1992.
+</code></pre>
+<hr />
+<h2 id="filter-multiple-pii-types-at-once">Filter multiple PII types at once</h2>
+<pre><code class="language-python">policy = Policy.from_dict({
+    &quot;name&quot;: &quot;multi&quot;,
+    &quot;identifiers&quot;: {
+        &quot;emailAddress&quot;: {
+            &quot;emailAddressFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+        },
+        &quot;ssn&quot;: {
+            &quot;ssnFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+        },
+        &quot;phoneNumber&quot;: {
+            &quot;phoneNumberFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;MASK&quot;}]
+        },
+        &quot;creditCard&quot;: {
+            &quot;creditCardFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;LAST_4&quot;}]
+        }
+    }
+})
+
+text = (
+    &quot;Name: Jane Smith, SSN: 987-65-4321, &quot;
+    &quot;Phone: (555) 123-4567, Email: jane@example.com, &quot;
+    &quot;Card: 5500 0000 0000 0004.&quot;
+)
+
+result = service.filter(policy, &quot;app&quot;, &quot;doc-7&quot;, text)
+print(result.filtered_text)
+# Name: Jane Smith, SSN: {{{REDACTED-ssn}}}, Phone: (***) ***-****, 
+# Email: {{{REDACTED-email-address}}}, Card: ************0004.
+</code></pre>
+<hr />
+<h2 id="inspect-spans">Inspect spans</h2>
+<p>Each <code>Span</code> in <code>result.spans</code> describes a single match:</p>
+<pre><code class="language-python">for span in result.spans:
+    print(
+        f&quot;[{span.filter_type:20s}] &quot;
+        f&quot;chars {span.character_start:3d}–{span.character_end:3d}  &quot;
+        f&quot;'{span.text}'  →  '{span.replacement}'  &quot;
+        f&quot;(confidence={span.confidence:.2f})&quot;
+    )
+</code></pre>
+<hr />
+<h2 id="skip-specific-values-with-an-ignore-list">Skip specific values with an ignore list</h2>
+<p>Prevent specific values from being redacted even when they match a filter pattern.</p>
+<pre><code class="language-python">policy = Policy.from_dict({
+    &quot;name&quot;: &quot;ignored-emails&quot;,
+    &quot;identifiers&quot;: {
+        &quot;emailAddress&quot;: {
+            &quot;emailAddressFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}],
+            &quot;ignored&quot;: [&quot;noreply@internal.com&quot;, &quot;admin@internal.com&quot;]
+        }
+    }
+})
+
+result = service.filter(
+    policy, &quot;app&quot;, &quot;doc-8&quot;,
+    &quot;Contact noreply@internal.com or john@example.com.&quot;
+)
+print(result.filtered_text)
+# Contact noreply@internal.com or {{{REDACTED-email-address}}}.
+</code></pre>
+<hr />
+<h2 id="skip-values-matching-a-regex-pattern">Skip values matching a regex pattern</h2>
+<p>Use <code>ignoredPatterns</code> at the top level to exclude matches by pattern.</p>
+<pre><code class="language-python">policy = Policy.from_dict({
+    &quot;name&quot;: &quot;pattern-ignore&quot;,
+    &quot;identifiers&quot;: {
+        &quot;phoneNumber&quot;: {
+            &quot;phoneNumberFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+        }
+    },
+    &quot;ignoredPatterns&quot;: [&quot;\\d{3}-555-\\d{4}&quot;]  # keep 555 numbers unchanged
+})
+
+result = service.filter(
+    policy, &quot;app&quot;, &quot;doc-9&quot;,
+    &quot;Call 555-555-1234 (public) or 800-867-5309 (private).&quot;
+)
+print(result.filtered_text)
+# Call 555-555-1234 (public) or {{{REDACTED-phone-number}}} (private).
+</code></pre>
+<hr />
+<h2 id="redact-zip-codes-based-on-population">Redact ZIP codes based on population</h2>
+<p>Use the <code>population</code> condition to redact only ZIP codes whose 2020 US Census population falls below (or above) a threshold. ZIP codes not found in the dataset are not redacted.</p>
+<pre><code class="language-python">policy = Policy.from_dict({
+    &quot;name&quot;: &quot;zip-population&quot;,
+    &quot;identifiers&quot;: {
+        &quot;zipCode&quot;: {
+            &quot;zipCodeFilterStrategies&quot;: [
+                {&quot;strategy&quot;: &quot;REDACT&quot;, &quot;condition&quot;: &quot;population &lt; 20000&quot;}
+            ]
+        }
+    }
+})
+
+result = service.filter(
+    policy, &quot;app&quot;, &quot;doc-zip&quot;,
+    &quot;Offices in 90210 and 10001.&quot;
+)
+print(result.filtered_text)
+# Offices in {{{REDACTED-zip-code}}} and 10001.
+# (90210 population ≈ 21,134 — below 20,000 threshold → redacted;
+#  10001 population ≈ 32,612 — above threshold → kept)
+</code></pre>
+<p>Multiple strategies can handle different population ranges differently:</p>
+<pre><code class="language-python">policy = Policy.from_dict({
+    &quot;name&quot;: &quot;zip-tiered&quot;,
+    &quot;identifiers&quot;: {
+        &quot;zipCode&quot;: {
+            &quot;zipCodeFilterStrategies&quot;: [
+                {&quot;strategy&quot;: &quot;REDACT&quot;,             &quot;condition&quot;: &quot;population &lt; 20000&quot;},
+                {&quot;strategy&quot;: &quot;STATIC_REPLACE&quot;,
+                 &quot;staticReplacement&quot;: &quot;[LARGE-ZIP]&quot;, &quot;condition&quot;: &quot;population &gt;= 20000&quot;},
+            ]
+        }
+    }
+})
+</code></pre>
+<hr />
+<h2 id="load-a-policy-from-a-json-file">Load a policy from a JSON file</h2>
+<pre><code class="language-python">import json
+from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
+with open(&quot;policy.json&quot;) as f:
+    policy = Policy.from_json(f.read())
+
+service = FilterService()
+result = service.filter(policy, &quot;app&quot;, &quot;doc-10&quot;, &quot;Text to filter...&quot;)
+</code></pre>
+<hr />
+<h2 id="load-a-policy-from-a-yaml-file">Load a policy from a YAML file</h2>
+<pre><code class="language-python">from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
+with open(&quot;policy.yaml&quot;) as f:
+    policy = Policy.from_yaml(f.read())
+
+service = FilterService()
+result = service.filter(policy, &quot;app&quot;, &quot;doc-11&quot;, &quot;Text to filter...&quot;)
+</code></pre>
+<p>An example <code>policy.yaml</code>:</p>
+<pre><code class="language-yaml">name: my-policy
+identifiers:
+  emailAddress:
+    emailAddressFilterStrategies:
+      - strategy: REDACT
+        redactionFormat: &quot;{{{REDACTED-%t}}}&quot;
+  ssn:
+    ssnFilterStrategies:
+      - strategy: MASK
+ignored:
+  - admin@example.com
+ignoredPatterns:
+  - &quot;\\d{3}-555-\\d{4}&quot;
+</code></pre>
+<hr />
+<h2 id="ner-based-person-detection-with-ph-eye">NER-based person detection with ph-eye</h2>
+<p>Requires a running <a href="https://github.com/philterd/ph-eye">ph-eye</a> service.</p>
+<pre><code class="language-python">from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
+policy = Policy.from_dict({
+    &quot;name&quot;: &quot;ner-demo&quot;,
+    &quot;identifiers&quot;: {
+        &quot;phEye&quot;: [
+            {
+                &quot;endpoint&quot;: &quot;http://localhost:8080&quot;,
+                &quot;labels&quot;: [&quot;PERSON&quot;],
+                &quot;thresholds&quot;: {&quot;PERSON&quot;: 0.85},
+                &quot;phEyeFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+            }
+        ]
+    }
+})
+
+service = FilterService()
+result = service.filter(
+    policy, &quot;app&quot;, &quot;doc-12&quot;,
+    &quot;Dr. Alice Johnson reviewed the case.&quot;
+)
+print(result.filtered_text)
+# Dr. {{{REDACTED-person}}} reviewed the case.
+</code></pre>
+<hr />
+<h2 id="redact-custom-patterns-with-regex">Redact custom patterns with regex</h2>
+<p>Use custom pattern filters to detect domain-specific PII not covered by built-in filters.</p>
+<pre><code class="language-python">from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
+policy = Policy.from_dict({
+    &quot;name&quot;: &quot;custom-patterns&quot;,
+    &quot;identifiers&quot;: {
+        &quot;patterns&quot;: [
+            {
+                &quot;pattern&quot;: r&quot;EMP-\d{6}&quot;,
+                &quot;label&quot;: &quot;employee-id&quot;,
+                &quot;patternFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+            },
+            {
+                &quot;pattern&quot;: r&quot;[A-Z]{2}\d{6}&quot;,
+                &quot;label&quot;: &quot;passport-number&quot;,
+                &quot;patternFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;MASK&quot;}]
+            }
+        ]
+    }
+})
+
+service = FilterService()
+result = service.filter(
+    policy, &quot;app&quot;, &quot;doc-13&quot;,
+    &quot;Employee EMP-123456 has passport AB123456.&quot;
+)
+print(result.filtered_text)
+# Employee {{{REDACTED-employee-id}}} has passport *********.
+</code></pre>
+<hr />
+<h2 id="redact-terms-from-a-dictionary">Redact terms from a dictionary</h2>
+<p>Use the dictionaries filter to redact known names or sensitive terms.</p>
+<pre><code class="language-python">from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
+policy = Policy.from_dict({
+    &quot;name&quot;: &quot;dictionary-demo&quot;,
+    &quot;identifiers&quot;: {
+        &quot;dictionaries&quot;: [
+            {
+                &quot;terms&quot;: [&quot;John Smith&quot;, &quot;Jane Doe&quot;, &quot;confidential&quot;, &quot;proprietary&quot;],
+                &quot;dictionaryFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+            }
+        ]
+    }
+})
+
+service = FilterService()
+result = service.filter(
+    policy, &quot;app&quot;, &quot;doc-14&quot;,
+    &quot;John Smith shared confidential data with Jane Doe about the proprietary algorithm.&quot;
+)
+print(result.filtered_text)
+# {{{REDACTED-dictionary}}} shared {{{REDACTED-dictionary}}} data with {{{REDACTED-dictionary}}} about the {{{REDACTED-dictionary}}} algorithm.
+</code></pre>
+<hr />
+<h2 id="use-conditions-to-filter-selectively">Use conditions to filter selectively</h2>
+<p>Apply different strategies based on the matched value using condition expressions.</p>
+<pre><code class="language-python">from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
+policy = Policy.from_dict({
+    &quot;name&quot;: &quot;conditional-filtering&quot;,
+    &quot;identifiers&quot;: {
+        &quot;phoneNumber&quot;: {
+            &quot;phoneNumberFilterStrategies&quot;: [
+                # Redact phone numbers starting with 555 (test numbers)
+                {&quot;strategy&quot;: &quot;REDACT&quot;, &quot;condition&quot;: 'token startswith &quot;555&quot;'},
+                # Mask all other phone numbers
+                {&quot;strategy&quot;: &quot;MASK&quot;}
+            ]
+        }
+    }
+})
+
+service = FilterService()
+result = service.filter(
+    policy, &quot;app&quot;, &quot;doc-15&quot;,
+    &quot;Test: 555-123-4567, Real: 800-867-5309&quot;
+)
+print(result.filtered_text)
+# Test: {{{REDACTED-phone-number}}}, Real: ***-***-****
+</code></pre>
+<hr />
+<h2 id="maintain-referential-integrity-across-documents">Maintain referential integrity across documents</h2>
+<p>Use contexts to ensure the same PII value gets the same replacement across multiple documents.</p>
+<pre><code class="language-python">from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
+policy = Policy.from_dict({
+    &quot;name&quot;: &quot;context-demo&quot;,
+    &quot;identifiers&quot;: {
+        &quot;emailAddress&quot;: {
+            &quot;emailAddressFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;HASH_SHA256_REPLACE&quot;}]
+        }
+    }
+})
+
+service = FilterService()
+
+# Filter multiple documents in the same context
+doc1 = service.filter(
+    policy, &quot;patient-123&quot;, &quot;note-1&quot;,
+    &quot;Patient emailed from john@example.com&quot;
+)
+doc2 = service.filter(
+    policy, &quot;patient-123&quot;, &quot;note-2&quot;,
+    &quot;Follow-up: john@example.com responded&quot;
+)
+
+# The hash will be identical in both documents
+print(doc1.filtered_text)
+# Patient emailed from 5bb8a5cbf6...
+
+print(doc2.filtered_text)
+# Follow-up: 5bb8a5cbf6... responded
+
+# Different context = different hash
+doc3 = service.filter(
+    policy, &quot;patient-456&quot;, &quot;note-1&quot;,
+    &quot;Patient emailed from john@example.com&quot;
+)
+# Hash will be different in patient-456 context
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../filters/" class="btn btn-neutral float-left" title="Filters"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../rest-server/" class="btn btn-neutral float-right" title="REST Server">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/philterd/phileas-python" class="fa fa-code-fork" style="color: #fcfcfc"> philterd/phileas-python</a>
+        </span>
+    
+    
+      <span><a href="../filters/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../rest-server/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

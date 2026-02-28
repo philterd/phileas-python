@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://philterd.github.io/phileas-python/policies/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Policies - phileas-python</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Policies";
+        var mkdocs_page_input_path = "policies.md";
+        var mkdocs_page_url = "/phileas-python/policies/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> phileas-python
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quick Start</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Policies</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#policy-structure">Policy structure</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#loading-a-policy">Loading a policy</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#enabling-and-disabling-filters">Enabling and disabling filters</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#filter-strategies">Filter strategies</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#available-strategies">Available strategies</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#strategy-options">Strategy options</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#conditions">Conditions</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#supported-condition-expressions">Supported condition expressions</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#population-condition">Population condition</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ignored-terms">Ignored terms</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ph-eye-integration">ph-eye integration</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#dictionary-filter">Dictionary filter</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../filters/">Filters</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rest-server/">REST Server</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../cli/">CLI</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../api-reference/">API Reference</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">phileas-python</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Policies</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/philterd/phileas-python/edit/master/docs/policies.md">Edit on philterd/phileas-python</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="policies">Policies</h1>
+<p>A <strong>policy</strong> is the configuration object that tells phileas-python what to detect and what to do with each match. Policies are expressed as Python dicts, JSON strings, or YAML strings and are loaded into a <code>Policy</code> object before being passed to <code>FilterService</code>.</p>
+<h2 id="policy-structure">Policy structure</h2>
+<pre><code class="language-yaml">name: my-policy
+identifiers:
+  emailAddress:
+    enabled: true
+    emailAddressFilterStrategies:
+      - strategy: REDACT
+        redactionFormat: &quot;{{{REDACTED-%t}}}&quot;
+    ignored:
+      - value-to-skip
+ignored:
+  - global-term-to-skip
+ignoredPatterns:
+  - &quot;\\d{3}-555-\\d{4}&quot;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>A human-readable name for the policy</td>
+</tr>
+<tr>
+<td><code>identifiers</code></td>
+<td>object</td>
+<td>Map of filter keys to their configuration</td>
+</tr>
+<tr>
+<td><code>ignored</code></td>
+<td>array of strings</td>
+<td>Terms that are never replaced, regardless of the filter that matched them</td>
+</tr>
+<tr>
+<td><code>ignoredPatterns</code></td>
+<td>array of regex strings</td>
+<td>Regex patterns whose full matches are never replaced</td>
+</tr>
+</tbody>
+</table>
+<h2 id="loading-a-policy">Loading a policy</h2>
+<pre><code class="language-python">from phileas.policy.policy import Policy
+
+# From a Python dict
+policy = Policy.from_dict({...})
+
+# From a JSON string
+policy = Policy.from_json('{&quot;name&quot;: &quot;p&quot;, &quot;identifiers&quot;: {...}}')
+
+# From a YAML string
+policy = Policy.from_yaml(&quot;name: p\nidentifiers:\n  ...&quot;)
+
+# Serialise back
+json_str = policy.to_json()
+yaml_str = policy.to_yaml()
+d = policy.to_dict()
+</code></pre>
+<h2 id="enabling-and-disabling-filters">Enabling and disabling filters</h2>
+<p>Every filter is <strong>disabled by default</strong>. To enable a filter, include its key in <code>identifiers</code>. To explicitly disable a filter that would otherwise be enabled, set <code>"enabled": false</code>:</p>
+<pre><code class="language-python">policy = Policy.from_dict({
+    &quot;name&quot;: &quot;selective&quot;,
+    &quot;identifiers&quot;: {
+        &quot;emailAddress&quot;: {
+            &quot;emailAddressFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+        },
+        &quot;url&quot;: {&quot;enabled&quot;: False}   # explicitly disabled
+    }
+})
+</code></pre>
+<h2 id="filter-strategies">Filter strategies</h2>
+<p>Each enabled filter requires at least one strategy entry in its <code>*FilterStrategies</code> array. The first strategy is applied to every match.</p>
+<h3 id="available-strategies">Available strategies</h3>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Description</th>
+<th>Example output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>REDACT</code></td>
+<td>Replace with a redaction tag</td>
+<td><code>{{{REDACTED-email-address}}}</code></td>
+</tr>
+<tr>
+<td><code>MASK</code></td>
+<td>Replace every character with <code>maskCharacter</code> (default <code>*</code>)</td>
+<td><code>***@*******.***</code></td>
+</tr>
+<tr>
+<td><code>STATIC_REPLACE</code></td>
+<td>Replace with a fixed string</td>
+<td><code>[REMOVED]</code></td>
+</tr>
+<tr>
+<td><code>HASH_SHA256_REPLACE</code></td>
+<td>Replace with the SHA-256 hex digest of the matched value</td>
+<td><code>a665a4592...</code></td>
+</tr>
+<tr>
+<td><code>LAST_4</code></td>
+<td>Mask all but the last 4 characters</td>
+<td><code>****6789</code></td>
+</tr>
+<tr>
+<td><code>SAME</code></td>
+<td>Leave the value unchanged (identify-only mode)</td>
+<td><code>123-45-6789</code></td>
+</tr>
+<tr>
+<td><code>TRUNCATE</code></td>
+<td>Keep only the first 4 characters</td>
+<td><code>john***</code></td>
+</tr>
+<tr>
+<td><code>ABBREVIATE</code></td>
+<td>Replace with the initials of each word</td>
+<td><code>J. S.</code></td>
+</tr>
+<tr>
+<td><code>RANDOM_REPLACE</code></td>
+<td>Replace with a randomly generated value of the same type</td>
+<td><code>jane@domain.org</code></td>
+</tr>
+<tr>
+<td><code>SHIFT_DATE</code></td>
+<td>Shift a detected date by a configurable number of years/months/days</td>
+<td><code>01/20/1995</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="strategy-options">Strategy options</h3>
+<pre><code class="language-yaml">strategy: REDACT
+redactionFormat: &quot;{{{REDACTED-%t}}}&quot;
+staticReplacement: &quot;[REMOVED]&quot;
+maskCharacter: &quot;*&quot;
+maskLength: SAME
+condition: &quot;&quot;
+shiftYears: 0
+shiftMonths: 0
+shiftDays: 0
+</code></pre>
+<ul>
+<li><strong><code>redactionFormat</code></strong> — used by <code>REDACT</code>. The placeholder <code>%t</code> is replaced with the filter type name (e.g. <code>email-address</code>).</li>
+<li><strong><code>staticReplacement</code></strong> — used by <code>STATIC_REPLACE</code>.</li>
+<li><strong><code>maskCharacter</code></strong> — character used by <code>MASK</code> (default: <code>*</code>).</li>
+<li><strong><code>shiftYears</code> / <code>shiftMonths</code> / <code>shiftDays</code></strong> — offsets used by <code>SHIFT_DATE</code>.</li>
+<li><strong><code>condition</code></strong> — optional expression that must evaluate to <code>true</code> for this strategy to be applied. See <a href="#conditions">Conditions</a> below.</li>
+</ul>
+<h3 id="examples">Examples</h3>
+<pre><code class="language-python"># Redact with a custom format
+{&quot;strategy&quot;: &quot;REDACT&quot;, &quot;redactionFormat&quot;: &quot;[PII-%t]&quot;}
+
+# Mask with a custom character
+{&quot;strategy&quot;: &quot;MASK&quot;, &quot;maskCharacter&quot;: &quot;X&quot;}
+
+# Replace with a fixed string
+{&quot;strategy&quot;: &quot;STATIC_REPLACE&quot;, &quot;staticReplacement&quot;: &quot;[REMOVED]&quot;}
+
+# Shift a date forward by 2 years and 3 days
+{&quot;strategy&quot;: &quot;SHIFT_DATE&quot;, &quot;shiftYears&quot;: 2, &quot;shiftDays&quot;: 3}
+</code></pre>
+<h2 id="conditions">Conditions</h2>
+<p>A <code>condition</code> expression is an optional string attached to a strategy that gates its application. The strategy is only applied when the condition evaluates to <code>true</code>. When multiple strategies are listed, the first one whose condition is satisfied is used.</p>
+<p>Multiple sub-expressions may be combined with <code>and</code>:</p>
+<pre><code class="language-python">{&quot;strategy&quot;: &quot;REDACT&quot;, &quot;condition&quot;: 'token startswith &quot;4&quot; and confidence &gt;= 0.9'}
+</code></pre>
+<h3 id="supported-condition-expressions">Supported condition expressions</h3>
+<table>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>token == "value"</code></td>
+<td>Matched text equals <code>value</code> (case-sensitive)</td>
+</tr>
+<tr>
+<td><code>token != "value"</code></td>
+<td>Matched text does not equal <code>value</code></td>
+</tr>
+<tr>
+<td><code>token startswith "prefix"</code></td>
+<td>Matched text starts with <code>prefix</code></td>
+</tr>
+<tr>
+<td><code>token endswith "suffix"</code></td>
+<td>Matched text ends with <code>suffix</code></td>
+</tr>
+<tr>
+<td><code>token contains "substring"</code></td>
+<td>Matched text contains <code>substring</code></td>
+</tr>
+<tr>
+<td><code>context == "value"</code></td>
+<td>Current context equals <code>value</code></td>
+</tr>
+<tr>
+<td><code>context != "value"</code></td>
+<td>Current context does not equal <code>value</code></td>
+</tr>
+<tr>
+<td><code>confidence &lt;op&gt; 0.9</code></td>
+<td>Match confidence compared to a threshold (<code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code>, <code>==</code>, <code>!=</code>)</td>
+</tr>
+<tr>
+<td><code>population &lt;op&gt; 20000</code></td>
+<td>ZIP code population compared to a threshold — see <a href="#population-condition">Population condition</a></td>
+</tr>
+</tbody>
+</table>
+<h3 id="population-condition">Population condition</h3>
+<p>The <code>population</code> condition is specific to the <code>zipCode</code> filter. It evaluates to <code>true</code> when the 2020 US Census population of the matched ZIP code satisfies the given comparison. ZIP codes not found in the dataset evaluate to <code>false</code>.</p>
+<p>Supported operators: <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>, <code>==</code>, <code>!=</code>.</p>
+<pre><code class="language-python"># Only redact ZIP codes with a population below 20,000
+{
+    &quot;zipCode&quot;: {
+        &quot;zipCodeFilterStrategies&quot;: [
+            {&quot;strategy&quot;: &quot;REDACT&quot;, &quot;condition&quot;: &quot;population &lt; 20000&quot;}
+        ]
+    }
+}
+</code></pre>
+<pre><code class="language-python"># Redact small ZIP codes; leave large ones unchanged (identify-only)
+s_small = {&quot;strategy&quot;: &quot;REDACT&quot;,  &quot;condition&quot;: &quot;population &lt; 20000&quot;}
+s_large = {&quot;strategy&quot;: &quot;SAME&quot;,    &quot;condition&quot;: &quot;population &gt;= 20000&quot;}
+
+{
+    &quot;zipCode&quot;: {
+        &quot;zipCodeFilterStrategies&quot;: [s_small, s_large]
+    }
+}
+</code></pre>
+<p>The condition can also be combined with other expressions using <code>and</code>:</p>
+<pre><code class="language-python">{&quot;strategy&quot;: &quot;REDACT&quot;, &quot;condition&quot;: 'population &lt; 20000 and context == &quot;medical&quot;'}
+</code></pre>
+<h2 id="ignored-terms">Ignored terms</h2>
+<p>Use <code>ignored</code> on an individual filter to skip specific values:</p>
+<pre><code class="language-python">{
+    &quot;emailAddress&quot;: {
+        &quot;emailAddressFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}],
+        &quot;ignored&quot;: [&quot;noreply@internal.com&quot;, &quot;admin@internal.com&quot;]
+    }
+}
+</code></pre>
+<p>Use the top-level <code>ignored</code> list to skip terms regardless of which filter matched them, and <code>ignoredPatterns</code> for regex-based exclusions:</p>
+<pre><code class="language-python">policy = Policy.from_dict({
+    &quot;name&quot;: &quot;allow-list&quot;,
+    &quot;identifiers&quot;: {
+        &quot;phoneNumber&quot;: {
+            &quot;phoneNumberFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+        }
+    },
+    &quot;ignored&quot;: [&quot;555-000-0000&quot;],
+    &quot;ignoredPatterns&quot;: [&quot;\\d{3}-555-\\d{4}&quot;]   # ignore 555-xxx numbers
+})
+</code></pre>
+<h2 id="ph-eye-integration">ph-eye integration</h2>
+<p><a href="https://github.com/philterd/ph-eye">ph-eye</a> is a standalone NER service that phileas-python can call to detect named entities such as person names. Add a <code>phEye</code> block to use it:</p>
+<pre><code class="language-python">policy = Policy.from_dict({
+    &quot;name&quot;: &quot;ner-policy&quot;,
+    &quot;identifiers&quot;: {
+        &quot;phEye&quot;: [
+            {
+                &quot;endpoint&quot;: &quot;http://localhost:8080&quot;,
+                &quot;bearerToken&quot;: &quot;secret&quot;,
+                &quot;labels&quot;: [&quot;PERSON&quot;, &quot;LOCATION&quot;],
+                &quot;thresholds&quot;: {&quot;PERSON&quot;: 0.8},
+                &quot;phEyeFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+            }
+        ]
+    }
+})
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>endpoint</code></td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Base URL of the ph-eye service</td>
+</tr>
+<tr>
+<td><code>bearerToken</code></td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Optional Bearer token for authentication</td>
+</tr>
+<tr>
+<td><code>timeout</code></td>
+<td>int</td>
+<td><code>30</code></td>
+<td>Request timeout in seconds</td>
+</tr>
+<tr>
+<td><code>labels</code></td>
+<td>list of strings</td>
+<td><code>["PERSON"]</code></td>
+<td>NER label types to process</td>
+</tr>
+<tr>
+<td><code>thresholds</code></td>
+<td>object</td>
+<td><code>{}</code></td>
+<td>Minimum confidence per label, e.g. <code>{"PERSON": 0.9}</code></td>
+</tr>
+<tr>
+<td><code>removePunctuation</code></td>
+<td>bool</td>
+<td><code>false</code></td>
+<td>Strip punctuation from entity text before replacement</td>
+</tr>
+</tbody>
+</table>
+<h2 id="dictionary-filter">Dictionary filter</h2>
+<p>The <code>dictionaries</code> filter matches terms from a user-supplied list anywhere in the text. It is useful for redacting known names, keywords, or any other fixed vocabulary.</p>
+<pre><code class="language-python">from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
+policy = Policy.from_dict({
+    &quot;name&quot;: &quot;dictionary-policy&quot;,
+    &quot;identifiers&quot;: {
+        &quot;dictionaries&quot;: [
+            {
+                &quot;terms&quot;: [&quot;John&quot;, &quot;Jane Smith&quot;, &quot;classified&quot;],
+                &quot;dictionaryFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+            }
+        ]
+    }
+})
+
+service = FilterService()
+result = service.filter(
+    policy, &quot;app&quot;, &quot;doc-1&quot;,
+    &quot;John called Jane Smith about the classified project.&quot;
+)
+print(result.filtered_text)
+# {{{REDACTED-dictionary}}} called {{{REDACTED-dictionary}}} about the {{{REDACTED-dictionary}}} project.
+</code></pre>
+<p>Like <code>phEye</code>, <code>dictionaries</code> is a list — you can include multiple independent dictionaries in a single policy:</p>
+<pre><code class="language-python">from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
+
+policy = Policy.from_dict({
+    &quot;name&quot;: &quot;multi-dict-policy&quot;,
+    &quot;identifiers&quot;: {
+        &quot;dictionaries&quot;: [
+            {
+                &quot;terms&quot;: [&quot;Alice&quot;, &quot;Bob&quot;],
+                &quot;dictionaryFilterStrategies&quot;: [
+                    {&quot;strategy&quot;: &quot;STATIC_REPLACE&quot;, &quot;staticReplacement&quot;: &quot;[PERSON]&quot;}
+                ]
+            },
+            {
+                &quot;terms&quot;: [&quot;secret&quot;, &quot;classified&quot;],
+                &quot;dictionaryFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+            }
+        ]
+    }
+})
+
+service = FilterService()
+result = service.filter(
+    policy, &quot;app&quot;, &quot;doc-2&quot;,
+    &quot;Alice told Bob about the secret project marked classified.&quot;
+)
+print(result.filtered_text)
+# [PERSON] told [PERSON] about the {{{REDACTED-dictionary}}} project marked {{{REDACTED-dictionary}}}.
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td>bool</td>
+<td><code>true</code></td>
+<td>Whether this dictionary is active</td>
+</tr>
+<tr>
+<td><code>terms</code></td>
+<td>array of strings</td>
+<td><code>[]</code></td>
+<td>The list of terms to detect (case-insensitive, whole-word)</td>
+</tr>
+<tr>
+<td><code>dictionaryFilterStrategies</code></td>
+<td>array</td>
+<td><code>[{"strategy": "REDACT"}]</code></td>
+<td>Replacement strategies</td>
+</tr>
+<tr>
+<td><code>ignored</code></td>
+<td>array of strings</td>
+<td><code>[]</code></td>
+<td>Terms to skip even if present in <code>terms</code></td>
+</tr>
+</tbody>
+</table>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../quickstart/" class="btn btn-neutral float-left" title="Quick Start"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../filters/" class="btn btn-neutral float-right" title="Filters">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/philterd/phileas-python" class="fa fa-code-fork" style="color: #fcfcfc"> philterd/phileas-python</a>
+        </span>
+    
+    
+      <span><a href="../quickstart/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../filters/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
