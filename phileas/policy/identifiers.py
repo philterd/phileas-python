@@ -29,6 +29,7 @@ class CreditCardFilterConfig:
     enabled: bool = True
     credit_card_filter_strategies: List[FilterStrategy] = field(default_factory=_default_strategies)
     ignored: List[str] = field(default_factory=list)
+    luhn_check: bool = False
 
 
 @dataclass
@@ -218,6 +219,7 @@ class Identifiers:
                 enabled=d.get("enabled", True),
                 credit_card_filter_strategies=_strategies_from_dict(d, "creditCardFilterStrategies"),
                 ignored=d.get("ignored", []),
+                luhn_check=d.get("luhnCheck", False),
             )
         if "ssn" in data:
             d = data["ssn"]
@@ -379,6 +381,7 @@ class Identifiers:
                 "enabled": self.credit_card.enabled,
                 "creditCardFilterStrategies": [s.to_dict() for s in self.credit_card.credit_card_filter_strategies],
                 "ignored": self.credit_card.ignored,
+                "luhnCheck": self.credit_card.luhn_check,
             }
         if self.ssn is not None:
             d["ssn"] = {

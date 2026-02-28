@@ -153,6 +153,71 @@ class TestCreditCardFilter:
 
 
 # ---------------------------------------------------------------------------
+# CreditCardFilter – Luhn check
+# ---------------------------------------------------------------------------
+
+class TestCreditCardFilterLuhn:
+    def test_luhn_valid_card_detected(self):
+        # 4111111111111111 passes Luhn; luhn_check=True should still find it
+        config = CreditCardFilterConfig(luhn_check=True)
+        f = CreditCardFilter(config)
+        spans = f.filter("Card: 4111111111111111")
+        assert any("4111111111111111" in s.text for s in spans)
+
+    def test_luhn_invalid_card_skipped(self):
+        # 4111111111111112 is a Visa-pattern number that fails Luhn
+        config = CreditCardFilterConfig(luhn_check=True)
+        f = CreditCardFilter(config)
+        spans = f.filter("Card: 4111111111111112")
+        assert len(spans) == 0
+
+    def test_luhn_disabled_invalid_card_detected(self):
+        # Without luhn_check the number is matched regardless of Luhn validity
+        config = CreditCardFilterConfig(luhn_check=False)
+        f = CreditCardFilter(config)
+        spans = f.filter("Card: 4111111111111112")
+        assert len(spans) >= 1
+
+    def test_luhn_default_is_disabled(self):
+        # Default config must NOT perform Luhn check (backward-compatible)
+        f = CreditCardFilter(_default_config(CreditCardFilterConfig))
+        spans = f.filter("Card: 4111111111111112")
+        assert len(spans) >= 1
+
+    def test_luhn_check_parsed_from_policy(self):
+        import json
+        from phileas.policy.policy import Policy
+
+        policy_dict = {
+            "name": "luhn-policy",
+            "identifiers": {
+                "creditCard": {
+                    "luhnCheck": True,
+                    "creditCardFilterStrategies": [{"strategy": "REDACT", "redactionFormat": "{{{REDACTED-%t}}}"}],
+                }
+            },
+        }
+        policy = Policy.from_dict(policy_dict)
+        assert policy.identifiers.credit_card.luhn_check is True
+
+    def test_luhn_check_serialized_to_policy(self):
+        from phileas.policy.policy import Policy
+
+        policy_dict = {
+            "name": "luhn-policy",
+            "identifiers": {
+                "creditCard": {
+                    "luhnCheck": True,
+                    "creditCardFilterStrategies": [{"strategy": "REDACT", "redactionFormat": "{{{REDACTED-%t}}}"}],
+                }
+            },
+        }
+        policy = Policy.from_dict(policy_dict)
+        serialized = policy.to_dict()
+        assert serialized["identifiers"]["creditCard"]["luhnCheck"] is True
+
+
+# ---------------------------------------------------------------------------
 # SSN Filter
 # ---------------------------------------------------------------------------
 
