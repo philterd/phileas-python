@@ -237,3 +237,61 @@ class TestFilterServiceFromJSON:
         result = svc.filter(policy, "ctx", "doc", text)
         assert "test@x.com" not in result.filtered_text
         assert "10.0.0.1" not in result.filtered_text
+
+
+# ---------------------------------------------------------------------------
+# ContextService injection
+# ---------------------------------------------------------------------------
+
+class TestFilterServiceContextService:
+    def test_default_context_service_is_in_memory(self):
+        from phileas.services.context import InMemoryContextService
+        svc = FilterService()
+        assert isinstance(svc._context_service, InMemoryContextService)
+
+    def test_custom_context_service_is_used(self):
+        from phileas.services.context import AbstractContextService, InMemoryContextService
+
+        class CustomContextService(AbstractContextService):
+            def put(self, context, token, replacement): pass
+            def get(self, context, token): return None
+            def contains(self, context, token): return False
+
+        custom = CustomContextService()
+        svc = FilterService(context_service=custom)
+        assert svc._context_service is custom
+
+    def test_filter_with_custom_context_service(self):
+        from phileas.services.context import InMemoryContextService
+        ctx_svc = InMemoryContextService()
+        svc = FilterService(context_service=ctx_svc)
+        policy = _policy_with(email_address=EmailAddressFilterConfig())
+        result = svc.filter(policy, "ctx", "doc", "Email: user@example.com")
+        assert "user@example.com" not in result.filtered_text
+
+    def test_context_referential_integrity_reuses_replacement(self):
+        """The same token in the same context must always get the same replacement."""
+        from phileas.services.context import InMemoryContextService
+        ctx_svc = InMemoryContextService()
+        svc = FilterService(context_service=ctx_svc)
+        policy = _policy_with(email_address=EmailAddressFilterConfig())
+
+        result1 = svc.filter(policy, "ctx", "doc1", "Contact user@example.com for info.")
+        result2 = svc.filter(policy, "ctx", "doc2", "Reply to user@example.com today.")
+
+        # The replacement strings for the same token must be identical across calls
+        replacement1 = result1.spans[0].replacement
+        replacement2 = result2.spans[0].replacement
+        assert replacement1 == replacement2
+
+    def test_context_referential_integrity_pre_seeded(self):
+        """A token pre-seeded in the context service is used as the replacement."""
+        from phileas.services.context import InMemoryContextService
+        ctx_svc = InMemoryContextService()
+        ctx_svc.put("ctx", "user@example.com", "KNOWN-REPLACEMENT")
+        svc = FilterService(context_service=ctx_svc)
+        policy = _policy_with(email_address=EmailAddressFilterConfig())
+
+        result = svc.filter(policy, "ctx", "doc1", "Email: user@example.com here.")
+        assert "KNOWN-REPLACEMENT" in result.filtered_text
+        assert result.spans[0].replacement == "KNOWN-REPLACEMENT"

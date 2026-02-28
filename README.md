@@ -163,6 +163,77 @@ policy_dict = {
 }
 ```
 
+## Contexts and Referential Integrity
+
+Every call to `FilterService.filter()` takes a **context** name. The context is a logical grouping that ties multiple documents together — for example, all documents belonging to a single patient, user, or case.
+
+Phileas uses the context to maintain **referential integrity**: once a PII token has been replaced, every subsequent occurrence of that same token in the same context receives the *identical* replacement. This ensures that redacted documents within a context remain internally consistent and can still be cross-referenced without revealing the underlying sensitive values.
+
+### How it works
+
+Phileas maintains a `ContextService` — a map of maps with the structure:
+
+```
+context_name → { token → replacement }
+```
+
+Before applying any replacement, `FilterService` checks whether the token already has a stored replacement for the current context:
+
+- **Token found** — the stored replacement is used instead of generating a new one.
+- **Token not found** — the newly generated replacement is stored and then applied.
+
+The default implementation is `InMemoryContextService`, which stores mappings in memory for the lifetime of the `FilterService` instance.
+
+### Using the default in-memory context service
+
+```python
+from phileas import FilterService
+
+service = FilterService()  # uses InMemoryContextService automatically
+
+# Both calls operate in the same context, so 555-123-4567 always gets
+# the same replacement across documents.
+result1 = service.filter(policy, "patient-records", "doc1", "Call 555-123-4567 for info.")
+result2 = service.filter(policy, "patient-records", "doc2", "Patient called 555-123-4567 back.")
+```
+
+### Pre-seeding the context service
+
+You can pre-populate the context service before filtering to force specific replacements:
+
+```python
+from phileas import FilterService, InMemoryContextService
+
+ctx_svc = InMemoryContextService()
+ctx_svc.put("patient-records", "john@example.com", "EMAIL-001")
+
+service = FilterService(context_service=ctx_svc)
+# john@example.com will always be replaced with EMAIL-001 in the "patient-records" context
+```
+
+### Providing a custom context service
+
+Subclass `AbstractContextService` to integrate any external store (e.g. Redis, a database):
+
+```python
+from phileas import FilterService, AbstractContextService
+
+class RedisContextService(AbstractContextService):
+    def put(self, context: str, token: str, replacement: str) -> None:
+        # store in Redis
+        ...
+
+    def get(self, context: str, token: str) -> str | None:
+        # retrieve from Redis, return None if not found
+        ...
+
+    def contains(self, context: str, token: str) -> bool:
+        # check existence in Redis
+        ...
+
+service = FilterService(context_service=RedisContextService())
+```
+
 ## API Reference
 
 ### `FilterService`
@@ -170,16 +241,22 @@ policy_dict = {
 ```python
 from phileas.services.filter_service import FilterService
 
-service = FilterService()
+service = FilterService(context_service=None)
 result = service.filter(policy, context, document_id, text)
 ```
 
-#### Parameters
+#### Constructor Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `context_service` | `AbstractContextService \| None` | Context service implementation to use for referential integrity. Defaults to `InMemoryContextService` when `None`. |
+
+#### `filter()` Parameters
 
 | Parameter | Type | Description |
 |---|---|---|
 | `policy` | `Policy` | The policy to apply |
-| `context` | `str` | An identifier for the request context (e.g., user or application name) |
+| `context` | `str` | Named context that groups documents for referential integrity (e.g., a patient ID or session name) |
 | `document_id` | `str` | A unique identifier for the document being filtered |
 | `text` | `str` | The text to filter |
 
@@ -221,6 +298,40 @@ json_str = policy.to_json()
 
 # To dict
 d = policy.to_dict()
+```
+
+### `AbstractContextService`
+
+Abstract base class for context service implementations. Subclass this to provide a custom backend.
+
+```python
+from phileas import AbstractContextService
+
+class MyContextService(AbstractContextService):
+    def put(self, context: str, token: str, replacement: str) -> None: ...
+    def get(self, context: str, token: str) -> str | None: ...
+    def contains(self, context: str, token: str) -> bool: ...
+```
+
+#### Methods
+
+| Method | Signature | Description |
+|---|---|---|
+| `put` | `(context, token, replacement) -> None` | Store a replacement value for a token under the given context |
+| `get` | `(context, token) -> str \| None` | Return the stored replacement, or `None` if not found |
+| `contains` | `(context, token) -> bool` | Return `True` if a replacement exists for the token in the given context |
+
+### `InMemoryContextService`
+
+Default implementation of `AbstractContextService` backed by a `dict[str, dict[str, str]]`. Suitable for single-process, in-memory use.
+
+```python
+from phileas import InMemoryContextService
+
+ctx_svc = InMemoryContextService()
+ctx_svc.put("my-context", "john@example.com", "EMAIL-001")
+ctx_svc.get("my-context", "john@example.com")      # "EMAIL-001"
+ctx_svc.contains("my-context", "john@example.com") # True
 ```
 
 ## Examples
