@@ -1,6 +1,7 @@
 """Tests for policy serialization and deserialization."""
 
 import json
+import yaml
 import pytest
 
 from phileas.policy.filter_strategy import FilterStrategy
@@ -133,6 +134,48 @@ class TestPolicy:
         p = Policy.from_dict(d)
         assert p.ignored_patterns == [r"\d{3}-test"]
         assert Policy.from_json(p.to_json()).ignored_patterns == [r"\d{3}-test"]
+
+    def test_from_yaml(self):
+        yaml_str = (
+            "name: yaml-policy\n"
+            "identifiers:\n"
+            "  age:\n"
+            "    ageFilterStrategies:\n"
+            "    - strategy: MASK\n"
+        )
+        p = Policy.from_yaml(yaml_str)
+        assert p.name == "yaml-policy"
+        assert p.identifiers.age is not None
+        assert p.identifiers.age.age_filter_strategies[0].strategy == "MASK"
+
+    def test_to_yaml(self):
+        p = Policy(name="my-yaml-policy")
+        p.identifiers.ssn = __import__(
+            "phileas.policy.identifiers", fromlist=["SSNFilterConfig"]
+        ).SSNFilterConfig()
+        y = p.to_yaml()
+        data = yaml.safe_load(y)
+        assert data["name"] == "my-yaml-policy"
+        assert "ssn" in data["identifiers"]
+
+    def test_round_trip_yaml(self):
+        p = Policy(name="round-trip-yaml")
+        p.identifiers.email_address = EmailAddressFilterConfig(
+            email_address_filter_strategies=[
+                FilterStrategy(strategy="STATIC_REPLACE", static_replacement="[EMAIL]")
+            ]
+        )
+        y = p.to_yaml()
+        p2 = Policy.from_yaml(y)
+        assert p2.name == "round-trip-yaml"
+        strat = p2.identifiers.email_address.email_address_filter_strategies[0]
+        assert strat.strategy == "STATIC_REPLACE"
+        assert strat.static_replacement == "[EMAIL]"
+
+    def test_yaml_ignored_patterns_round_trip(self):
+        d = {"name": "p", "identifiers": {}, "ignoredPatterns": [r"\d{3}-test"]}
+        p = Policy.from_dict(d)
+        assert Policy.from_yaml(p.to_yaml()).ignored_patterns == [r"\d{3}-test"]
 
     def test_all_identifier_types_from_dict(self):
         d = {
