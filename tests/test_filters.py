@@ -1064,6 +1064,74 @@ class TestPhEyeFilter:
             with pytest.raises(IOError):
                 f.filter("John Smith was here.")
 
+    def test_local_filter_gliner(self):
+        import unittest.mock as mock
+        config = PhEyeFilterConfig(
+            model_path="/path/to/model.bin",
+            vocab_path="/path/to/vocab.txt",
+            labels=["PERSON"]
+        )
+        f = PhEyeFilter(config)
+
+        mock_gliner_class = mock.MagicMock()
+        mock_model = mock.MagicMock()
+        mock_gliner_class.from_pretrained.return_value = mock_model
+
+        # Mocking the response from GLiNER
+        mock_model.predict_entities.return_value = [
+            {"start": 0, "end": 10, "label": "PERSON", "text": "John Smith", "score": 0.95}
+        ]
+
+        with mock.patch.dict("sys.modules", {"gliner": mock.MagicMock()}):
+            import gliner
+            with mock.patch("gliner.GLiNER", mock_gliner_class):
+                spans = f.filter("John Smith was here.")
+
+        assert len(spans) == 1
+        assert spans[0].text == "John Smith"
+        assert spans[0].filter_type == "person"
+        assert spans[0].confidence == 0.95
+
+        mock_gliner_class.from_pretrained.assert_called_once_with("/path/to/model.bin", onnx=False, vocab_path="/path/to/vocab.txt")
+
+    def test_local_filter_onnx(self):
+        import unittest.mock as mock
+        config = PhEyeFilterConfig(
+            model_path="/path/to/model.onnx",
+            vocab_path="/path/to/vocab.txt",
+            labels=["PERSON"]
+        )
+        f = PhEyeFilter(config)
+
+        mock_gliner_class = mock.MagicMock()
+        mock_model = mock.MagicMock()
+        mock_gliner_class.from_pretrained.return_value = mock_model
+
+        mock_model.predict_entities.return_value = [
+            {"start": 0, "end": 10, "label": "PERSON", "text": "John Smith", "score": 0.95}
+        ]
+
+        with mock.patch.dict("sys.modules", {"gliner": mock.MagicMock()}):
+            import gliner
+            with mock.patch("gliner.GLiNER", mock_gliner_class):
+                spans = f.filter("John Smith was here.")
+
+        assert len(spans) == 1
+        mock_gliner_class.from_pretrained.assert_called_once_with("/path/to/model.onnx", onnx=True, vocab_path="/path/to/vocab.txt")
+
+    def test_local_filter_import_error(self):
+        import unittest.mock as mock
+        config = PhEyeFilterConfig(
+            model_path="/path/to/model.bin",
+            vocab_path="/path/to/vocab.txt"
+        )
+        f = PhEyeFilter(config)
+
+        with mock.patch.dict("sys.modules", {"gliner": None}):
+            with pytest.raises(ImportError) as excinfo:
+                f.filter("Some text.")
+            assert "The 'gliner' package is required" in str(excinfo.value)
+
     def test_policy_json_ph_eye(self):
         from phileas.policy.policy import Policy
         policy_json = json.dumps({

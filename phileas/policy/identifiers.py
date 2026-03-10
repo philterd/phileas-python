@@ -166,6 +166,8 @@ class PhEyeFilterConfig:
     timeout: int = 30
     labels: List[str] = field(default_factory=lambda: ["PERSON"])
     remove_punctuation: bool = False
+    model_path: str = ""
+    vocab_path: str = ""
     thresholds: dict = field(default_factory=dict)
     ph_eye_filter_strategies: List[FilterStrategy] = field(default_factory=_default_strategies)
     ignored: List[str] = field(default_factory=list)
@@ -369,6 +371,8 @@ class Identifiers:
                     timeout=d.get("timeout", 30),
                     labels=d.get("labels", ["PERSON"]),
                     remove_punctuation=d.get("removePunctuation", False),
+                    model_path=d.get("modelPath", ""),
+                    vocab_path=d.get("vocabPath", ""),
                     thresholds=d.get("thresholds", {}),
                     ph_eye_filter_strategies=_strategies_from_dict(d, "phEyeFilterStrategies"),
                     ignored=d.get("ignored", []),
@@ -524,6 +528,8 @@ class Identifiers:
                     "timeout": cfg.timeout,
                     "labels": cfg.labels,
                     "removePunctuation": cfg.remove_punctuation,
+                    "modelPath": cfg.model_path,
+                    "vocabPath": cfg.vocab_path,
                     "thresholds": cfg.thresholds,
                     "phEyeFilterStrategies": [s.to_dict() for s in cfg.ph_eye_filter_strategies],
                     "ignored": cfg.ignored,

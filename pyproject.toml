@@ -67,6 +67,10 @@ dev = [
 server = [
     "flask>=3.0",
 ]
+gliner = [
+    "gliner>=0.1.0",
+    "onnxruntime>=1.16.0",
+]
 
 [project.scripts]
 phileas-server = "phileas.server:main"

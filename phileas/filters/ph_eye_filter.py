@@ -26,13 +26,20 @@ from .base import BaseFilter, FilterType
 class PhEyeFilter(BaseFilter):
     def __init__(self, filter_config):
         super().__init__(FilterType.PH_EYE, filter_config)
+        self._model = None
 
     def filter(self, text: str, context: str = "default") -> List[Span]:
+        model_path = getattr(self.filter_config, "model_path", "")
+        vocab_path = getattr(self.filter_config, "vocab_path", "")
+        labels = getattr(self.filter_config, "labels", ["PERSON"])
+
+        if model_path and vocab_path:
+            return self._local_filter(text, context, model_path, vocab_path, labels)
+
         endpoint = getattr(self.filter_config, "endpoint", "")
         if not endpoint:
             return []
 
-        labels = getattr(self.filter_config, "labels", ["PERSON"])
         thresholds = getattr(self.filter_config, "thresholds", {})
         bearer_token = getattr(self.filter_config, "bearer_token", "")
         timeout = getattr(self.filter_config, "timeout", 30) or 30
@@ -42,6 +49,8 @@ class PhEyeFilter(BaseFilter):
             "context": context,
             "piece": 0,
             "labels": list(labels),
+            "modelPath": model_path,
+            "vocabPath": vocab_path,
         }).encode("utf-8")
 
         req = urllib.request.Request(
@@ -67,6 +76,66 @@ class PhEyeFilter(BaseFilter):
         strategies = self._get_strategies()
         strategy = strategies[0] if strategies else None
         ignored_terms = set(self._get_ignored())
+
+        spans: List[Span] = []
+        for item in ph_eye_spans:
+            label = item.get("label", "")
+            score = float(item.get("score", 0.0))
+            span_text = item.get("text", "")
+            start = int(item.get("start", 0))
+            end = int(item.get("end", 0))
+
+            if labels and label not in labels:
+                continue
+
+            threshold = thresholds.get(label.upper(), 0.0)
+            if score < threshold:
+                continue
+
+            if span_text in ignored_terms:
+                continue
+
+            if label.upper() == "PERSON":
+                filter_type = "person"
+            else:
+                filter_type = label.lower() if label else FilterType.PH_EYE
+
+            replacement = (
+                strategy.get_replacement(filter_type, span_text) if strategy else span_text
+            )
+
+            spans.append(Span(
+                character_start=start,
+                character_end=end,
+                filter_type=filter_type,
+                context=context,
+                confidence=score,
+                text=span_text,
+                replacement=replacement,
+                ignored=False,
+            ))
+
+        return spans
+
+    def _local_filter(self, text: str, context: str, model_path: str, vocab_path: str, labels: List[str]) -> List[Span]:
+        if not self._model:
+            onnx = False
+            if model_path.endswith(".onnx"):
+                onnx = True
+
+            try:
+                from gliner import GLiNER
+            except ImportError:
+                raise ImportError("The 'gliner' package is required for local inference. Install it with 'pip install gliner'.")
+
+            self._model = GLiNER.from_pretrained(model_path, onnx=onnx, vocab_path=vocab_path)
+
+        ph_eye_spans = self._model.predict_entities(text, labels)
+
+        strategies = self._get_strategies()
+        strategy = strategies[0] if strategies else None
+        ignored_terms = set(self._get_ignored())
+        thresholds = getattr(self.filter_config, "thresholds", {})
 
         spans: List[Span] = []
         for item in ph_eye_spans:
