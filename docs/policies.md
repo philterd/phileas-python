@@ -207,7 +207,11 @@ policy = Policy.from_dict({
 
 ## ph-eye integration
 
-[ph-eye](https://github.com/philterd/ph-eye) is a standalone NER service that phileas-python can call to detect named entities such as person names. Add a `phEye` block to use it:
+[ph-eye](https://github.com/philterd/ph-eye) is a standalone NER service that phileas-python can call to detect named entities such as person names. Alternatively, phileas-python can perform local inference using [GLiNER](https://github.com/urchade/GLiNER) if `modelPath` and `vocabPath` are provided.
+
+### Remote Inference (HTTP)
+
+To use a remote ph-eye service, provide the `endpoint` URL:
 
 ```python
 policy = Policy.from_dict({
@@ -226,11 +230,33 @@ policy = Policy.from_dict({
 })
 ```
 
+### Local Inference (GLiNER)
+
+To use local inference, provide the `modelPath` and `vocabPath`. If the `modelPath` ends with `.onnx`, the ONNX Runtime will be used.
+
+```python
+policy = Policy.from_dict({
+    "name": "local-ner-policy",
+    "identifiers": {
+        "phEye": [
+            {
+                "modelPath": "/path/to/gliner_model.bin",
+                "vocabPath": "/path/to/vocab.txt",
+                "labels": ["PERSON"],
+                "phEyeFilterStrategies": [{"strategy": "REDACT"}]
+            }
+        ]
+    }
+})
+```
+
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `endpoint` | string | `""` | Base URL of the ph-eye service |
-| `bearerToken` | string | `""` | Optional Bearer token for authentication |
-| `timeout` | int | `30` | Request timeout in seconds |
+| `endpoint` | string | `""` | Base URL of the ph-eye service (for remote inference) |
+| `bearerToken` | string | `""` | Optional Bearer token for authentication (for remote inference) |
+| `modelPath` | string | `""` | Path to the local GLiNER model (e.g. `gliner_model.bin` or `gliner_model.onnx`) |
+| `vocabPath` | string | `""` | Path to the vocabulary file required by GLiNER |
+| `timeout` | int | `30` | Request timeout in seconds (for remote inference) |
 | `labels` | list of strings | `["PERSON"]` | NER label types to process |
 | `thresholds` | object | `{}` | Minimum confidence per label, e.g. `{"PERSON": 0.9}` |
 | `removePunctuation` | bool | `false` | Strip punctuation from entity text before replacement |

@@ -325,6 +325,10 @@ Detects US passport numbers in the format `A12345678` (one letter followed by ei
 
 The `phEye` filter delegates named entity recognition to the [ph-eye](https://github.com/philterd/ph-eye) service over HTTP. Unlike the regex-based filters above, ph-eye uses a machine-learning NER model and can detect entities such as person names, locations, and organisations.
 
+Alternatively, `phEye` can perform **local inference** using [GLiNER](https://github.com/urchade/GLiNER) if `modelPath` and `vocabPath` are provided in the policy.
+
+### Remote Inference (HTTP)
+
 Multiple `phEye` configurations can be listed in an array (for example, to call different ph-eye instances with different label sets).
 
 ```python
@@ -335,6 +339,46 @@ Multiple `phEye` configurations can be listed in an array (for example, to call 
             "bearerToken": "my-token",
             "labels": ["PERSON"],
             "thresholds": {"PERSON": 0.85},
+            "phEyeFilterStrategies": [{"strategy": "REDACT"}]
+        }
+    ]
+}
+```
+
+### Local Inference (GLiNER)
+
+To use local inference, you must install the `gliner` extra:
+
+```bash
+pip install "phileas-redact[gliner]"
+```
+
+Then, specify the `modelPath` and `vocabPath` in your policy. If the `modelPath` ends with `.onnx`, the ONNX Runtime will be used for inference.
+
+#### Standard GLiNER Model
+
+```python
+"identifiers": {
+    "phEye": [
+        {
+            "modelPath": "/path/to/gliner_model.bin",
+            "vocabPath": "/path/to/vocab.txt",
+            "labels": ["PERSON", "ORGANIZATION"],
+            "phEyeFilterStrategies": [{"strategy": "REDACT"}]
+        }
+    ]
+}
+```
+
+#### ONNX GLiNER Model
+
+```python
+"identifiers": {
+    "phEye": [
+        {
+            "modelPath": "/path/to/gliner_model.onnx",
+            "vocabPath": "/path/to/vocab.txt",
+            "labels": ["PERSON"],
             "phEyeFilterStrategies": [{"strategy": "REDACT"}]
         }
     ]
