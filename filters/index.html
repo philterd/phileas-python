@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://philterd.github.io/phileas-python/filters/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Filters - phileas-python</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Filters";
+        var mkdocs_page_input_path = "filters.md";
+        var mkdocs_page_url = "/phileas-python/filters/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> phileas-python
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quick Start</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../policies/">Policies</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Filters</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#age">age</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#emailaddress">emailAddress</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#creditcard">creditCard</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ssn">ssn</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#phonenumber">phoneNumber</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ipaddress">ipAddress</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#url">url</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#zipcode">zipCode</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#population-condition">Population condition</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#vin">vin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#bitcoinaddress">bitcoinAddress</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#bankroutingnumber">bankRoutingNumber</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#date">date</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#macaddress">macAddress</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#currency">currency</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#streetaddress">streetAddress</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#trackingnumber">trackingNumber</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#driverslicense">driversLicense</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ibancode">ibanCode</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#passportnumber">passportNumber</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#pheye-ner-via-ph-eye">phEye (NER via ph-eye)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#remote-inference-http">Remote Inference (HTTP)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#local-inference-gliner">Local Inference (GLiNER)</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#standard-gliner-model">Standard GLiNER Model</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#onnx-gliner-model">ONNX GLiNER Model</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#dictionaries">dictionaries</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#multiple-dictionaries">Multiple dictionaries</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rest-server/">REST Server</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../cli/">CLI</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../api-reference/">API Reference</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">phileas-python</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Filters</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/philterd/phileas-python/edit/master/docs/filters.md">Edit on philterd/phileas-python</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="filters">Filters</h1>
+<p>Each filter detects a specific type of sensitive information. Filters are enabled by including their key in the <code>identifiers</code> section of a policy and are disabled by default.</p>
+<p>The table below lists every supported filter, the policy key used to enable it, the internal filter type name returned in <code>Span.filter_type</code>, and example matching values.</p>
+<table>
+<thead>
+<tr>
+<th>Policy key</th>
+<th>Filter type</th>
+<th>Example matches</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>age</code></td>
+<td><code>age</code></td>
+<td><code>35 years old</code>, <code>aged 25</code>, <code>12-year-old</code></td>
+</tr>
+<tr>
+<td><code>emailAddress</code></td>
+<td><code>email-address</code></td>
+<td><code>user@example.com</code></td>
+</tr>
+<tr>
+<td><code>creditCard</code></td>
+<td><code>credit-card</code></td>
+<td><code>4111 1111 1111 1111</code>, <code>5500-0000-0000-0004</code></td>
+</tr>
+<tr>
+<td><code>ssn</code></td>
+<td><code>ssn</code></td>
+<td><code>123-45-6789</code>, <code>123 45 6789</code></td>
+</tr>
+<tr>
+<td><code>phoneNumber</code></td>
+<td><code>phone-number</code></td>
+<td><code>(555) 867-5309</code>, <code>555.867.5309</code></td>
+</tr>
+<tr>
+<td><code>ipAddress</code></td>
+<td><code>ip-address</code></td>
+<td><code>192.168.1.1</code>, <code>2001:db8::1</code></td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td><code>url</code></td>
+<td><code>https://www.example.com/path?q=1</code></td>
+</tr>
+<tr>
+<td><code>zipCode</code></td>
+<td><code>zip-code</code></td>
+<td><code>90210</code>, <code>10001-1234</code></td>
+</tr>
+<tr>
+<td><code>vin</code></td>
+<td><code>vin</code></td>
+<td><code>1HGBH41JXMN109186</code></td>
+</tr>
+<tr>
+<td><code>bitcoinAddress</code></td>
+<td><code>bitcoin-address</code></td>
+<td><code>1A1zP1eP5QGefi2DMPTfTL5SLmv7Divf…</code></td>
+</tr>
+<tr>
+<td><code>bankRoutingNumber</code></td>
+<td><code>bank-routing-number</code></td>
+<td><code>021000021</code></td>
+</tr>
+<tr>
+<td><code>date</code></td>
+<td><code>date</code></td>
+<td><code>01/15/1990</code>, <code>January 15, 1990</code>, <code>1990-01-15</code></td>
+</tr>
+<tr>
+<td><code>macAddress</code></td>
+<td><code>mac-address</code></td>
+<td><code>00:1A:2B:3C:4D:5E</code>, <code>00-1A-2B-3C-4D-5E</code></td>
+</tr>
+<tr>
+<td><code>currency</code></td>
+<td><code>currency</code></td>
+<td><code>$1,234.56</code>, <code>$99.99</code></td>
+</tr>
+<tr>
+<td><code>streetAddress</code></td>
+<td><code>street-address</code></td>
+<td><code>123 Main St</code>, <code>456 Elm Avenue</code></td>
+</tr>
+<tr>
+<td><code>trackingNumber</code></td>
+<td><code>tracking-number</code></td>
+<td>UPS, FedEx, and USPS tracking numbers</td>
+</tr>
+<tr>
+<td><code>driversLicense</code></td>
+<td><code>drivers-license</code></td>
+<td>US state driver's license numbers</td>
+</tr>
+<tr>
+<td><code>ibanCode</code></td>
+<td><code>iban-code</code></td>
+<td><code>GB82 WEST 1234 5698 7654 32</code></td>
+</tr>
+<tr>
+<td><code>passportNumber</code></td>
+<td><code>passport-number</code></td>
+<td>US passport numbers (e.g. <code>A12345678</code>)</td>
+</tr>
+<tr>
+<td><code>phEye</code></td>
+<td><code>person</code>, <code>location</code>, etc.</td>
+<td>Any NER entity returned by <a href="https://github.com/philterd/ph-eye">ph-eye</a></td>
+</tr>
+<tr>
+<td><code>dictionaries</code></td>
+<td><code>dictionary</code></td>
+<td>Any term from a user-supplied list (e.g. <code>John</code>, <code>classified</code>)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="age">age</h2>
+<p>Detects age references in text such as "35 years old", "aged 25", or "a 12-year-old child".</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;age&quot;: {
+        &quot;ageFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="emailaddress">emailAddress</h2>
+<p>Detects standard email addresses (<code>local@domain.tld</code>).</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;emailAddress&quot;: {
+        &quot;emailAddressFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}],
+        &quot;ignored&quot;: [&quot;noreply@example.com&quot;]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="creditcard">creditCard</h2>
+<p>Detects major credit card number formats (Visa, Mastercard, American Express, Discover, and others), with or without spaces/hyphens.</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;creditCard&quot;: {
+        &quot;creditCardFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;LAST_4&quot;}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="ssn">ssn</h2>
+<p>Detects US Social Security Numbers (SSNs) and Taxpayer Identification Numbers (TINs) in <code>NNN-NN-NNNN</code> and <code>NNN NN NNNN</code> formats.</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;ssn&quot;: {
+        &quot;ssnFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;HASH_SHA256_REPLACE&quot;}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="phonenumber">phoneNumber</h2>
+<p>Detects US phone numbers in common formats: <code>(555) 867-5309</code>, <code>555-867-5309</code>, <code>555.867.5309</code>.</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;phoneNumber&quot;: {
+        &quot;phoneNumberFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;MASK&quot;}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="ipaddress">ipAddress</h2>
+<p>Detects IPv4 addresses (e.g. <code>192.168.1.1</code>) and IPv6 addresses (e.g. <code>2001:db8::1</code>).</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;ipAddress&quot;: {
+        &quot;ipAddressFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;STATIC_REPLACE&quot;, &quot;staticReplacement&quot;: &quot;0.0.0.0&quot;}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="url">url</h2>
+<p>Detects HTTP and HTTPS URLs.</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;url&quot;: {
+        &quot;urlFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="zipcode">zipCode</h2>
+<p>Detects 5-digit ZIP codes (<code>90210</code>) and ZIP+4 codes (<code>90210-1234</code>).</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;zipCode&quot;: {
+        &quot;zipCodeFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+    }
+}
+</code></pre>
+<h3 id="population-condition">Population condition</h3>
+<p>The <code>zipCode</code> filter supports a <code>population</code> condition that limits redaction to ZIP codes whose 2020 US Census population satisfies a numeric threshold. ZIP codes not present in the dataset are treated as non-matching.</p>
+<pre><code class="language-python"># Redact only ZIP codes with a population below 20,000
+&quot;identifiers&quot;: {
+    &quot;zipCode&quot;: {
+        &quot;zipCodeFilterStrategies&quot;: [
+            {&quot;strategy&quot;: &quot;REDACT&quot;, &quot;condition&quot;: &quot;population &lt; 20000&quot;}
+        ]
+    }
+}
+</code></pre>
+<p>Supported operators: <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>, <code>==</code>, <code>!=</code>. The condition also works with ZIP+4 codes — the 5-digit prefix is used for the lookup (<code>90210-1234</code> → <code>90210</code>).</p>
+<p>See <a href="../policies/#conditions">Conditions</a> for details on combining conditions with <code>and</code> and using other condition types.</p>
+<hr />
+<h2 id="vin">vin</h2>
+<p>Detects 17-character Vehicle Identification Numbers.</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;vin&quot;: {
+        &quot;vinFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="bitcoinaddress">bitcoinAddress</h2>
+<p>Detects Bitcoin addresses (P2PKH addresses starting with <code>1</code>, P2SH addresses starting with <code>3</code>, and bech32 addresses starting with <code>bc1</code>).</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;bitcoinAddress&quot;: {
+        &quot;bitcoinAddressFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="bankroutingnumber">bankRoutingNumber</h2>
+<p>Detects US ABA bank routing numbers (9-digit numbers).</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;bankRoutingNumber&quot;: {
+        &quot;bankRoutingNumberFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;MASK&quot;}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="date">date</h2>
+<p>Detects dates in several common formats:</p>
+<ul>
+<li><code>MM/DD/YYYY</code> and <code>MM-DD-YYYY</code></li>
+<li><code>YYYY-MM-DD</code> (ISO 8601)</li>
+<li><code>Month DD, YYYY</code> (e.g. <code>January 15, 1990</code>)</li>
+<li><code>DD Month YYYY</code> (e.g. <code>15 January 1990</code>)</li>
+</ul>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;date&quot;: {
+        &quot;dateFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;SHIFT_DATE&quot;, &quot;shiftYears&quot;: 1}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="macaddress">macAddress</h2>
+<p>Detects network MAC addresses in colon-separated (<code>AA:BB:CC:DD:EE:FF</code>) and hyphen-separated (<code>AA-BB-CC-DD-EE-FF</code>) formats.</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;macAddress&quot;: {
+        &quot;macAddressFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="currency">currency</h2>
+<p>Detects US dollar amounts such as <code>$1,234.56</code> and <code>$99.99</code>.</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;currency&quot;: {
+        &quot;currencyFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="streetaddress">streetAddress</h2>
+<p>Detects US street address patterns such as <code>123 Main St</code> or <code>456 Elm Avenue</code>.</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;streetAddress&quot;: {
+        &quot;streetAddressFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="trackingnumber">trackingNumber</h2>
+<p>Detects UPS, FedEx, and USPS package tracking numbers.</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;trackingNumber&quot;: {
+        &quot;trackingNumberFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="driverslicense">driversLicense</h2>
+<p>Detects US driver's license numbers (pattern varies by state).</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;driversLicense&quot;: {
+        &quot;driversLicenseFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="ibancode">ibanCode</h2>
+<p>Detects International Bank Account Numbers (IBANs) for all supported country codes.</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;ibanCode&quot;: {
+        &quot;ibanCodeFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;MASK&quot;}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="passportnumber">passportNumber</h2>
+<p>Detects US passport numbers in the format <code>A12345678</code> (one letter followed by eight digits).</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;passportNumber&quot;: {
+        &quot;passportNumberFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+    }
+}
+</code></pre>
+<hr />
+<h2 id="pheye-ner-via-ph-eye">phEye (NER via ph-eye)</h2>
+<p>The <code>phEye</code> filter delegates named entity recognition to the <a href="https://github.com/philterd/ph-eye">ph-eye</a> service over HTTP. Unlike the regex-based filters above, ph-eye uses a machine-learning NER model and can detect entities such as person names, locations, and organisations.</p>
+<p>Alternatively, <code>phEye</code> can perform <strong>local inference</strong> using <a href="https://github.com/urchade/GLiNER">GLiNER</a> if <code>modelPath</code> and <code>vocabPath</code> are provided in the policy.</p>
+<h3 id="remote-inference-http">Remote Inference (HTTP)</h3>
+<p>Multiple <code>phEye</code> configurations can be listed in an array (for example, to call different ph-eye instances with different label sets).</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;phEye&quot;: [
+        {
+            &quot;endpoint&quot;: &quot;http://localhost:8080&quot;,
+            &quot;bearerToken&quot;: &quot;my-token&quot;,
+            &quot;labels&quot;: [&quot;PERSON&quot;],
+            &quot;thresholds&quot;: {&quot;PERSON&quot;: 0.85},
+            &quot;phEyeFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+        }
+    ]
+}
+</code></pre>
+<h3 id="local-inference-gliner">Local Inference (GLiNER)</h3>
+<p>To use local inference, you must install the <code>gliner</code> extra:</p>
+<pre><code class="language-bash">pip install &quot;phileas-redact[gliner]&quot;
+</code></pre>
+<p>Then, specify the <code>modelPath</code> and <code>vocabPath</code> in your policy. If the <code>modelPath</code> ends with <code>.onnx</code>, the ONNX Runtime will be used for inference.</p>
+<h4 id="standard-gliner-model">Standard GLiNER Model</h4>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;phEye&quot;: [
+        {
+            &quot;modelPath&quot;: &quot;/path/to/gliner_model.bin&quot;,
+            &quot;vocabPath&quot;: &quot;/path/to/vocab.txt&quot;,
+            &quot;labels&quot;: [&quot;PERSON&quot;, &quot;ORGANIZATION&quot;],
+            &quot;phEyeFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+        }
+    ]
+}
+</code></pre>
+<h4 id="onnx-gliner-model">ONNX GLiNER Model</h4>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;phEye&quot;: [
+        {
+            &quot;modelPath&quot;: &quot;/path/to/gliner_model.onnx&quot;,
+            &quot;vocabPath&quot;: &quot;/path/to/vocab.txt&quot;,
+            &quot;labels&quot;: [&quot;PERSON&quot;],
+            &quot;phEyeFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+        }
+    ]
+}
+</code></pre>
+<p>See <a href="../policies/#ph-eye-integration">Policies – ph-eye integration</a> for all configuration options.</p>
+<hr />
+<h2 id="dictionaries">dictionaries</h2>
+<p>The <code>dictionaries</code> filter lets you supply a list of terms that should be detected and replaced in text. Matching is case-insensitive and is constrained to whole-word boundaries so that a term like <code>John</code> does not match inside <code>Johnson</code>.</p>
+<p>Internally the filter uses a <strong>Bloom filter</strong> for fast O(1) rejection of tokens that are definitely not in the dictionary, followed by an exact-set lookup to eliminate any Bloom false-positives. This makes the filter efficient even for large term lists.</p>
+<p>Multiple independent dictionaries can be listed in an array. Each entry may have its own term list, strategy, and ignored terms.</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;dictionaries&quot;: [
+        {
+            &quot;enabled&quot;: true,
+            &quot;terms&quot;: [&quot;John&quot;, &quot;Jane Smith&quot;, &quot;classified&quot;],
+            &quot;dictionaryFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}],
+            &quot;ignored&quot;: []
+        }
+    ]
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td>bool</td>
+<td><code>true</code></td>
+<td>Whether this dictionary is active</td>
+</tr>
+<tr>
+<td><code>terms</code></td>
+<td>array of strings</td>
+<td><code>[]</code></td>
+<td>The list of terms to detect</td>
+</tr>
+<tr>
+<td><code>dictionaryFilterStrategies</code></td>
+<td>array</td>
+<td><code>[{"strategy": "REDACT"}]</code></td>
+<td>Replacement strategies (same as other filters)</td>
+</tr>
+<tr>
+<td><code>ignored</code></td>
+<td>array of strings</td>
+<td><code>[]</code></td>
+<td>Terms to skip even if found in the <code>terms</code> list</td>
+</tr>
+</tbody>
+</table>
+<h3 id="multiple-dictionaries">Multiple dictionaries</h3>
+<p>You can define several dictionaries in the same policy — for example, one for person names and another for sensitive keywords:</p>
+<pre><code class="language-python">&quot;identifiers&quot;: {
+    &quot;dictionaries&quot;: [
+        {
+            &quot;terms&quot;: [&quot;Alice&quot;, &quot;Bob&quot;, &quot;Charlie&quot;],
+            &quot;dictionaryFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;STATIC_REPLACE&quot;, &quot;staticReplacement&quot;: &quot;[PERSON]&quot;}]
+        },
+        {
+            &quot;terms&quot;: [&quot;secret&quot;, &quot;classified&quot;, &quot;top-secret&quot;],
+            &quot;dictionaryFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+        }
+    ]
+}
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../policies/" class="btn btn-neutral float-left" title="Policies"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../examples/" class="btn btn-neutral float-right" title="Examples">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/philterd/phileas-python" class="fa fa-code-fork" style="color: #fcfcfc"> philterd/phileas-python</a>
+        </span>
+    
+    
+      <span><a href="../policies/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../examples/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://philterd.github.io/phileas-python/cli/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>CLI - phileas-python</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "CLI";
+        var mkdocs_page_input_path = "cli.md";
+        var mkdocs_page_url = "/phileas-python/cli/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> phileas-python
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quick Start</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../policies/">Policies</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../filters/">Filters</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rest-server/">REST Server</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">CLI</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#required-arguments">Required arguments</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#optional-arguments">Optional arguments</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#policy-files">Policy files</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#json-policy-file-example">JSON policy file example</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#yaml-policy-file-example">YAML policy file example</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#redact-a-text-string">Redact a text string</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#redact-the-contents-of-a-file">Redact the contents of a file</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#write-redacted-output-to-a-file">Write redacted output to a file</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#use-a-yaml-policy-file">Use a YAML policy file</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#supply-a-custom-document-id">Supply a custom document ID</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#view-span-metadata">View span metadata</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipe-text-from-another-command">Pipe text from another command</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#evaluate-against-ground-truth-annotations">Evaluate against ground-truth annotations</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../api-reference/">API Reference</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">phileas-python</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">CLI</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/philterd/phileas-python/edit/master/docs/cli.md">Edit on philterd/phileas-python</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="cli">CLI</h1>
+<p>phileas includes a command-line interface (CLI) that lets you redact sensitive information from text directly from your terminal — no Python code required.</p>
+<h2 id="installation">Installation</h2>
+<p>The CLI is installed automatically with the phileas package:</p>
+<pre><code class="language-bash">pip install phileas-redact
+</code></pre>
+<p>After installation, the <code>phileas</code> command is available in your shell.</p>
+<h2 id="usage">Usage</h2>
+<pre><code>phileas -p POLICY_FILE -c CONTEXT (-t TEXT | -f FILE) [options]
+</code></pre>
+<h3 id="required-arguments">Required arguments</h3>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Short</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--policy FILE</code></td>
+<td><code>-p</code></td>
+<td>Path to a policy file (JSON or YAML).</td>
+</tr>
+<tr>
+<td><code>--context CONTEXT</code></td>
+<td><code>-c</code></td>
+<td>Context name used for referential integrity across documents.</td>
+</tr>
+<tr>
+<td><code>--text TEXT</code></td>
+<td><code>-t</code></td>
+<td>Text to redact, supplied directly as a string. Mutually exclusive with <code>--file</code>.</td>
+</tr>
+<tr>
+<td><code>--file FILE</code></td>
+<td><code>-f</code></td>
+<td>Path to a file whose contents should be redacted. Mutually exclusive with <code>--text</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="optional-arguments">Optional arguments</h3>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Short</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--document-id ID</code></td>
+<td><code>-d</code></td>
+<td>Document identifier. Auto-generated if omitted.</td>
+</tr>
+<tr>
+<td><code>--output FILE</code></td>
+<td><code>-o</code></td>
+<td>Write the redacted text to FILE instead of stdout.</td>
+</tr>
+<tr>
+<td><code>--spans</code></td>
+<td></td>
+<td>Print span metadata as JSON to stderr after filtering.</td>
+</tr>
+<tr>
+<td><code>--evaluate FILE</code></td>
+<td></td>
+<td>Path to a JSON file containing ground-truth spans. Prints evaluation metrics (precision, recall, F1) to stdout.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="policy-files">Policy files</h2>
+<p>The <code>--policy</code> argument accepts a path to a JSON or YAML policy file. The file must conform to the phileas <a href="../policies/">policy schema</a>.</p>
+<h3 id="json-policy-file-example">JSON policy file example</h3>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;my-policy&quot;,
+  &quot;identifiers&quot;: {
+    &quot;emailAddress&quot;: {
+      &quot;emailAddressFilterStrategies&quot;: [
+        {&quot;strategy&quot;: &quot;REDACT&quot;, &quot;redactionFormat&quot;: &quot;{{{REDACTED-%t}}}&quot;}
+      ]
+    },
+    &quot;ssn&quot;: {
+      &quot;ssnFilterStrategies&quot;: [
+        {&quot;strategy&quot;: &quot;REDACT&quot;, &quot;redactionFormat&quot;: &quot;{{{REDACTED-%t}}}&quot;}
+      ]
+    }
+  }
+}
+</code></pre>
+<h3 id="yaml-policy-file-example">YAML policy file example</h3>
+<pre><code class="language-yaml">name: my-policy
+identifiers:
+  emailAddress:
+    emailAddressFilterStrategies:
+      - strategy: REDACT
+        redactionFormat: &quot;{{{REDACTED-%t}}}&quot;
+  ssn:
+    ssnFilterStrategies:
+      - strategy: REDACT
+        redactionFormat: &quot;{{{REDACTED-%t}}}&quot;
+</code></pre>
+<h2 id="examples">Examples</h2>
+<h3 id="redact-a-text-string">Redact a text string</h3>
+<pre><code class="language-bash">phileas -p policy.yaml -c my-context -t &quot;Contact john@example.com or call 800-555-1234.&quot;
+</code></pre>
+<p>Output:</p>
+<pre><code>Contact {{{REDACTED-email-address}}} or call {{{REDACTED-phone-number}}}.
+</code></pre>
+<h3 id="redact-the-contents-of-a-file">Redact the contents of a file</h3>
+<pre><code class="language-bash">phileas -p policy.yaml -c my-context -f report.txt
+</code></pre>
+<p>The redacted text is written to stdout.</p>
+<h3 id="write-redacted-output-to-a-file">Write redacted output to a file</h3>
+<pre><code class="language-bash">phileas -p policy.yaml -c my-context -f report.txt -o report_redacted.txt
+</code></pre>
+<h3 id="use-a-yaml-policy-file">Use a YAML policy file</h3>
+<pre><code class="language-bash">phileas -p policy.yaml -c my-context -t &quot;Patient SSN is 123-45-6789.&quot;
+</code></pre>
+<h3 id="supply-a-custom-document-id">Supply a custom document ID</h3>
+<pre><code class="language-bash">phileas -p policy.yaml -c my-context -d doc-001 -t &quot;Email: admin@example.com&quot;
+</code></pre>
+<h3 id="view-span-metadata">View span metadata</h3>
+<p>Use <code>--spans</code> to print details about each detected piece of sensitive information as JSON on stderr:</p>
+<pre><code class="language-bash">phileas -p policy.yaml -c my-context -t &quot;Email john@example.com.&quot; --spans
+</code></pre>
+<p>Stdout:</p>
+<pre><code>Email {{{REDACTED-email-address}}}.
+</code></pre>
+<p>Stderr:</p>
+<pre><code class="language-json">[
+  {
+    &quot;characterStart&quot;: 6,
+    &quot;characterEnd&quot;: 22,
+    &quot;filterType&quot;: &quot;email-address&quot;,
+    &quot;text&quot;: &quot;john@example.com&quot;,
+    &quot;replacement&quot;: &quot;{{{REDACTED-email-address}}}&quot;,
+    &quot;confidence&quot;: 1.0,
+    &quot;ignored&quot;: false,
+    &quot;context&quot;: &quot;my-context&quot;
+  }
+]
+</code></pre>
+<h3 id="pipe-text-from-another-command">Pipe text from another command</h3>
+<p>Pass a file to phileas with the <code>--file</code> flag:</p>
+<pre><code class="language-bash">phileas -p policy.yaml -c pipeline -f report.txt
+</code></pre>
+<h3 id="evaluate-against-ground-truth-annotations">Evaluate against ground-truth annotations</h3>
+<p>Use <code>--evaluate</code> to compare the filter's output against a JSON file of ground-truth spans. Evaluation metrics are printed to stdout after the redacted text.</p>
+<pre><code class="language-bash">phileas -p policy.json -c my-context -t &quot;Email john@example.com.&quot; --evaluate ground_truth.json
+</code></pre>
+<p>The ground-truth JSON file must be either a JSON array of span objects or a JSON object with a <code>"spans"</code> key. Each span must have <code>"start"</code> and <code>"end"</code> character positions, and an optional <code>"type"</code> field:</p>
+<pre><code class="language-json">[
+  {&quot;start&quot;: 6, &quot;end&quot;: 22, &quot;type&quot;: &quot;email-address&quot;}
+]
+</code></pre>
+<p>Or using the object format:</p>
+<pre><code class="language-json">{
+  &quot;text&quot;: &quot;Email john@example.com.&quot;,
+  &quot;spans&quot;: [
+    {&quot;start&quot;: 6, &quot;end&quot;: 22, &quot;type&quot;: &quot;email-address&quot;}
+  ]
+}
+</code></pre>
+<p>Stdout (redacted text followed by metrics):</p>
+<pre><code>Email {{{REDACTED-email-address}}}.
+{
+  &quot;truePositives&quot;: 1,
+  &quot;falsePositives&quot;: 0,
+  &quot;falseNegatives&quot;: 0,
+  &quot;precision&quot;: 1.0,
+  &quot;recall&quot;: 1.0,
+  &quot;f1&quot;: 1.0
+}
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../rest-server/" class="btn btn-neutral float-left" title="REST Server"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../api-reference/" class="btn btn-neutral float-right" title="API Reference">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/philterd/phileas-python" class="fa fa-code-fork" style="color: #fcfcfc"> philterd/phileas-python</a>
+        </span>
+    
+    
+      <span><a href="../rest-server/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../api-reference/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

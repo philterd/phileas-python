@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://philterd.github.io/phileas-python/api-reference/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>API Reference - phileas-python</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "API Reference";
+        var mkdocs_page_input_path = "api-reference.md";
+        var mkdocs_page_url = "/phileas-python/api-reference/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> phileas-python
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quick Start</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../policies/">Policies</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../filters/">Filters</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../rest-server/">REST Server</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../cli/">CLI</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">API Reference</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#filterservice">FilterService</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#constructor">Constructor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#filterpolicy-context-document_id-text">filter(policy, context, document_id, text)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#policy">Policy</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#constructors">Constructors</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#policyfrom_dictdata">Policy.from_dict(data)</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#policyfrom_jsonjson_str">Policy.from_json(json_str)</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#policyfrom_yamlyaml_str">Policy.from_yaml(yaml_str)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#methods">Methods</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#to_dict">to_dict()</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#to_json">to_json()</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#to_yaml">to_yaml()</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#attributes">Attributes</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#filterresult">FilterResult</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#attributes_1">Attributes</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#span">Span</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#attributes_2">Attributes</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_1">Methods</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#overlapsother">overlaps(other)</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#spandrop_overlapping_spansspans-static">Span.drop_overlapping_spans(spans) (static)</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#filterstrategy">FilterStrategy</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#constants">Constants</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#constructor_1">Constructor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_2">Methods</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#get_replacementfilter_type-token">get_replacement(filter_type, token)</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#filterstrategyfrom_dictdata-class-method">FilterStrategy.from_dict(data) (class method)</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#to_dict_1">to_dict()</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#abstractcontextservice">AbstractContextService</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_3">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#inmemorycontextservice">InMemoryContextService</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_4">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#policy-key-reference">Policy key reference</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">phileas-python</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">API Reference</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/philterd/phileas-python/edit/master/docs/api-reference.md">Edit on philterd/phileas-python</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="api-reference">API Reference</h1>
+<h2 id="filterservice">FilterService</h2>
+<p><code>phileas.services.filter_service.FilterService</code></p>
+<p>The main entry point for filtering text. <code>FilterService</code> is stateless; a single instance can be reused across multiple calls.</p>
+<pre><code class="language-python">from phileas.services.filter_service import FilterService
+from phileas.policy.policy import Policy
+
+# Create with default in-memory context service
+service = FilterService()
+
+# Or provide a custom context service
+from phileas.services.context_service import InMemoryContextService
+ctx_svc = InMemoryContextService()
+service = FilterService(context_service=ctx_svc)
+</code></pre>
+<h3 id="constructor">Constructor</h3>
+<pre><code class="language-python">FilterService(context_service=None)
+</code></pre>
+<p><strong>Parameters</strong></p>
+<p>| Parameter | Type | Default | Description |
+|---|---|---|
+| <code>context_service</code> | <code>AbstractContextService</code> or <code>None</code> | <code>None</code> | Context service implementation for managing referential integrity. If <code>None</code>, an <code>InMemoryContextService</code> is created automatically. |</p>
+<h3 id="filterpolicy-context-document_id-text"><code>filter(policy, context, document_id, text)</code></h3>
+<p>Apply the policy to the given text and return a <code>FilterResult</code>.</p>
+<pre><code class="language-python">from phileas.services.filter_service import FilterService
+from phileas.policy.policy import Policy
+
+policy = Policy.from_dict({
+    &quot;name&quot;: &quot;example&quot;,
+    &quot;identifiers&quot;: {
+        &quot;emailAddress&quot;: {
+            &quot;emailAddressFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+        }
+    }
+})
+
+service = FilterService()
+result = service.filter(
+    policy=policy,
+    context=&quot;my-app&quot;,
+    document_id=&quot;doc-001&quot;,
+    text=&quot;Contact john@example.com.&quot;,
+)
+
+print(result.filtered_text)
+# Contact {{{REDACTED-email-address}}}.
+</code></pre>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>policy</code></td>
+<td><code>Policy</code></td>
+<td>The policy to apply</td>
+</tr>
+<tr>
+<td><code>context</code></td>
+<td><code>str</code></td>
+<td>An arbitrary string identifying the caller or application (e.g. user name, service name). Stored in each returned <code>Span</code>.</td>
+</tr>
+<tr>
+<td><code>document_id</code></td>
+<td><code>str</code></td>
+<td>A unique identifier for the document being filtered. Stored in the returned <code>FilterResult</code>.</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>str</code></td>
+<td>The text to filter</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns</strong> — <code>FilterResult</code></p>
+<hr />
+<h2 id="policy">Policy</h2>
+<p><code>phileas.policy.policy.Policy</code></p>
+<p>Represents a de-identification policy.</p>
+<pre><code class="language-python">from phileas.policy.policy import Policy
+</code></pre>
+<h3 id="constructors">Constructors</h3>
+<h4 id="policyfrom_dictdata"><code>Policy.from_dict(data)</code></h4>
+<p>Create a <code>Policy</code> from a Python dictionary.</p>
+<pre><code class="language-python">policy = Policy.from_dict({
+    &quot;name&quot;: &quot;my-policy&quot;,
+    &quot;identifiers&quot;: {
+        &quot;emailAddress&quot;: {
+            &quot;emailAddressFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+        }
+    }
+})
+</code></pre>
+<h4 id="policyfrom_jsonjson_str"><code>Policy.from_json(json_str)</code></h4>
+<p>Create a <code>Policy</code> from a JSON string.</p>
+<pre><code class="language-python">policy = Policy.from_json('{&quot;name&quot;: &quot;p&quot;, &quot;identifiers&quot;: {...}}')
+</code></pre>
+<h4 id="policyfrom_yamlyaml_str"><code>Policy.from_yaml(yaml_str)</code></h4>
+<p>Create a <code>Policy</code> from a YAML string.</p>
+<pre><code class="language-python">policy = Policy.from_yaml(&quot;name: p\nidentifiers:\n  ...&quot;)
+</code></pre>
+<h3 id="methods">Methods</h3>
+<h4 id="to_dict"><code>to_dict()</code></h4>
+<p>Serialise the policy to a Python dict.</p>
+<h4 id="to_json"><code>to_json()</code></h4>
+<p>Serialise the policy to a JSON string (pretty-printed).</p>
+<h4 id="to_yaml"><code>to_yaml()</code></h4>
+<p>Serialise the policy to a YAML string.</p>
+<h3 id="attributes">Attributes</h3>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>str</code></td>
+<td>Policy name</td>
+</tr>
+<tr>
+<td><code>identifiers</code></td>
+<td><code>Identifiers</code></td>
+<td>Filter configuration</td>
+</tr>
+<tr>
+<td><code>ignored</code></td>
+<td><code>list[str]</code></td>
+<td>Global ignore list</td>
+</tr>
+<tr>
+<td><code>ignored_patterns</code></td>
+<td><code>list[str]</code></td>
+<td>Global ignore patterns (regex)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="filterresult">FilterResult</h2>
+<p><code>phileas.models.filter_result.FilterResult</code></p>
+<p>Returned by <code>FilterService.filter()</code>. Contains the filtered text and metadata for every match.</p>
+<pre><code class="language-python">from phileas.models.filter_result import FilterResult
+</code></pre>
+<h3 id="attributes_1">Attributes</h3>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>filtered_text</code></td>
+<td><code>str</code></td>
+<td>The input text with sensitive values replaced</td>
+</tr>
+<tr>
+<td><code>spans</code></td>
+<td><code>list[Span]</code></td>
+<td>One <code>Span</code> per detected piece of sensitive information</td>
+</tr>
+<tr>
+<td><code>context</code></td>
+<td><code>str</code></td>
+<td>The <code>context</code> value passed to <code>filter()</code></td>
+</tr>
+<tr>
+<td><code>document_id</code></td>
+<td><code>str</code></td>
+<td>The <code>document_id</code> value passed to <code>filter()</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="span">Span</h2>
+<p><code>phileas.models.span.Span</code></p>
+<p>Describes a single detected piece of sensitive information.</p>
+<pre><code class="language-python">from phileas.models.span import Span
+</code></pre>
+<h3 id="attributes_2">Attributes</h3>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>character_start</code></td>
+<td><code>int</code></td>
+<td>Start index (inclusive) of the match in the original text</td>
+</tr>
+<tr>
+<td><code>character_end</code></td>
+<td><code>int</code></td>
+<td>End index (exclusive) of the match in the original text</td>
+</tr>
+<tr>
+<td><code>filter_type</code></td>
+<td><code>str</code></td>
+<td>The type of PII detected (e.g. <code>"email-address"</code>, <code>"ssn"</code>)</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>str</code></td>
+<td>The original matched text</td>
+</tr>
+<tr>
+<td><code>replacement</code></td>
+<td><code>str</code></td>
+<td>The replacement value applied to the text</td>
+</tr>
+<tr>
+<td><code>confidence</code></td>
+<td><code>float</code></td>
+<td>Confidence score in the range 0.0–1.0</td>
+</tr>
+<tr>
+<td><code>ignored</code></td>
+<td><code>bool</code></td>
+<td><code>True</code> if the span was matched but not replaced (because it appeared in an ignore list or matched an ignored pattern)</td>
+</tr>
+<tr>
+<td><code>context</code></td>
+<td><code>str</code></td>
+<td>The <code>context</code> value from the <code>filter()</code> call</td>
+</tr>
+</tbody>
+</table>
+<h3 id="methods_1">Methods</h3>
+<h4 id="overlapsother"><code>overlaps(other)</code></h4>
+<p>Return <code>True</code> if this span overlaps with <code>other</code>.</p>
+<h4 id="spandrop_overlapping_spansspans-static"><code>Span.drop_overlapping_spans(spans)</code> <em>(static)</em></h4>
+<p>Given a list of spans, remove overlapping ones, keeping the span with the highest confidence score. Returns a new list sorted by <code>character_start</code>.</p>
+<hr />
+<h2 id="filterstrategy">FilterStrategy</h2>
+<p><code>phileas.policy.filter_strategy.FilterStrategy</code></p>
+<p>Holds the replacement configuration for a single filter strategy entry.</p>
+<h3 id="constants">Constants</h3>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>REDACT</code></td>
+<td><code>"REDACT"</code></td>
+</tr>
+<tr>
+<td><code>MASK</code></td>
+<td><code>"MASK"</code></td>
+</tr>
+<tr>
+<td><code>STATIC_REPLACE</code></td>
+<td><code>"STATIC_REPLACE"</code></td>
+</tr>
+<tr>
+<td><code>HASH_SHA256_REPLACE</code></td>
+<td><code>"HASH_SHA256_REPLACE"</code></td>
+</tr>
+<tr>
+<td><code>LAST_4</code></td>
+<td><code>"LAST_4"</code></td>
+</tr>
+<tr>
+<td><code>SAME</code></td>
+<td><code>"SAME"</code></td>
+</tr>
+<tr>
+<td><code>TRUNCATE</code></td>
+<td><code>"TRUNCATE"</code></td>
+</tr>
+<tr>
+<td><code>ABBREVIATE</code></td>
+<td><code>"ABBREVIATE"</code></td>
+</tr>
+<tr>
+<td><code>RANDOM_REPLACE</code></td>
+<td><code>"RANDOM_REPLACE"</code></td>
+</tr>
+<tr>
+<td><code>SHIFT_DATE</code></td>
+<td><code>"SHIFT_DATE"</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="constructor_1">Constructor</h3>
+<pre><code class="language-python">FilterStrategy(
+    strategy=&quot;REDACT&quot;,
+    redaction_format=&quot;{{{REDACTED-%t}}}&quot;,
+    static_replacement=&quot;&quot;,
+    mask_character=&quot;*&quot;,
+    mask_length=&quot;SAME&quot;,
+    condition=&quot;&quot;,
+    shift_years=0,
+    shift_months=0,
+    shift_days=0,
+)
+</code></pre>
+<h3 id="methods_2">Methods</h3>
+<h4 id="get_replacementfilter_type-token"><code>get_replacement(filter_type, token)</code></h4>
+<p>Return the replacement string for <code>token</code> based on the configured strategy.</p>
+<h4 id="filterstrategyfrom_dictdata-class-method"><code>FilterStrategy.from_dict(data)</code> <em>(class method)</em></h4>
+<p>Create a <code>FilterStrategy</code> from a dict such as <code>{"strategy": "REDACT", "redactionFormat": "..."}</code>.</p>
+<h4 id="to_dict_1"><code>to_dict()</code></h4>
+<p>Serialise to a dict.</p>
+<hr />
+<h2 id="abstractcontextservice">AbstractContextService</h2>
+<p><code>phileas.services.context_service.AbstractContextService</code></p>
+<p>Abstract base class for context service implementations. Subclass this to provide a custom backend (e.g., Redis, database, etc.).</p>
+<pre><code class="language-python">from phileas.services.context_service import AbstractContextService
+from phileas.services.filter_service import FilterService
+from phileas.policy.policy import Policy
+
+class RedisContextService(AbstractContextService):
+    &quot;&quot;&quot;Example custom context service using Redis.&quot;&quot;&quot;
+
+    def __init__(self, redis_client):
+        self.redis = redis_client
+
+    def put(self, context: str, token: str, replacement: str) -&gt; None:
+        &quot;&quot;&quot;Store token -&gt; replacement mapping in Redis.&quot;&quot;&quot;
+        key = f&quot;phileas:{context}:{token}&quot;
+        self.redis.set(key, replacement)
+
+    def get(self, context: str, token: str) -&gt; str | None:
+        &quot;&quot;&quot;Retrieve replacement from Redis, or None if not found.&quot;&quot;&quot;
+        key = f&quot;phileas:{context}:{token}&quot;
+        value = self.redis.get(key)
+        return value.decode('utf-8') if value else None
+
+    def contains(self, context: str, token: str) -&gt; bool:
+        &quot;&quot;&quot;Check if token exists in Redis.&quot;&quot;&quot;
+        key = f&quot;phileas:{context}:{token}&quot;
+        return self.redis.exists(key) &gt; 0
+
+# Usage example (requires redis package)
+# import redis
+# redis_client = redis.Redis(host='localhost', port=6379, db=0)
+# ctx_svc = RedisContextService(redis_client)
+# service = FilterService(context_service=ctx_svc)
+</code></pre>
+<h3 id="methods_3">Methods</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Signature</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>put</code></td>
+<td><code>(context, token, replacement) -&gt; None</code></td>
+<td>Store a replacement value for a token under the given context</td>
+</tr>
+<tr>
+<td><code>get</code></td>
+<td><code>(context, token) -&gt; str \| None</code></td>
+<td>Return the stored replacement, or <code>None</code> if not found</td>
+</tr>
+<tr>
+<td><code>contains</code></td>
+<td><code>(context, token) -&gt; bool</code></td>
+<td>Return <code>True</code> if a replacement exists for the token in the given context</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="inmemorycontextservice">InMemoryContextService</h2>
+<p><code>phileas.services.context_service.InMemoryContextService</code></p>
+<p>Default implementation of <code>AbstractContextService</code> backed by a <code>dict[str, dict[str, str]]</code>. Suitable for single-process, in-memory use.</p>
+<pre><code class="language-python">from phileas.services.context_service import InMemoryContextService
+from phileas.services.filter_service import FilterService
+from phileas.policy.policy import Policy
+
+# Create and pre-populate the context service
+ctx_svc = InMemoryContextService()
+ctx_svc.put(&quot;patient-123&quot;, &quot;john@example.com&quot;, &quot;EMAIL-001&quot;)
+ctx_svc.put(&quot;patient-123&quot;, &quot;555-867-5309&quot;, &quot;PHONE-001&quot;)
+
+# Use it with FilterService
+policy = Policy.from_dict({
+    &quot;name&quot;: &quot;medical&quot;,
+    &quot;identifiers&quot;: {
+        &quot;emailAddress&quot;: {
+            &quot;emailAddressFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+        },
+        &quot;phoneNumber&quot;: {
+            &quot;phoneNumberFilterStrategies&quot;: [{&quot;strategy&quot;: &quot;REDACT&quot;}]
+        }
+    }
+})
+
+service = FilterService(context_service=ctx_svc)
+
+# The pre-populated replacements will be used
+result1 = service.filter(
+    policy, &quot;patient-123&quot;, &quot;doc-1&quot;,
+    &quot;Contact john@example.com or 555-867-5309.&quot;
+)
+print(result1.filtered_text)
+# Contact EMAIL-001 or PHONE-001.
+
+# The same replacements persist across documents in the same context
+result2 = service.filter(
+    policy, &quot;patient-123&quot;, &quot;doc-2&quot;,
+    &quot;Patient called 555-867-5309 from john@example.com.&quot;
+)
+print(result2.filtered_text)
+# Patient called PHONE-001 from EMAIL-001.
+
+# Check what's stored
+print(ctx_svc.get(&quot;patient-123&quot;, &quot;john@example.com&quot;))      # EMAIL-001
+print(ctx_svc.contains(&quot;patient-123&quot;, &quot;555-867-5309&quot;))     # True
+print(ctx_svc.get(&quot;patient-123&quot;, &quot;unknown@example.com&quot;))   # None
+</code></pre>
+<h3 id="methods_4">Methods</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Signature</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>put</code></td>
+<td><code>(context, token, replacement) -&gt; None</code></td>
+<td>Store a replacement for a token</td>
+</tr>
+<tr>
+<td><code>get</code></td>
+<td><code>(context, token) -&gt; str \| None</code></td>
+<td>Retrieve a replacement, or <code>None</code> if not found</td>
+</tr>
+<tr>
+<td><code>contains</code></td>
+<td><code>(context, token) -&gt; bool</code></td>
+<td>Check if a replacement exists</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="policy-key-reference">Policy key reference</h2>
+<p>The table below maps every JSON/YAML policy key to the <code>Identifiers</code> attribute it populates and the strategies key used in its filter config.</p>
+<table>
+<thead>
+<tr>
+<th>Policy key</th>
+<th><code>Identifiers</code> attribute</th>
+<th>Strategies key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>age</code></td>
+<td><code>age</code></td>
+<td><code>ageFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>emailAddress</code></td>
+<td><code>email_address</code></td>
+<td><code>emailAddressFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>creditCard</code></td>
+<td><code>credit_card</code></td>
+<td><code>creditCardFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>ssn</code></td>
+<td><code>ssn</code></td>
+<td><code>ssnFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>phoneNumber</code></td>
+<td><code>phone_number</code></td>
+<td><code>phoneNumberFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>ipAddress</code></td>
+<td><code>ip_address</code></td>
+<td><code>ipAddressFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td><code>url</code></td>
+<td><code>urlFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>zipCode</code></td>
+<td><code>zip_code</code></td>
+<td><code>zipCodeFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>vin</code></td>
+<td><code>vin</code></td>
+<td><code>vinFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>bitcoinAddress</code></td>
+<td><code>bitcoin_address</code></td>
+<td><code>bitcoinAddressFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>bankRoutingNumber</code></td>
+<td><code>bank_routing_number</code></td>
+<td><code>bankRoutingNumberFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>date</code></td>
+<td><code>date</code></td>
+<td><code>dateFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>macAddress</code></td>
+<td><code>mac_address</code></td>
+<td><code>macAddressFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>currency</code></td>
+<td><code>currency</code></td>
+<td><code>currencyFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>streetAddress</code></td>
+<td><code>street_address</code></td>
+<td><code>streetAddressFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>trackingNumber</code></td>
+<td><code>tracking_number</code></td>
+<td><code>trackingNumberFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>driversLicense</code></td>
+<td><code>drivers_license</code></td>
+<td><code>driversLicenseFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>ibanCode</code></td>
+<td><code>iban_code</code></td>
+<td><code>ibanCodeFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>passportNumber</code></td>
+<td><code>passport_number</code></td>
+<td><code>passportNumberFilterStrategies</code></td>
+</tr>
+<tr>
+<td><code>phEye</code></td>
+<td><code>ph_eye</code> (list)</td>
+<td><code>phEyeFilterStrategies</code></td>
+</tr>
+</tbody>
+</table>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../cli/" class="btn btn-neutral float-left" title="CLI"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/philterd/phileas-python" class="fa fa-code-fork" style="color: #fcfcfc"> philterd/phileas-python</a>
+        </span>
+    
+    
+      <span><a href="../cli/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
