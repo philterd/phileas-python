@@ -32,16 +32,6 @@ cd phileas-python
 pip install -e ".[dev]"
 ```
 
-## Install with the REST server
-
-To also install the optional Flask-based REST server:
-
-```bash
-pip install "phileas-redact[server]"
-```
-
-See [REST Server](rest-server.md) for usage details.
-
 ## Verify the installation
 
 ```python

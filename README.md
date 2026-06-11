@@ -31,7 +31,6 @@ policy produced by the PhiSQL compiler runs in Phileas unchanged.
 
 Note that this port of [Phileas](https://github.com/philterd/phileas) is not 1:1 with the Java version. There are some differences:
 
-* This project includes a server that exposes redaction HTTP endpoints. For the Java version, the API server is [Philter](https://github.com/philterd/philter).
 * This project supports local inference for named-entities (via [GLiNER](https://github.com/urchade/GLiNER)) in addition to remote [ph-eye](https://github.com/philterd/ph-eye) services.
 * This project includes support for policies in YAML as well as JSON.
 * This project does not include all redaction strategies present in the Java version.
