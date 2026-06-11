@@ -2,7 +2,9 @@
 
 A Python port of [Phileas (Java)](https://github.com/philterd/phileas) — a library to deidentify and redact PII, PHI, and other sensitive information from text.
 
-* Check out the [documentation](https://philterd.github.io/phileas-python/) or details and code examples.
+### 📖 [Read the documentation →](https://philterd.github.io/phileas-python/)
+
+* Full guides, code examples, and the API reference live on the [documentation website](https://philterd.github.io/phileas-python/).
 * Built by [Philterd](https://www.philterd.ai).
 * Commercial support and consulting is available - [contact us](https://www.philterd.ai).
 
