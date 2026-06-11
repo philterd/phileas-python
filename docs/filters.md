@@ -28,6 +28,9 @@ The table below lists every supported filter, the policy key used to enable it, 
 | `phEye` | `person`, `location`, etc. | Any NER entity returned by [ph-eye](https://github.com/philterd/ph-eye) |
 | `dictionaries` | `dictionary` | Any term from a user-supplied list (e.g. `John`, `classified`) |
 
+!!! note "Catalog-derived field names"
+    Policy field names come from the PhiSQL catalog, so a few are non-obvious. ZIP codes use the **singular** `zipCodeFilterStrategy`, and Bitcoin addresses use `bitcoinFilterStrategies`. Policies emitted by the PhiSQL compiler already use the correct names.
+
 ---
 
 ## age
@@ -136,7 +139,7 @@ Detects 5-digit ZIP codes (`90210`) and ZIP+4 codes (`90210-1234`).
 ```python
 "identifiers": {
     "zipCode": {
-        "zipCodeFilterStrategies": [{"strategy": "REDACT"}]
+        "zipCodeFilterStrategy": [{"strategy": "REDACT"}]
     }
 }
 ```
@@ -149,8 +152,8 @@ The `zipCode` filter supports a `population` condition that limits redaction to 
 # Redact only ZIP codes with a population below 20,000
 "identifiers": {
     "zipCode": {
-        "zipCodeFilterStrategies": [
-            {"strategy": "REDACT", "condition": "population < 20000"}
+        "zipCodeFilterStrategy": [
+            {"strategy": "REDACT", "conditions": "population < 20000"}
         ]
     }
 }
@@ -158,7 +161,7 @@ The `zipCode` filter supports a `population` condition that limits redaction to 
 
 Supported operators: `<`, `>`, `<=`, `>=`, `==`, `!=`. The condition also works with ZIP+4 codes — the 5-digit prefix is used for the lookup (`90210-1234` → `90210`).
 
-See [Conditions](policies.md#conditions) for details on combining conditions with `and` and using other condition types.
+See [Conditions](policies.md#conditions) for details on combining conditions with `and`, `or`, and parentheses, and using other condition types.
 
 ---
 
@@ -183,7 +186,7 @@ Detects Bitcoin addresses (P2PKH addresses starting with `1`, P2SH addresses sta
 ```python
 "identifiers": {
     "bitcoinAddress": {
-        "bitcoinAddressFilterStrategies": [{"strategy": "REDACT"}]
+        "bitcoinFilterStrategies": [{"strategy": "REDACT"}]
     }
 }
 ```
@@ -216,7 +219,7 @@ Detects dates in several common formats:
 ```python
 "identifiers": {
     "date": {
-        "dateFilterStrategies": [{"strategy": "SHIFT_DATE", "shiftYears": 1}]
+        "dateFilterStrategies": [{"strategy": "SHIFT", "shiftYears": 1}]
     }
 }
 ```

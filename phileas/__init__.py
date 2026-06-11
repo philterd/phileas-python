@@ -12,17 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .models import Span, FilterResult
-from .policy import FilterStrategy, Identifiers, Policy
-from .services import FilterService, AbstractContextService, InMemoryContextService
+from .catalog import PhileasCatalog, get_catalog
+from .models import FilterResult, Span
+from .policy import Policy, Strategy
+from .services import (
+    AbstractContextService,
+    EvaluationService,
+    FilterService,
+    InMemoryContextService,
+)
 
 __all__ = [
     "Span",
     "FilterResult",
-    "FilterStrategy",
-    "Identifiers",
     "Policy",
+    "Strategy",
     "FilterService",
+    "EvaluationService",
     "AbstractContextService",
     "InMemoryContextService",
+    "PhileasCatalog",
+    "get_catalog",
 ]

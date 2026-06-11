@@ -49,14 +49,12 @@ def _luhn_check(number: str) -> bool:
 
 
 class CreditCardFilter(BaseFilter):
-    def __init__(self, filter_config):
-        super().__init__(FilterType.CREDIT_CARD, filter_config)
+    def __init__(self, config=None):
+        super().__init__(FilterType.CREDIT_CARD, config)
 
-    def filter(self, text: str, context: str = "default") -> List[Span]:
-        luhn_check_enabled = getattr(self.filter_config, "luhn_check", False)
-        if not luhn_check_enabled:
-            return self._find_spans(_PATTERNS, text, context)
-
-        # When Luhn check is enabled, only include spans that pass validation
-        spans = self._find_spans(_PATTERNS, text, context)
+    def detect(self, text: str, context: str = "default") -> List[Span]:
+        spans = self._detect_patterns(_PATTERNS, text, context)
+        # ``luhnCheck`` may be set as a per-filter option on the policy node.
+        if not self.config.get("luhnCheck", False):
+            return spans
         return [s for s in spans if _luhn_check("".join(c for c in s.text if c.isdigit()))]

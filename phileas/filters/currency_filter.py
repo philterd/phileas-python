@@ -30,8 +30,8 @@ _PATTERNS = [
 
 
 class CurrencyFilter(BaseFilter):
-    def __init__(self, filter_config):
-        super().__init__(FilterType.CURRENCY, filter_config)
+    def __init__(self, config=None):
+        super().__init__(FilterType.CURRENCY, config)
 
-    def filter(self, text: str, context: str = "default") -> List[Span]:
-        return self._find_spans(_PATTERNS, text, context)
+    def detect(self, text: str, context: str = "default") -> List[Span]:
+        return self._detect_patterns(_PATTERNS, text, context)

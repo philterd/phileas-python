@@ -27,6 +27,9 @@ ignoredPatterns:
 | `ignored` | array of strings | Terms that are never replaced, regardless of the filter that matched them |
 | `ignoredPatterns` | array of regex strings | Regex patterns whose full matches are never replaced |
 
+!!! note "Catalog-derived field names"
+    Because policy field names come from the PhiSQL catalog, a few are non-obvious. ZIP codes use the **singular** `zipCodeFilterStrategy`, and Bitcoin addresses use `bitcoinFilterStrategies`. Policies emitted by the PhiSQL compiler already use the correct names.
+
 ## Loading a policy
 
 ```python
@@ -69,18 +72,25 @@ Each enabled filter requires at least one strategy entry in its `*FilterStrategi
 
 ### Available strategies
 
-| Strategy | Description | Example output |
-|---|---|---|
-| `REDACT` | Replace with a redaction tag | `{{{REDACTED-email-address}}}` |
-| `MASK` | Replace every character with `maskCharacter` (default `*`) | `***@*******.***` |
-| `STATIC_REPLACE` | Replace with a fixed string | `[REMOVED]` |
-| `HASH_SHA256_REPLACE` | Replace with the SHA-256 hex digest of the matched value | `a665a4592...` |
-| `LAST_4` | Mask all but the last 4 characters | `****6789` |
-| `SAME` | Leave the value unchanged (identify-only mode) | `123-45-6789` |
-| `TRUNCATE` | Keep only the first 4 characters | `john***` |
-| `ABBREVIATE` | Replace with the initials of each word | `J. S.` |
-| `RANDOM_REPLACE` | Replace with a randomly generated value of the same type | `jane@domain.org` |
-| `SHIFT_DATE` | Shift a detected date by a configurable number of years/months/days | `01/20/1995` |
+The set of valid strategies comes from the PhiSQL catalog. The `strategy` value in a policy is the catalog's `phileas_enum`; the matching PhiSQL keyword is shown for reference.
+
+| Strategy | PhiSQL keyword | Description | Example output |
+|---|---|---|---|
+| `REDACT` | `REDACT` | Replace with a redaction tag | `{{{REDACTED-email-address}}}` |
+| `MASK` | `MASK` | Replace every character with `maskCharacter` (default `*`) | `***@*******.***` |
+| `RANDOM_REPLACE` | `RANDOM_REPLACE` | Replace with a randomly generated value of the same type | `jane@domain.org` |
+| `STATIC_REPLACE` | `STATIC_REPLACE` | Replace with a fixed string | `[REMOVED]` |
+| `CRYPTO_REPLACE` | `ENCRYPT` | Encrypt the value (requires an externally-configured key); emits a stable marker in this engine | `{{{ENCRYPTED-ssn}}}` |
+| `FPE_ENCRYPT_REPLACE` | `FPE_ENCRYPT` | Format-preserving encryption (requires an externally-configured key); emits a stable marker in this engine | `{{{ENCRYPTED-ssn}}}` |
+| `HASH_SHA256_REPLACE` | `HASH_SHA256` | Replace with the SHA-256 hex digest of the matched value | `a665a4592...` |
+| `LAST_4` | `LAST_4` | Mask all but the last 4 characters | `****6789` |
+| `TRUNCATE` | `TRUNCATE` | Keep only the first 4 characters | `john***` |
+| `TRUNCATE_TO_YEAR` | `TRUNCATE_TO_YEAR` | Reduce a detected date to just its year | `1990` |
+| `SHIFT` | `SHIFT` | Shift a detected date by a configurable number of years/months/days | `01/20/1995` |
+| `RELATIVE` | `RELATIVE` | Pass the value through unchanged | `123-45-6789` |
+| `ABBREVIATE` | `ABBREVIATE` | Replace with the initials of each word | `J. S.` |
+
+`CRYPTO_REPLACE` and `FPE_ENCRYPT_REPLACE` require an externally-configured key and emit a stable marker in this engine. `RELATIVE` passes the value through unchanged.
 
 ### Strategy options
 
@@ -89,8 +99,7 @@ strategy: REDACT
 redactionFormat: "{{{REDACTED-%t}}}"
 staticReplacement: "[REMOVED]"
 maskCharacter: "*"
-maskLength: SAME
-condition: ""
+conditions: ""
 shiftYears: 0
 shiftMonths: 0
 shiftDays: 0
@@ -99,8 +108,8 @@ shiftDays: 0
 - **`redactionFormat`** — used by `REDACT`. The placeholder `%t` is replaced with the filter type name (e.g. `email-address`).
 - **`staticReplacement`** — used by `STATIC_REPLACE`.
 - **`maskCharacter`** — character used by `MASK` (default: `*`).
-- **`shiftYears` / `shiftMonths` / `shiftDays`** — offsets used by `SHIFT_DATE`.
-- **`condition`** — optional expression that must evaluate to `true` for this strategy to be applied. See [Conditions](#conditions) below.
+- **`shiftYears` / `shiftMonths` / `shiftDays`** — offsets used by `SHIFT`.
+- **`conditions`** — optional expression that must evaluate to `true` for this strategy to be applied. See [Conditions](#conditions) below.
 
 ### Examples
 
@@ -115,17 +124,21 @@ shiftDays: 0
 {"strategy": "STATIC_REPLACE", "staticReplacement": "[REMOVED]"}
 
 # Shift a date forward by 2 years and 3 days
-{"strategy": "SHIFT_DATE", "shiftYears": 2, "shiftDays": 3}
+{"strategy": "SHIFT", "shiftYears": 2, "shiftDays": 3}
 ```
 
 ## Conditions
 
-A `condition` expression is an optional string attached to a strategy that gates its application. The strategy is only applied when the condition evaluates to `true`. When multiple strategies are listed, the first one whose condition is satisfied is used.
+A `conditions` expression is an optional string attached to a strategy that gates its application. The strategy is only applied when the condition evaluates to `true`. When multiple strategies are listed, the first one whose condition is satisfied is used.
 
-Multiple sub-expressions may be combined with `and`:
+Sub-expressions may be combined with `and` and `or`, and grouped with parentheses. Conditions can test `confidence`, `token`, `context`, and `population`:
 
 ```python
-{"strategy": "REDACT", "condition": 'token startswith "4" and confidence >= 0.9'}
+{"strategy": "REDACT", "conditions": 'token startswith "4" and confidence >= 0.9'}
+```
+
+```python
+{"strategy": "REDACT", "conditions": '(token startswith "4" or token startswith "5") and confidence >= 0.9'}
 ```
 
 ### Supported condition expressions
@@ -152,29 +165,30 @@ Supported operators: `<`, `>`, `<=`, `>=`, `==`, `!=`.
 # Only redact ZIP codes with a population below 20,000
 {
     "zipCode": {
-        "zipCodeFilterStrategies": [
-            {"strategy": "REDACT", "condition": "population < 20000"}
+        "zipCodeFilterStrategy": [
+            {"strategy": "REDACT", "conditions": "population < 20000"}
         ]
     }
 }
 ```
 
 ```python
-# Redact small ZIP codes; leave large ones unchanged (identify-only)
-s_small = {"strategy": "REDACT",  "condition": "population < 20000"}
-s_large = {"strategy": "SAME",    "condition": "population >= 20000"}
+# Redact small ZIP codes; statically replace large ones
+s_small = {"strategy": "REDACT",         "conditions": "population < 20000"}
+s_large = {"strategy": "STATIC_REPLACE", "staticReplacement": "[LARGE-ZIP]",
+           "conditions": "population >= 20000"}
 
 {
     "zipCode": {
-        "zipCodeFilterStrategies": [s_small, s_large]
+        "zipCodeFilterStrategy": [s_small, s_large]
     }
 }
 ```
 
-The condition can also be combined with other expressions using `and`:
+The condition can also be combined with other expressions using `and` or `or`:
 
 ```python
-{"strategy": "REDACT", "condition": 'population < 20000 and context == "medical"'}
+{"strategy": "REDACT", "conditions": 'population < 20000 and context == "medical"'}
 ```
 
 ## Ignored terms

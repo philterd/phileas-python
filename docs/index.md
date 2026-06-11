@@ -8,6 +8,8 @@ It is a Python port of [Phileas](https://github.com/philterd/phileas), an Apache
 
 phileas-python scans text for sensitive information — email addresses, phone numbers, Social Security Numbers, credit card numbers, dates, and [many more types](#supported-pii-phi-types) — and replaces each match with a configurable replacement value. You control what to detect and how to replace it through **policies**.
 
+phileas-python depends on the [`phisql`](installation.md) package, which provides the **catalog** of policy actions — the single source of truth for the available redaction strategies and entity-type field mappings used by policies. See [Installation](installation.md) for how to install it.
+
 ```python
 from phileas.policy.policy import Policy
 from phileas.services.filter_service import FilterService

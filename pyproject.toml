@@ -50,6 +50,13 @@ classifiers = [
 ]
 dependencies = [
     "PyYAML>=6.0",
+    # The PhiSQL reference implementation is the source of truth for policy
+    # actions (redaction strategies) and entity-type field mappings.
+    # TODO: `phisql` is not yet on PyPI. Until it is published, install it from
+    # the local reference checkout in editable mode:
+    #     pip install -e /work/philterd/code/phisql/reference/python
+    # Once published, this pinned requirement resolves from PyPI unchanged.
+    "phisql==1.0.0",
 ]
 
 [project.urls]

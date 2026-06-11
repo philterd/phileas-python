@@ -17,7 +17,7 @@ from __future__ import annotations
 import hashlib
 import math
 import re
-from typing import List
+from typing import List, Optional
 
 from phileas.models.span import Span
 from .base import BaseFilter, FilterType
@@ -62,64 +62,43 @@ class BloomFilter:
 
 
 class DictionaryFilter(BaseFilter):
-    """Filter that identifies terms from a user-supplied dictionary.
+    """Detects terms from a user-supplied dictionary.
 
-    A :class:`BloomFilter` is used for fast membership testing during
-    scanning.  An exact ``set`` provides final verification to eliminate
-    any bloom false-positives.
+    Config is a dictionary node from ``identifiers.dictionaries``:
+    ``classification`` (the filter type) and ``terms`` (the term list). A
+    :class:`BloomFilter` provides fast rejection during scanning; an exact set
+    verifies matches.
     """
 
-    def __init__(self, filter_config):
-        super().__init__(FilterType.DICTIONARY, filter_config)
-        terms: List[str] = list(getattr(filter_config, "terms", []))
-        self._terms_set: set = {t.lower() for t in terms}
+    def __init__(self, config=None):
+        config = config or {}
+        filter_type = config.get("classification") or FilterType.DICTIONARY
+        super().__init__(filter_type, config)
+
+        terms: List[str] = list(config.get("terms", []) or [])
+        self._terms_set = {t.lower() for t in terms}
         self._bloom = BloomFilter(capacity=max(len(terms), 1))
         for term in terms:
             self._bloom.add(term.lower())
-        # Build a regex that matches any term at a word boundary.
-        # Sort longest-first so that longer phrases are preferred over prefixes.
         if terms:
             sorted_terms = sorted(terms, key=len, reverse=True)
-            self._pattern: re.Pattern | None = re.compile(
+            self._pattern: Optional[re.Pattern] = re.compile(
                 r"(?<!\w)(" + "|".join(re.escape(t) for t in sorted_terms) + r")(?!\w)",
                 re.IGNORECASE,
             )
         else:
             self._pattern = None
 
-    def filter(self, text: str, context: str = "default") -> List[Span]:
+    def detect(self, text: str, context: str = "default") -> List[Span]:
         if self._pattern is None:
             return []
-
-        strategies = self._get_strategies()
-        ignored = set(self._get_ignored())
         spans: List[Span] = []
-
         for match in self._pattern.finditer(text):
             token = match.group(0)
-            if token in ignored:
-                continue
-            # Bloom filter: fast rejection of tokens not in the dictionary.
             if token.lower() not in self._bloom:
                 continue
-            # Exact set: verify (handles any bloom false-positives).
             if token.lower() not in self._terms_set:
                 continue
-
-            matched_strategy = None
-            for s in strategies:
-                if s.evaluate_condition(token, context, 1.0):
-                    matched_strategy = s
-                    break
-
-            if strategies and matched_strategy is None:
-                continue
-
-            replacement = (
-                matched_strategy.get_replacement(self.filter_type, token)
-                if matched_strategy
-                else token
-            )
             spans.append(
                 Span(
                     character_start=match.start(),
@@ -128,9 +107,8 @@ class DictionaryFilter(BaseFilter):
                     context=context,
                     confidence=1.0,
                     text=token,
-                    replacement=replacement,
+                    replacement="",
                     ignored=False,
                 )
             )
-
         return spans

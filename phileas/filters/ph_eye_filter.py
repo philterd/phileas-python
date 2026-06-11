@@ -17,32 +17,50 @@ from __future__ import annotations
 import json
 import urllib.error
 import urllib.request
-from typing import List
+from typing import Any, List
 
 from phileas.models.span import Span
 from .base import BaseFilter, FilterType
 
 
 class PhEyeFilter(BaseFilter):
-    def __init__(self, filter_config):
-        super().__init__(FilterType.PH_EYE, filter_config)
+    """Detects named entities via a ph-eye service or a local GLiNER model.
+
+    Config is a ph-eye node from ``identifiers.pheyes``. Connection settings are
+    read from the nested ``phEyeConfiguration`` object (``endpoint``,
+    ``labels``); additional options (``bearerToken``, ``timeout``,
+    ``thresholds``, ``modelPath``, ``vocabPath``) are read from the node for
+    compatibility with hand-written policies.
+    """
+
+    def __init__(self, config=None):
+        super().__init__(FilterType.PH_EYE, config)
         self._model = None
 
-    def filter(self, text: str, context: str = "default") -> List[Span]:
-        model_path = getattr(self.filter_config, "model_path", "")
-        vocab_path = getattr(self.filter_config, "vocab_path", "")
-        labels = getattr(self.filter_config, "labels", ["PERSON"])
+    def _opt(self, key: str, default: Any) -> Any:
+        configuration = self.config.get("phEyeConfiguration") or {}
+        if key in configuration:
+            return configuration[key]
+        return self.config.get(key, default)
+
+    def detect(self, text: str, context: str = "default") -> List[Span]:
+        model_path = self._opt("modelPath", "")
+        vocab_path = self._opt("vocabPath", "")
+        labels = self._opt("labels", ["PERSON"])
 
         if model_path and vocab_path:
-            return self._local_filter(text, context, model_path, vocab_path, labels)
+            items = self._predict_local(text, model_path, vocab_path, labels)
+        else:
+            endpoint = self._opt("endpoint", "")
+            if not endpoint:
+                return []
+            items = self._predict_remote(text, context, endpoint, labels, model_path, vocab_path)
 
-        endpoint = getattr(self.filter_config, "endpoint", "")
-        if not endpoint:
-            return []
+        return self._to_spans(items, context, labels)
 
-        thresholds = getattr(self.filter_config, "thresholds", {})
-        bearer_token = getattr(self.filter_config, "bearer_token", "")
-        timeout = getattr(self.filter_config, "timeout", 30) or 30
+    def _predict_remote(self, text, context, endpoint, labels, model_path, vocab_path) -> list:
+        bearer_token = self._opt("bearerToken", "")
+        timeout = self._opt("timeout", 30) or 30
 
         payload = json.dumps({
             "text": text,
@@ -57,10 +75,7 @@ class PhEyeFilter(BaseFilter):
             url=endpoint.rstrip("/") + "/find",
             data=payload,
             method="POST",
-            headers={
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            },
+            headers={"Content-Type": "application/json", "Accept": "application/json"},
         )
         if bearer_token:
             req.add_header("Authorization", f"Bearer {bearer_token}")
@@ -71,74 +86,25 @@ class PhEyeFilter(BaseFilter):
         except urllib.error.URLError as exc:
             raise IOError(f"Unable to process document. Request to ph-eye failed: {exc}") from exc
 
-        ph_eye_spans = json.loads(response_body)
+        return json.loads(response_body)
 
-        strategies = self._get_strategies()
-        strategy = strategies[0] if strategies else None
-        ignored_terms = set(self._get_ignored())
-
-        spans: List[Span] = []
-        for item in ph_eye_spans:
-            label = item.get("label", "")
-            score = float(item.get("score", 0.0))
-            span_text = item.get("text", "")
-            start = int(item.get("start", 0))
-            end = int(item.get("end", 0))
-
-            if labels and label not in labels:
-                continue
-
-            threshold = thresholds.get(label.upper(), 0.0)
-            if score < threshold:
-                continue
-
-            if span_text in ignored_terms:
-                continue
-
-            if label.upper() == "PERSON":
-                filter_type = "person"
-            else:
-                filter_type = label.lower() if label else FilterType.PH_EYE
-
-            replacement = (
-                strategy.get_replacement(filter_type, span_text) if strategy else span_text
-            )
-
-            spans.append(Span(
-                character_start=start,
-                character_end=end,
-                filter_type=filter_type,
-                context=context,
-                confidence=score,
-                text=span_text,
-                replacement=replacement,
-                ignored=False,
-            ))
-
-        return spans
-
-    def _local_filter(self, text: str, context: str, model_path: str, vocab_path: str, labels: List[str]) -> List[Span]:
+    def _predict_local(self, text, model_path, vocab_path, labels) -> list:
         if not self._model:
-            onnx = False
-            if model_path.endswith(".onnx"):
-                onnx = True
-
+            onnx = model_path.endswith(".onnx")
             try:
                 from gliner import GLiNER
             except ImportError:
-                raise ImportError("The 'gliner' package is required for local inference. Install it with 'pip install gliner'.")
-
+                raise ImportError(
+                    "The 'gliner' package is required for local inference. "
+                    "Install it with 'pip install gliner'."
+                )
             self._model = GLiNER.from_pretrained(model_path, onnx=onnx, vocab_path=vocab_path)
+        return self._model.predict_entities(text, labels)
 
-        ph_eye_spans = self._model.predict_entities(text, labels)
-
-        strategies = self._get_strategies()
-        strategy = strategies[0] if strategies else None
-        ignored_terms = set(self._get_ignored())
-        thresholds = getattr(self.filter_config, "thresholds", {})
-
+    def _to_spans(self, items: list, context: str, labels) -> List[Span]:
+        thresholds = self._opt("thresholds", {}) or {}
         spans: List[Span] = []
-        for item in ph_eye_spans:
+        for item in items:
             label = item.get("label", "")
             score = float(item.get("score", 0.0))
             span_text = item.get("text", "")
@@ -147,32 +113,20 @@ class PhEyeFilter(BaseFilter):
 
             if labels and label not in labels:
                 continue
-
-            threshold = thresholds.get(label.upper(), 0.0)
-            if score < threshold:
+            if score < thresholds.get(label.upper(), 0.0):
                 continue
 
-            if span_text in ignored_terms:
-                continue
-
-            if label.upper() == "PERSON":
-                filter_type = "person"
-            else:
-                filter_type = label.lower() if label else FilterType.PH_EYE
-
-            replacement = (
-                strategy.get_replacement(filter_type, span_text) if strategy else span_text
+            filter_type = "person" if label.upper() == "PERSON" else (label.lower() or FilterType.PH_EYE)
+            spans.append(
+                Span(
+                    character_start=start,
+                    character_end=end,
+                    filter_type=filter_type,
+                    context=context,
+                    confidence=score,
+                    text=span_text,
+                    replacement="",
+                    ignored=False,
+                )
             )
-
-            spans.append(Span(
-                character_start=start,
-                character_end=end,
-                filter_type=filter_type,
-                context=context,
-                confidence=score,
-                text=span_text,
-                replacement=replacement,
-                ignored=False,
-            ))
-
         return spans

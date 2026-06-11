@@ -135,9 +135,11 @@ Serialise the policy to a YAML string.
 | Attribute | Type | Description |
 |---|---|---|
 | `name` | `str` | Policy name |
-| `identifiers` | `Identifiers` | Filter configuration |
-| `ignored` | `list[str]` | Global ignore list |
-| `ignored_patterns` | `list[str]` | Global ignore patterns (regex) |
+| `identifiers` | `dict` | Raw Phileas-JSON `identifiers` object — a plain `dict` mapping each entity field name to its filter node |
+| `ignored` | `list[str]` | Global ignore list — a flat list of strings, parsed from the PhiSQL `ignored` shape (a list of `{"terms": [...]}` objects) |
+| `ignored_patterns` | `list[str]` | Global ignore patterns — a flat list of regex strings, parsed from the PhiSQL `ignoredPatterns` shape (a list of `{"pattern": "..."}` objects) |
+
+`Policy.identifiers` is a plain `dict` holding the raw Phileas-JSON `identifiers` object (entity field name → filter node); there is no `Identifiers` class.
 
 ---
 
@@ -197,56 +199,58 @@ Given a list of spans, remove overlapping ones, keeping the span with the highes
 
 ---
 
-## FilterStrategy
+## Strategy
 
-`phileas.policy.filter_strategy.FilterStrategy`
+`phileas.policy.strategy.Strategy`
 
-Holds the replacement configuration for a single filter strategy entry.
+Wraps a single strategy JSON object (one entry from a filter's `*FilterStrategies` array), for example:
 
-### Constants
+```python
+{"strategy": "MASK", "maskCharacter": "X", "conditions": "confidence > 0.9"}
+```
 
-| Constant | Value |
-|---|---|
-| `REDACT` | `"REDACT"` |
-| `MASK` | `"MASK"` |
-| `STATIC_REPLACE` | `"STATIC_REPLACE"` |
-| `HASH_SHA256_REPLACE` | `"HASH_SHA256_REPLACE"` |
-| `LAST_4` | `"LAST_4"` |
-| `SAME` | `"SAME"` |
-| `TRUNCATE` | `"TRUNCATE"` |
-| `ABBREVIATE` | `"ABBREVIATE"` |
-| `RANDOM_REPLACE` | `"RANDOM_REPLACE"` |
-| `SHIFT_DATE` | `"SHIFT_DATE"` |
+### Valid strategies
+
+The valid `strategy` values come from the PhiSQL catalog (the `strategy` value is the catalog's `phileas_enum`):
+
+`REDACT`, `MASK`, `RANDOM_REPLACE`, `STATIC_REPLACE`, `CRYPTO_REPLACE`, `FPE_ENCRYPT_REPLACE`, `HASH_SHA256_REPLACE`, `LAST_4`, `TRUNCATE`, `TRUNCATE_TO_YEAR`, `SHIFT`, `RELATIVE`, `ABBREVIATE`.
+
+`CRYPTO_REPLACE` and `FPE_ENCRYPT_REPLACE` require an externally-configured key and emit a stable marker in this engine; `RELATIVE` passes the value through unchanged.
 
 ### Constructor
 
 ```python
-FilterStrategy(
-    strategy="REDACT",
-    redaction_format="{{{REDACTED-%t}}}",
-    static_replacement="",
-    mask_character="*",
-    mask_length="SAME",
-    condition="",
-    shift_years=0,
-    shift_months=0,
-    shift_days=0,
-)
+Strategy(config: dict)
 ```
+
+Build a `Strategy` from a single strategy JSON object.
+
+### Class methods
+
+#### `Strategy.from_dict(d)`
+
+Create a `Strategy` from a dict such as `{"strategy": "REDACT", "redactionFormat": "..."}`.
+
+#### `Strategy.default()`
+
+Return a default `Strategy` (the `REDACT` strategy).
+
+### Attributes
+
+| Attribute | Type | Description |
+|---|---|---|
+| `strategy` | `str` | The strategy enum string (e.g. `"REDACT"`, `"MASK"`) |
+| `conditions` | `str` | The optional condition expression that gates this strategy |
 
 ### Methods
 
-#### `get_replacement(filter_type, token)`
+#### `evaluate_condition(token, context, confidence) -> bool`
+
+Return `True` if this strategy's `conditions` expression is satisfied for the given `token`, `context`, and `confidence` (a strategy with no condition always returns `True`).
+
+#### `get_replacement(filter_type, token) -> str`
 
 Return the replacement string for `token` based on the configured strategy.
-
-#### `FilterStrategy.from_dict(data)` *(class method)*
-
-Create a `FilterStrategy` from a dict such as `{"strategy": "REDACT", "redactionFormat": "..."}`.
-
-#### `to_dict()`
-
-Serialise to a dict.
 
 ---
 
@@ -365,27 +369,27 @@ print(ctx_svc.get("patient-123", "unknown@example.com"))   # None
 
 ## Policy key reference
 
-The table below maps every JSON/YAML policy key to the `Identifiers` attribute it populates and the strategies key used in its filter config.
+`Policy.identifiers` is a plain `dict` keyed by the policy key (entity field name). The table below maps every JSON/YAML policy key to the strategies key used in its filter config. Because these field names come from the PhiSQL catalog, a few are non-obvious — note that `zipCode` uses the **singular** `zipCodeFilterStrategy` and `bitcoinAddress` uses `bitcoinFilterStrategies`.
 
-| Policy key | `Identifiers` attribute | Strategies key |
-|---|---|---|
-| `age` | `age` | `ageFilterStrategies` |
-| `emailAddress` | `email_address` | `emailAddressFilterStrategies` |
-| `creditCard` | `credit_card` | `creditCardFilterStrategies` |
-| `ssn` | `ssn` | `ssnFilterStrategies` |
-| `phoneNumber` | `phone_number` | `phoneNumberFilterStrategies` |
-| `ipAddress` | `ip_address` | `ipAddressFilterStrategies` |
-| `url` | `url` | `urlFilterStrategies` |
-| `zipCode` | `zip_code` | `zipCodeFilterStrategies` |
-| `vin` | `vin` | `vinFilterStrategies` |
-| `bitcoinAddress` | `bitcoin_address` | `bitcoinAddressFilterStrategies` |
-| `bankRoutingNumber` | `bank_routing_number` | `bankRoutingNumberFilterStrategies` |
-| `date` | `date` | `dateFilterStrategies` |
-| `macAddress` | `mac_address` | `macAddressFilterStrategies` |
-| `currency` | `currency` | `currencyFilterStrategies` |
-| `streetAddress` | `street_address` | `streetAddressFilterStrategies` |
-| `trackingNumber` | `tracking_number` | `trackingNumberFilterStrategies` |
-| `driversLicense` | `drivers_license` | `driversLicenseFilterStrategies` |
-| `ibanCode` | `iban_code` | `ibanCodeFilterStrategies` |
-| `passportNumber` | `passport_number` | `passportNumberFilterStrategies` |
-| `phEye` | `ph_eye` (list) | `phEyeFilterStrategies` |
+| Policy key | Strategies key |
+|---|---|
+| `age` | `ageFilterStrategies` |
+| `emailAddress` | `emailAddressFilterStrategies` |
+| `creditCard` | `creditCardFilterStrategies` |
+| `ssn` | `ssnFilterStrategies` |
+| `phoneNumber` | `phoneNumberFilterStrategies` |
+| `ipAddress` | `ipAddressFilterStrategies` |
+| `url` | `urlFilterStrategies` |
+| `zipCode` | `zipCodeFilterStrategy` |
+| `vin` | `vinFilterStrategies` |
+| `bitcoinAddress` | `bitcoinFilterStrategies` |
+| `bankRoutingNumber` | `bankRoutingNumberFilterStrategies` |
+| `date` | `dateFilterStrategies` |
+| `macAddress` | `macAddressFilterStrategies` |
+| `currency` | `currencyFilterStrategies` |
+| `streetAddress` | `streetAddressFilterStrategies` |
+| `trackingNumber` | `trackingNumberFilterStrategies` |
+| `driversLicense` | `driversLicenseFilterStrategies` |
+| `ibanCode` | `ibanCodeFilterStrategies` |
+| `passportNumber` | `passportNumberFilterStrategies` |
+| `phEye` | `phEyeFilterStrategies` |

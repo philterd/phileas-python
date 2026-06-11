@@ -12,7 +12,18 @@ Phileas analyzes text searching for sensitive information such as email addresse
 
 Other capabilities include referential integrity for redactions, conditional logic for redactions, and a CLI.
 
-Phileas requires no external dependencies (e.g. no ChatGPT/etc.) and is intended to be lightweight and easy to use.
+Phileas requires no machine-learning dependencies (e.g. no ChatGPT/etc.) and is intended to be lightweight and easy to use.
+
+### Policy actions come from the PhiSQL catalog
+
+The set of redaction **strategies** (the "policy actions" — `REDACT`, `MASK`,
+`HASH_SHA256`, `SHIFT`, etc.) and the mapping of each entity type to its place in
+the policy JSON are defined by the [PhiSQL](https://github.com/philterd/phisql)
+specification catalog. Phileas consumes that catalog through the `phisql`
+package rather than hard-coding it, so the strategy vocabulary and field names
+stay in lockstep with the spec (and with the Java reference implementation).
+Phileas owns the *behavior* of each action; PhiSQL owns the *vocabulary*. A
+policy produced by the PhiSQL compiler runs in Phileas unchanged.
 
 ## Compatibility Notes
 
@@ -32,6 +43,8 @@ Note that this port of [Phileas](https://github.com/philterd/phileas) is not 1:1
 pip install phileas-redact
 ```
 
+This pulls in the `phisql` package, which supplies the policy-action catalog.
+
 Or, to install in development mode from source:
 
 ```bash
@@ -39,6 +52,13 @@ git clone https://github.com/philterd/phileas-python.git
 cd phileas-python
 pip install -e ".[dev]"
 ```
+
+> **Note:** `phisql` is not yet published to PyPI. Until it is, install the
+> reference implementation in editable mode from your local checkout first:
+>
+> ```bash
+> pip install -e /path/to/phisql/reference/python
+> ```
 
 ## Quick Start
 
@@ -105,7 +125,9 @@ for span in result.spans:
 | `driversLicense` | `drivers-license` | US driver's license numbers |
 | `ibanCode` | `iban-code` | International Bank Account Numbers (IBANs) |
 | `passportNumber` | `passport-number` | US passport numbers |
-| `patterns` | user-defined | Custom regex-based patterns (list of pattern filters) |
+| `identifiers` | user-defined | Custom regex identifiers (list; see below) |
+| `dictionaries` | user-defined | Custom term lists (list) |
+| `pheyes` | user-defined | Named-entity detection via ph-eye / GLiNER (list) |
 
 ## Policies
 
@@ -131,33 +153,45 @@ ignoredPatterns:
 
 ### Filter Strategies
 
-Each filter type supports one or more strategies that define what to do with the identified information:
+Each filter type supports one or more strategies that define what to do with the
+identified information. The `strategy` value in policy JSON is the PhiSQL
+catalog's `phileas_enum`; the PhiSQL keyword you would write in the DSL is shown
+in parentheses.
 
-| Strategy | Description | Example Output |
+| `strategy` (PhiSQL keyword) | Description | Example Output |
 |---|---|---|
 | `REDACT` | Replace with a redaction tag | `{{{REDACTED-email-address}}}` |
-| `MASK` | Replace each character with `*` | `***@*******.***` |
+| `MASK` | Replace each character with a mask character | `***********` |
 | `STATIC_REPLACE` | Replace with a fixed string | `[REMOVED]` |
-| `HASH_SHA256_REPLACE` | Replace with the SHA-256 hash | `a665a4592...` |
-| `LAST_4` | Mask all but the last 4 characters | `****6789` |
-| `SAME` | Leave the value unchanged (identify only) | `123-45-6789` |
-| `TRUNCATE` | Keep leading or trailing characters | `john@***` |
-| `ABBREVIATE` | Abbreviate the value | `J. S.` |
+| `RANDOM_REPLACE` | Replace with a synthetic value of the same type | `random@example.com` |
+| `HASH_SHA256_REPLACE` (`HASH_SHA256`) | Replace with the SHA-256 hash | `a665a4592...` |
+| `LAST_4` | Mask all but the last 4 characters | `*******6789` |
+| `TRUNCATE` | Keep the leading characters | `john` |
+| `TRUNCATE_TO_YEAR` | Truncate a date to its year (dates only) | `2020` |
+| `SHIFT` | Shift a date by a fixed offset (dates only) | `01/15/2020` |
+| `ABBREVIATE` | Reduce the value to its initials | `JS` |
+
+`CRYPTO_REPLACE` (`ENCRYPT`) and `FPE_ENCRYPT_REPLACE` (`FPE_ENCRYPT`) require an
+externally configured key and are not performed by this reference engine; they
+emit a stable marker. `RELATIVE` passes the value through unchanged.
 
 ### Strategy Options
 
+Each strategy reads the option fields the catalog declares for it. Common ones:
+
 ```yaml
 strategy: REDACT
-redactionFormat: "{{{REDACTED-%t}}}"
-staticReplacement: "[REMOVED]"
-maskCharacter: "*"
-maskLength: SAME
-truncateLeaveCharacters: 4
-truncateDirection: LEADING
-condition: ""
+redactionFormat: "{{{REDACTED-%t}}}"   # REDACT/MASK; %t -> filter type
+staticReplacement: "[REMOVED]"          # STATIC_REPLACE
+maskCharacter: "*"                       # MASK
+maskLength: 4                            # MASK; a number or numeric string; "SAME"/omit = full length
+shiftDays: 10                            # SHIFT (also shiftMonths, shiftYears)
+conditions: "confidence > 0.9"           # apply only when the condition holds
 ```
 
 - `%t` in `redactionFormat` is replaced by the filter type name.
+- `conditions` supports `confidence`/`token`/`context`/`population` tests
+  combined with `and`, `or`, and parentheses.
 
 ### Ignored Terms
 
@@ -177,19 +211,24 @@ policy_dict = {
 }
 ```
 
-### Pattern-Based Filters
+### Custom Identifiers (regex)
 
-A policy can include a list of custom regex-based filters. Each pattern filter specifies a `pattern` (a regular expression) and an optional `label` used as the filter type in results. This is useful for identifying domain-specific PII that is not covered by the built-in filters.
+A policy can include a list of custom regex identifiers under
+`identifiers.identifiers`. Each entry specifies a `classification` (used as the
+filter type in results), a `pattern` (a regular expression), and its
+`identifierFilterStrategies`. This matches the shape the PhiSQL `DEFINE
+IDENTIFIER` statement compiles to, and is useful for domain-specific PII the
+built-in filters do not cover.
 
 ```python
 policy_dict = {
     "name": "my-policy",
     "identifiers": {
-        "patterns": [
+        "identifiers": [
             {
+                "classification": "custom-id",
                 "pattern": "\\d{3}-\\d{3}-\\d{3}",
-                "label": "custom-id",
-                "patternFilterStrategies": [{"strategy": "REDACT"}]
+                "identifierFilterStrategies": [{"strategy": "REDACT"}]
             }
         ]
     }
@@ -200,24 +239,22 @@ result = service.filter(policy, "ctx", "doc1", "ID: 123-456-789")
 print(result.filtered_text)  # ID: {{{REDACTED-custom-id}}}
 ```
 
-Multiple pattern filters can be included in the same policy:
-
-```python
-"patterns": [
-    {"pattern": "\\d{3}-\\d{3}-\\d{3}", "label": "id-number"},
-    {"pattern": "[A-Z]{2}\\d{6}", "label": "passport-number"}
-]
-```
-
-#### Pattern Filter Options
+#### Custom Identifier Options
 
 | Field | Type | Description |
 |---|---|---|
+| `classification` | `str` | Filter type label used in spans |
 | `pattern` | `str` | Regular expression used to identify PII |
-| `label` | `str` | Filter type label used in spans (defaults to `"pattern"`) |
-| `patternFilterStrategies` | `list` | List of filter strategies (same as other filter types) |
+| `caseSensitive` | `bool` | Whether matching is case-sensitive (default: `true`) |
+| `groupNumber` | `int` | Capture group to extract as the matched value (optional) |
+| `identifierFilterStrategies` | `list` | List of filter strategies (same as other filter types) |
 | `ignored` | `list` | Terms that should not be redacted even if they match |
 | `enabled` | `bool` | Whether the filter is active (default: `true`) |
+
+> **Field names follow the catalog.** Because policy field names come from the
+> PhiSQL catalog, a few are non-obvious: ZIP codes use the singular
+> `zipCodeFilterStrategy`, and Bitcoin addresses use `bitcoinFilterStrategies`.
+> Policies emitted by the PhiSQL compiler already use the correct names.
 
 ## Contexts and Referential Integrity
 

@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .filter_strategy import FilterStrategy
-from .identifiers import Identifiers
 from .policy import Policy
+from .strategy import Strategy
 
-__all__ = ["FilterStrategy", "Identifiers", "Policy"]
+__all__ = ["Policy", "Strategy"]

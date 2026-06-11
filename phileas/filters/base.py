@@ -11,12 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Detection filters.
+
+A filter's sole job is *detection*: scan text and return the spans of sensitive
+information it finds. It does not know about strategies, conditions, ignored
+terms, or referential integrity — those are applied centrally by
+:class:`phileas.services.filter_service.FilterService` using the PhiSQL catalog.
+Detected spans carry an empty ``replacement``; the service fills it in.
+
+Each filter is constructed with its policy *config* — the filter node from the
+policy ``identifiers`` object (a plain dict). Most regex filters ignore it;
+filters like credit card (luhn), dictionary, pattern, and ph-eye read options
+from it.
+"""
 
 from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 
 from phileas.models.span import Span
 
@@ -47,75 +61,36 @@ class FilterType:
 
 
 class BaseFilter(ABC):
-    def __init__(self, filter_type: str, filter_config):
+    def __init__(self, filter_type: str, config: Optional[dict] = None) -> None:
         self.filter_type = filter_type
-        self.filter_config = filter_config
+        self.config: dict = config or {}
 
     @abstractmethod
-    def filter(self, text: str, context: str = "default") -> List[Span]:
-        """Find spans of sensitive information in text."""
+    def detect(self, text: str, context: str = "default") -> List[Span]:
+        """Return the spans of sensitive information found in *text*."""
         ...
 
-    def _get_strategies(self) -> list:
-        """Return the list of filter strategies from the config."""
-        for attr in vars(self.filter_config):
-            if attr.endswith("_strategies"):
-                return getattr(self.filter_config, attr)
-        return []
-
-    def _get_ignored(self) -> list:
-        """Return ignored terms from the config."""
-        return getattr(self.filter_config, "ignored", [])
-
-    def _find_spans(
+    def _detect_patterns(
         self,
         patterns: List[re.Pattern],
         text: str,
         context: str,
         confidence: float = 1.0,
     ) -> List[Span]:
-        """Find all pattern matches in text and return Span objects."""
+        """Return a span for every match of every pattern (no replacement set)."""
         spans: List[Span] = []
-        strategies = self._get_strategies()
-        ignored = self._get_ignored()
-
         for pattern in patterns:
             for match in pattern.finditer(text):
-                token = match.group(0)
-                # Skip ignored terms
-                if token in ignored:
-                    continue
-
-                # Find the first strategy whose condition is satisfied
-                matched_strategy = None
-                for s in strategies:
-                    if s.evaluate_condition(token, context, confidence):
-                        matched_strategy = s
-                        break
-
-                # If strategies are configured but none matched, skip this token
-                if strategies and matched_strategy is None:
-                    continue
-
-                replacement = (
-                    matched_strategy.get_replacement(self.filter_type, token)
-                    if matched_strategy
-                    else token
+                spans.append(
+                    Span(
+                        character_start=match.start(),
+                        character_end=match.end(),
+                        filter_type=self.filter_type,
+                        context=context,
+                        confidence=confidence,
+                        text=match.group(0),
+                        replacement="",
+                        ignored=False,
+                    )
                 )
-                span = Span(
-                    character_start=match.start(),
-                    character_end=match.end(),
-                    filter_type=self.filter_type,
-                    context=context,
-                    confidence=confidence,
-                    text=token,
-                    replacement=replacement,
-                    ignored=False,
-                )
-                spans.append(span)
-
-        return spans
-
-    def apply_strategy(self, spans: List[Span]) -> List[Span]:
-        """Apply the filter strategy to each span (already applied in _find_spans)."""
         return spans

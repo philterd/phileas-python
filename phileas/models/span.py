@@ -37,23 +37,29 @@ class Span:
 
     @staticmethod
     def drop_overlapping_spans(spans: List["Span"]) -> List["Span"]:
-        """Remove overlapping spans, keeping the one with higher confidence."""
+        """Remove overlapping spans, keeping the highest-confidence span.
+
+        Spans are considered in descending confidence order, so a
+        higher-confidence span always wins over any span it overlaps —
+        regardless of their relative start positions. Ties (equal confidence)
+        are broken deterministically: the earliest-starting span wins, and
+        among equal starts the longest span wins. The result is independent of
+        the input order and is returned sorted by start position.
+        """
         if not spans:
             return spans
 
-        sorted_spans = sorted(spans, key=lambda s: (s.character_start, -s.confidence))
+        ordered = sorted(
+            spans,
+            key=lambda s: (
+                -s.confidence,
+                s.character_start,
+                -(s.character_end - s.character_start),
+            ),
+        )
         result: List[Span] = []
-
-        for span in sorted_spans:
-            dominated = False
-            for kept in result:
-                if span.overlaps(kept):
-                    # kept span has equal or higher confidence (sorted by confidence desc)
-                    dominated = True
-                    break
-            if not dominated:
-                # Remove any already-added spans that are dominated by this one
-                result = [k for k in result if not (span.overlaps(k) and span.confidence > k.confidence)]
+        for span in ordered:
+            if not any(span.overlaps(kept) for kept in result):
                 result.append(span)
 
         return sorted(result, key=lambda s: s.character_start)

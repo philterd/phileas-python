@@ -15,24 +15,53 @@
 from __future__ import annotations
 
 import re
-from typing import List
+from typing import List, Optional
 
 from phileas.models.span import Span
 from .base import BaseFilter, FilterType
 
 
 class PatternFilter(BaseFilter):
-    """Filter that identifies PII using a user-supplied regular expression."""
+    """Detects PII using a user-supplied regular expression (custom identifier).
 
-    def __init__(self, filter_config):
-        label = getattr(filter_config, "label", None)
-        if not label:
-            label = FilterType.PATTERN
-        super().__init__(label, filter_config)
-        pattern_str = getattr(filter_config, "pattern", "")
-        self._pattern: re.Pattern | None = re.compile(pattern_str) if pattern_str else None
+    Config is a custom-identifier node from the policy ``identifiers.identifiers``
+    array: ``classification`` (the label/filter type), ``pattern`` (the regex),
+    optional ``caseSensitive`` (default True), and optional ``groupNumber`` (the
+    capture group to extract as the matched value).
+    """
 
-    def filter(self, text: str, context: str = "default") -> List[Span]:
+    def __init__(self, config=None):
+        config = config or {}
+        filter_type = config.get("classification") or config.get("label") or FilterType.PATTERN
+        super().__init__(filter_type, config)
+
+        pattern_str = config.get("pattern", "")
+        flags = 0 if config.get("caseSensitive", True) else re.IGNORECASE
+        self._pattern: Optional[re.Pattern] = (
+            re.compile(pattern_str, flags) if pattern_str else None
+        )
+        group = config.get("groupNumber")
+        self._group = int(group) if group is not None else 0
+
+    def detect(self, text: str, context: str = "default") -> List[Span]:
         if self._pattern is None:
             return []
-        return self._find_spans([self._pattern], text, context)
+        spans: List[Span] = []
+        for match in self._pattern.finditer(text):
+            group = self._group if self._group <= (match.re.groups) else 0
+            token = match.group(group)
+            if token is None:
+                continue
+            spans.append(
+                Span(
+                    character_start=match.start(group),
+                    character_end=match.end(group),
+                    filter_type=self.filter_type,
+                    context=context,
+                    confidence=1.0,
+                    text=token,
+                    replacement="",
+                    ignored=False,
+                )
+            )
+        return spans

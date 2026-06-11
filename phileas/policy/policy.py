@@ -11,31 +11,87 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+A Phileas redaction policy.
+
+The policy is the JSON document produced by the PhiSQL compiler (or written by
+hand against the same schema). Rather than mirror every entity into hand-coded
+dataclasses, this class keeps the ``identifiers`` object as raw JSON and lets
+:class:`phileas.services.filter_service.FilterService` resolve entity fields and
+strategies through the PhiSQL catalog. Top-level allowlists (``ignored`` /
+``ignoredPatterns``) are normalized to flat lists for the engine.
+"""
 
 from __future__ import annotations
 
 import json
+from typing import List
 
 import yaml
 
-from .identifiers import Identifiers
+
+def _parse_ignored_terms(raw) -> List[str]:
+    """Flattens the policy ``ignored`` value to a list of term strings.
+
+    Accepts the PhiSQL/Phileas shape — a list of ``{"terms": [...]}`` objects —
+    as well as a plain list of strings or a single object.
+    """
+    if isinstance(raw, dict):
+        raw = [raw]
+    terms: List[str] = []
+    for item in raw or []:
+        if isinstance(item, str):
+            terms.append(item)
+        elif isinstance(item, dict):
+            terms.extend(item.get("terms", []) or [])
+    return terms
+
+
+def _parse_ignored_patterns(raw) -> List[str]:
+    """Flattens ``ignoredPatterns`` to a list of regex strings.
+
+    Accepts the PhiSQL/Phileas shape — a list of ``{"pattern": "..."}`` objects
+    — as well as a plain list of strings.
+    """
+    if isinstance(raw, dict):
+        raw = [raw]
+    patterns: List[str] = []
+    for item in raw or []:
+        if isinstance(item, str):
+            patterns.append(item)
+        elif isinstance(item, dict):
+            pattern = item.get("pattern")
+            if pattern:
+                patterns.append(pattern)
+    return patterns
 
 
 class Policy:
-    def __init__(self, name: str = "default"):
+    def __init__(
+        self,
+        name: str = "default",
+        identifiers: dict | None = None,
+        ignored: List[str] | None = None,
+        ignored_patterns: List[str] | None = None,
+    ) -> None:
         self.name = name
-        self.identifiers = Identifiers()
-        self.ignored: list = []
-        self.ignored_patterns: list = []
+        #: Raw Phileas-JSON ``identifiers`` object (entity field -> filter node).
+        self.identifiers: dict = identifiers if identifiers is not None else {}
+        #: Flat list of policy-level ignored terms.
+        self.ignored: List[str] = ignored if ignored is not None else []
+        #: Flat list of policy-level ignored regex patterns.
+        self.ignored_patterns: List[str] = (
+            ignored_patterns if ignored_patterns is not None else []
+        )
 
     @classmethod
     def from_dict(cls, data: dict) -> "Policy":
-        policy = cls(name=data.get("name", "default"))
-        if "identifiers" in data:
-            policy.identifiers = Identifiers.from_dict(data["identifiers"])
-        policy.ignored = data.get("ignored", [])
-        policy.ignored_patterns = data.get("ignoredPatterns", [])
-        return policy
+        return cls(
+            name=data.get("name", "default"),
+            identifiers=data.get("identifiers", {}) or {},
+            ignored=_parse_ignored_terms(data.get("ignored", [])),
+            ignored_patterns=_parse_ignored_patterns(data.get("ignoredPatterns", [])),
+        )
 
     @classmethod
     def from_json(cls, json_str: str) -> "Policy":
@@ -48,9 +104,9 @@ class Policy:
     def to_dict(self) -> dict:
         return {
             "name": self.name,
-            "identifiers": self.identifiers.to_dict(),
-            "ignored": self.ignored,
-            "ignoredPatterns": self.ignored_patterns,
+            "identifiers": self.identifiers,
+            "ignored": [{"terms": list(self.ignored)}] if self.ignored else [],
+            "ignoredPatterns": [{"pattern": p} for p in self.ignored_patterns],
         }
 
     def to_json(self) -> str:

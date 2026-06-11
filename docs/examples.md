@@ -128,7 +128,7 @@ policy = Policy.from_dict({
     "identifiers": {
         "date": {
             "dateFilterStrategies": [
-                {"strategy": "SHIFT_DATE", "shiftYears": 2, "shiftDays": 15}
+                {"strategy": "SHIFT", "shiftYears": 2, "shiftDays": 15}
             ]
         }
     }
@@ -251,8 +251,8 @@ policy = Policy.from_dict({
     "name": "zip-population",
     "identifiers": {
         "zipCode": {
-            "zipCodeFilterStrategies": [
-                {"strategy": "REDACT", "condition": "population < 20000"}
+            "zipCodeFilterStrategy": [
+                {"strategy": "REDACT", "conditions": "population < 20000"}
             ]
         }
     }
@@ -275,10 +275,10 @@ policy = Policy.from_dict({
     "name": "zip-tiered",
     "identifiers": {
         "zipCode": {
-            "zipCodeFilterStrategies": [
-                {"strategy": "REDACT",             "condition": "population < 20000"},
+            "zipCodeFilterStrategy": [
+                {"strategy": "REDACT",             "conditions": "population < 20000"},
                 {"strategy": "STATIC_REPLACE",
-                 "staticReplacement": "[LARGE-ZIP]", "condition": "population >= 20000"},
+                 "staticReplacement": "[LARGE-ZIP]", "conditions": "population >= 20000"},
             ]
         }
     }
@@ -371,7 +371,7 @@ print(result.filtered_text)
 
 ## Redact custom patterns with regex
 
-Use custom pattern filters to detect domain-specific PII not covered by built-in filters.
+Use custom identifiers to detect domain-specific PII not covered by built-in filters. The custom identifiers live in an `identifiers` array nested inside the top-level `identifiers` object. Each entry has a `pattern`, a `classification` (which becomes the span's `filter_type`), and an `identifierFilterStrategies` array. Optional fields are `caseSensitive` (bool, default `true`) and `groupNumber` (the capture group to extract).
 
 ```python
 from phileas.policy.policy import Policy
@@ -380,16 +380,17 @@ from phileas.services.filter_service import FilterService
 policy = Policy.from_dict({
     "name": "custom-patterns",
     "identifiers": {
-        "patterns": [
+        "identifiers": [
             {
                 "pattern": r"EMP-\d{6}",
-                "label": "employee-id",
-                "patternFilterStrategies": [{"strategy": "REDACT"}]
+                "classification": "employee-id",
+                "caseSensitive": True,
+                "identifierFilterStrategies": [{"strategy": "REDACT"}]
             },
             {
                 "pattern": r"[A-Z]{2}\d{6}",
-                "label": "passport-number",
-                "patternFilterStrategies": [{"strategy": "MASK"}]
+                "classification": "passport-number",
+                "identifierFilterStrategies": [{"strategy": "MASK"}]
             }
         ]
     }
@@ -451,7 +452,7 @@ policy = Policy.from_dict({
         "phoneNumber": {
             "phoneNumberFilterStrategies": [
                 # Redact phone numbers starting with 555 (test numbers)
-                {"strategy": "REDACT", "condition": 'token startswith "555"'},
+                {"strategy": "REDACT", "conditions": 'token startswith "555"'},
                 # Mask all other phone numbers
                 {"strategy": "MASK"}
             ]
