@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "phileas-redact"
-version = "1.0.0"
+version = "1.1.0"
 description = "A Python library to deidentify and redact PII, PHI, and other sensitive information from text"
 readme = "README.md"
 license = {text = "Apache-2.0"}
@@ -52,7 +52,7 @@ dependencies = [
     "PyYAML>=6.0",
     # The PhiSQL reference implementation is the source of truth for policy
     # actions (redaction strategies) and entity-type field mappings.
-    "phisql==1.0.0",
+    "phisql==1.1.0",
 ]
 
 [project.urls]

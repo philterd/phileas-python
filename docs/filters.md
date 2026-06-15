@@ -438,3 +438,55 @@ You can define several dictionaries in the same policy — for example, one for 
     ]
 }
 ```
+
+## identifiers (custom)
+
+The custom `identifiers` filter detects sensitive values with a user-supplied regular expression. Like dictionaries, it is a list, so a policy may define several custom identifiers.
+
+```python
+"identifiers": {
+    "identifiers": [
+        {
+            "classification": "account-number",
+            "pattern": "\\bACC-\\d{8}\\b",
+            "caseSensitive": false,
+            "identifierFilterStrategies": [{"strategy": "REDACT"}]
+        }
+    ]
+}
+```
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `classification` | string | `pattern` | Label applied to matches (used as the filter type) |
+| `pattern` | string | none | The regular expression to match. Backslashes must be escaped for valid JSON |
+| `caseSensitive` | bool | `true` | Whether matching is case-sensitive |
+| `groupNumber` | int | `0` | The capture group to extract as the matched value (`0` is the whole match) |
+| `validator` | string or object | none | An optional named, post-match validator (see below) |
+
+### Validators
+
+A regular expression matches a *format*, not a valid value. The optional `validator` runs a named, built-in check on each match and keeps the match only if the check passes, so a generic identifier can reject format-valid but checksum-invalid values without embedding executable code in the policy.
+
+The validator may be written as a string, or as an object when it takes parameters:
+
+```python
+"validator": "luhn"
+```
+
+```python
+"validator": {"name": "mod11", "params": {"variant": "cpf"}}
+```
+
+An unknown or not-yet-implemented validator name is a policy error and the filter raises rather than silently skipping the check. The validators match the Phileas (Java) implementation for the same input.
+
+| Validator | Parameters | Description |
+|---|---|---|
+| `luhn` | none | Standard mod-10 Luhn checksum over the digits of the match (separators ignored). |
+| `mod11` | `variant`: `cpf` or `cnpj` | Weighted-sum mod-11 check digits for the Brazilian CPF and CNPJ. |
+| `mod97` | `variant`: `nir` or `iban`; `substitutions` (nir) | Control from a value mod 97: the French INSEE/NIR (with Corsica substitutions) or an IBAN (MOD-97-10). |
+| `mod23-letter` | `substitutions` | Control letter from a 23-entry table, for the Spanish DNI and NIE (leading X/Y/Z substitution). |
+| `es-cif` | none | Spanish CIF control character (digit or letter). |
+| `de-steuerid` | none | German tax ID (Steuer-ID): digit-repetition rule plus ISO/IEC 7064 MOD 11,10 check digit. |
+| `de-personalausweis` | none | German ID card number: ICAO 9303 7-3-1 check digit. |
+| `bic-structural` | none | SWIFT/BIC structure (ISO 9362) with a valid ISO 3166 country segment. |
