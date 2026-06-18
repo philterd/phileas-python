@@ -328,7 +328,7 @@ Detects US passport numbers in the format `A12345678` (one letter followed by ei
 
 The `phEye` filter delegates named entity recognition to the [ph-eye](https://github.com/philterd/ph-eye) service over HTTP. Unlike the regex-based filters above, ph-eye uses a machine-learning NER model and can detect entities such as person names, locations, and organisations.
 
-Alternatively, `phEye` can perform **local inference** using [GLiNER](https://github.com/urchade/GLiNER) if `modelPath` and `vocabPath` are provided in the policy.
+Alternatively, `phEye` can perform **local on-device inference** using [GLiNER](https://github.com/urchade/GLiNER) when `modelPath` points at a local model directory. When `modelPath` is set, detection runs on-device and no remote endpoint is called.
 
 ### Remote Inference (HTTP)
 
@@ -350,38 +350,21 @@ Multiple `phEye` configurations can be listed in an array (for example, to call 
 
 ### Local Inference (GLiNER)
 
-To use local inference, you must install the `gliner` extra:
+To use local inference, install the `gliner` extra:
 
 ```bash
 pip install "phileas-redact[gliner]"
 ```
 
-Then, specify the `modelPath` and `vocabPath` in your policy. If the `modelPath` ends with `.onnx`, the ONNX Runtime will be used for inference.
-
-#### Standard GLiNER Model
+Then set `modelPath` to a local GLiNER model **directory**: a folder containing the exported ONNX model (`model.onnx`), its tokenizer, and the GLiNER config (the layout produced for the `pheye-local-model` example). When `modelPath` is set, detection runs on-device and no remote endpoint is called. `labels` is the GLiNER detection prompt, and `threshold` (default `0.5`) is the minimum span confidence. This matches what the PhiSQL `DETECT PHEYE ... MODEL '<path>'` clause compiles to.
 
 ```python
 "identifiers": {
     "phEye": [
         {
-            "modelPath": "/path/to/gliner_model.bin",
-            "vocabPath": "/path/to/vocab.txt",
+            "modelPath": "/path/to/ph-eye-model",
             "labels": ["PERSON", "ORGANIZATION"],
-            "phEyeFilterStrategies": [{"strategy": "REDACT"}]
-        }
-    ]
-}
-```
-
-#### ONNX GLiNER Model
-
-```python
-"identifiers": {
-    "phEye": [
-        {
-            "modelPath": "/path/to/gliner_model.onnx",
-            "vocabPath": "/path/to/vocab.txt",
-            "labels": ["PERSON"],
+            "threshold": 0.5,
             "phEyeFilterStrategies": [{"strategy": "REDACT"}]
         }
     ]

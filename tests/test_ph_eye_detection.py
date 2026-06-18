@@ -85,11 +85,14 @@ class TestDetectNoBackend:
         f = PhEyeFilter({"phEyeConfiguration": {"labels": ["PERSON"]}})
         assert f.detect("Some text") == []
 
-    def test_model_path_without_vocab_path_falls_to_remote_and_empty(self):
-        # Only one of modelPath/vocabPath set -> local branch skipped; no
-        # endpoint -> [] without any network call.
-        f = PhEyeFilter({"modelPath": "/tmp/model.onnx"})
-        assert f.detect("Some text") == []
+    def test_model_path_alone_triggers_local_inference(self):
+        # Schema 1.1.0: modelPath alone (no vocabPath) routes to local on-device
+        # inference and does NOT fall through to the remote endpoint. With a path
+        # that is not a real model directory, local loading fails rather than
+        # silently returning [] via remote.
+        f = PhEyeFilter({"modelPath": "/nonexistent/ph-eye-model"})
+        with pytest.raises(Exception):
+            f.detect("Some text")
 
     def test_returns_a_list(self):
         result = PhEyeFilter({}).detect("hello")
@@ -234,7 +237,8 @@ class TestToSpansFilterType:
 # ---------------------------------------------------------------------------
 class TestToSpansFields:
     def test_all_fields_mapped_correctly(self):
-        f = PhEyeFilter({})
+        # threshold 0.0 isolates field mapping from the default 0.5 cutoff.
+        f = PhEyeFilter({"threshold": 0.0})
         items = [
             {"label": "PERSON", "score": 0.42, "text": "Bob", "start": 5, "end": 8}
         ]
@@ -257,7 +261,8 @@ class TestToSpansFields:
         assert spans[0].context == "my-context"
 
     def test_missing_fields_use_defaults(self):
-        f = PhEyeFilter({})
+        # threshold 0.0 so the score-0.0 default item is not filtered out.
+        f = PhEyeFilter({"threshold": 0.0})
         spans = f._to_spans([{}], "default", [])
         s = spans[0]
         assert s.character_start == 0
