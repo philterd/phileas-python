@@ -1,0 +1,34 @@
+name: E2E Model Test
+
+# Downloads the published philterd/ph-eye-pii-en-xsmall model from Hugging Face and runs the
+# local-inference end-to-end test against it. Kept off the per-PR test workflow on purpose: the
+# model is large and the download is network-dependent, so this runs only on demand and nightly.
+on:
+  workflow_dispatch:
+  schedule:
+    # Nightly at an offset minute (UTC). Scheduled runs are best-effort and may be delayed.
+    - cron: "37 5 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: Download model and run local-inference e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PHILEAS_DOWNLOAD_MODEL: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies (with the local-inference extra)
+        run: |
+          pip install --upgrade pip
+          pip install ".[dev,gliner]"
+      - name: Run the model-download end-to-end test
+        run: pytest tests/test_ph_eye_filter_download_e2e.py -v
