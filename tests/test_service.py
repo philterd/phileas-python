@@ -73,7 +73,7 @@ class TestStrategies:
     def test_condition_pick_first_matching(self):
         # First strategy's condition fails; second (default) applies.
         strategies = [
-            {"strategy": "STATIC_REPLACE", "staticReplacement": "NOPE", "conditions": 'token == "other"'},
+            {"strategy": "STATIC_REPLACE", "staticReplacement": "NOPE", "condition": 'token == "other"'},
             {"strategy": "REDACT"},
         ]
         r = run({"ssn": {"ssnFilterStrategies": strategies}}, "SSN 123-45-6789.")
@@ -81,7 +81,7 @@ class TestStrategies:
         assert "NOPE" not in r.filtered_text
 
     def test_condition_none_match_drops_span(self):
-        strategies = [{"strategy": "REDACT", "conditions": 'token == "never"'}]
+        strategies = [{"strategy": "REDACT", "condition": 'token == "never"'}]
         r = run({"ssn": {"ssnFilterStrategies": strategies}}, "SSN 123-45-6789.")
         # No strategy applies -> the SSN is left in place.
         assert "123-45-6789" in r.filtered_text

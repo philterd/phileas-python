@@ -252,7 +252,7 @@ policy = Policy.from_dict({
     "identifiers": {
         "zipCode": {
             "zipCodeFilterStrategy": [
-                {"strategy": "REDACT", "conditions": "population < 20000"}
+                {"strategy": "REDACT", "condition": "population < 20000"}
             ]
         }
     }
@@ -276,9 +276,9 @@ policy = Policy.from_dict({
     "identifiers": {
         "zipCode": {
             "zipCodeFilterStrategy": [
-                {"strategy": "REDACT",             "conditions": "population < 20000"},
+                {"strategy": "REDACT",             "condition": "population < 20000"},
                 {"strategy": "STATIC_REPLACE",
-                 "staticReplacement": "[LARGE-ZIP]", "conditions": "population >= 20000"},
+                 "staticReplacement": "[LARGE-ZIP]", "condition": "population >= 20000"},
             ]
         }
     }
@@ -452,7 +452,7 @@ policy = Policy.from_dict({
         "phoneNumber": {
             "phoneNumberFilterStrategies": [
                 # Redact phone numbers starting with 555 (test numbers)
-                {"strategy": "REDACT", "conditions": 'token startswith "555"'},
+                {"strategy": "REDACT", "condition": 'token startswith "555"'},
                 # Mask all other phone numbers
                 {"strategy": "MASK"}
             ]

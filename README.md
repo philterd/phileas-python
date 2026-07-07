@@ -187,11 +187,11 @@ staticReplacement: "[REMOVED]"          # STATIC_REPLACE
 maskCharacter: "*"                       # MASK
 maskLength: 4                            # MASK; a number or numeric string; "SAME"/omit = full length
 shiftDays: 10                            # SHIFT (also shiftMonths, shiftYears)
-conditions: "confidence > 0.9"           # apply only when the condition holds
+condition: "confidence > 0.9"           # apply only when the condition holds
 ```
 
 - `%t` in `redactionFormat` is replaced by the filter type name.
-- `conditions` supports `confidence`/`token`/`context`/`population` tests
+- `condition` supports `confidence`/`token`/`context`/`population` tests
   combined with `and`, `or`, and parentheses.
 
 ### Ignored Terms

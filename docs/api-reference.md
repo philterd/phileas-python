@@ -206,7 +206,7 @@ Given a list of spans, remove overlapping ones, keeping the span with the highes
 Wraps a single strategy JSON object (one entry from a filter's `*FilterStrategies` array), for example:
 
 ```python
-{"strategy": "MASK", "maskCharacter": "X", "conditions": "confidence > 0.9"}
+{"strategy": "MASK", "maskCharacter": "X", "condition": "confidence > 0.9"}
 ```
 
 ### Valid strategies
@@ -240,13 +240,13 @@ Return a default `Strategy` (the `REDACT` strategy).
 | Attribute | Type | Description |
 |---|---|---|
 | `strategy` | `str` | The strategy enum string (e.g. `"REDACT"`, `"MASK"`) |
-| `conditions` | `str` | The optional condition expression that gates this strategy |
+| `condition` | `str` | The optional condition expression that gates this strategy |
 
 ### Methods
 
 #### `evaluate_condition(token, context, confidence) -> bool`
 
-Return `True` if this strategy's `conditions` expression is satisfied for the given `token`, `context`, and `confidence` (a strategy with no condition always returns `True`).
+Return `True` if this strategy's `condition` expression is satisfied for the given `token`, `context`, and `confidence` (a strategy with no condition always returns `True`).
 
 #### `get_replacement(filter_type, token) -> str`
 

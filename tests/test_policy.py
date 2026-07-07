@@ -33,8 +33,8 @@ class TestStrategy:
         assert s.config["maskCharacter"] == "#"
 
     def test_conditions_exposed(self):
-        s = Strategy.from_dict({"strategy": "MASK", "conditions": "confidence > 0.5"})
-        assert s.conditions == "confidence > 0.5"
+        s = Strategy.from_dict({"strategy": "MASK", "condition": "confidence > 0.5"})
+        assert s.condition == "confidence > 0.5"
         assert s.evaluate_condition("t", "c", 0.9) is True
         assert s.evaluate_condition("t", "c", 0.1) is False
 

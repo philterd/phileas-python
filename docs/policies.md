@@ -99,7 +99,7 @@ strategy: REDACT
 redactionFormat: "{{{REDACTED-%t}}}"
 staticReplacement: "[REMOVED]"
 maskCharacter: "*"
-conditions: ""
+condition: ""
 shiftYears: 0
 shiftMonths: 0
 shiftDays: 0
@@ -109,7 +109,7 @@ shiftDays: 0
 - **`staticReplacement`** — used by `STATIC_REPLACE`.
 - **`maskCharacter`** — character used by `MASK` (default: `*`).
 - **`shiftYears` / `shiftMonths` / `shiftDays`** — offsets used by `SHIFT`.
-- **`conditions`** — optional expression that must evaluate to `true` for this strategy to be applied. See [Conditions](#conditions) below.
+- **`condition`** — optional expression that must evaluate to `true` for this strategy to be applied. See [Conditions](#conditions) below.
 
 ### Examples
 
@@ -129,16 +129,18 @@ shiftDays: 0
 
 ## Conditions
 
-A `conditions` expression is an optional string attached to a strategy that gates its application. The strategy is only applied when the condition evaluates to `true`. When multiple strategies are listed, the first one whose condition is satisfied is used.
+A `condition` expression is an optional string attached to a strategy that gates its application. The strategy is only applied when the condition evaluates to `true`. When multiple strategies are listed, the first one whose condition is satisfied is used.
+
+> The key is `condition` (singular), matching the redaction policy schema and the Java and .NET Phileas runtimes. The plural `conditions` is accepted as a deprecated alias for backward compatibility and may be removed in a future release; prefer `condition`.
 
 Sub-expressions may be combined with `and` and `or`, and grouped with parentheses. Conditions can test `confidence`, `token`, `context`, and `population`:
 
 ```python
-{"strategy": "REDACT", "conditions": 'token startswith "4" and confidence >= 0.9'}
+{"strategy": "REDACT", "condition": 'token startswith "4" and confidence >= 0.9'}
 ```
 
 ```python
-{"strategy": "REDACT", "conditions": '(token startswith "4" or token startswith "5") and confidence >= 0.9'}
+{"strategy": "REDACT", "condition": '(token startswith "4" or token startswith "5") and confidence >= 0.9'}
 ```
 
 ### Supported condition expressions
@@ -166,7 +168,7 @@ Supported operators: `<`, `>`, `<=`, `>=`, `==`, `!=`.
 {
     "zipCode": {
         "zipCodeFilterStrategy": [
-            {"strategy": "REDACT", "conditions": "population < 20000"}
+            {"strategy": "REDACT", "condition": "population < 20000"}
         ]
     }
 }
@@ -174,9 +176,9 @@ Supported operators: `<`, `>`, `<=`, `>=`, `==`, `!=`.
 
 ```python
 # Redact small ZIP codes; statically replace large ones
-s_small = {"strategy": "REDACT",         "conditions": "population < 20000"}
+s_small = {"strategy": "REDACT",         "condition": "population < 20000"}
 s_large = {"strategy": "STATIC_REPLACE", "staticReplacement": "[LARGE-ZIP]",
-           "conditions": "population >= 20000"}
+           "condition": "population >= 20000"}
 
 {
     "zipCode": {
@@ -188,7 +190,7 @@ s_large = {"strategy": "STATIC_REPLACE", "staticReplacement": "[LARGE-ZIP]",
 The condition can also be combined with other expressions using `and` or `or`:
 
 ```python
-{"strategy": "REDACT", "conditions": 'population < 20000 and context == "medical"'}
+{"strategy": "REDACT", "condition": 'population < 20000 and context == "medical"'}
 ```
 
 ## Ignored terms

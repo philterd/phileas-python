@@ -302,7 +302,7 @@ class TestStrategySelection:
     def test_first_passing_condition_wins(self):
         strategies = [
             {"strategy": "STATIC_REPLACE", "staticReplacement": "FIRST",
-             "conditions": 'token == "123-45-6789"'},
+             "condition": 'token == "123-45-6789"'},
             {"strategy": "REDACT"},
         ]
         r = run({"ssn": {"ssnFilterStrategies": strategies}}, "SSN 123-45-6789.")
@@ -312,7 +312,7 @@ class TestStrategySelection:
     def test_falls_through_to_second_when_first_fails(self):
         strategies = [
             {"strategy": "STATIC_REPLACE", "staticReplacement": "NOPE",
-             "conditions": 'token == "other"'},
+             "condition": 'token == "other"'},
             {"strategy": "STATIC_REPLACE", "staticReplacement": "SECOND"},
         ]
         r = run({"ssn": {"ssnFilterStrategies": strategies}}, "SSN 123-45-6789.")
@@ -320,14 +320,14 @@ class TestStrategySelection:
         assert "NOPE" not in r.filtered_text
 
     def test_no_strategy_condition_passes_drops_span(self):
-        strategies = [{"strategy": "REDACT", "conditions": 'token == "never"'}]
+        strategies = [{"strategy": "REDACT", "condition": 'token == "never"'}]
         r = run({"ssn": {"ssnFilterStrategies": strategies}}, "SSN 123-45-6789.")
         assert "123-45-6789" in r.filtered_text
         assert r.spans == []
 
     def test_context_condition(self):
         strategies = [{"strategy": "STATIC_REPLACE", "staticReplacement": "MATCHED",
-                       "conditions": 'context == "ctx"'}]
+                       "condition": 'context == "ctx"'}]
         r = run({"ssn": {"ssnFilterStrategies": strategies}}, "SSN 123-45-6789.")
         assert "MATCHED" in r.filtered_text
 

@@ -84,13 +84,13 @@ class TestPolicyIgnoredPatterns:
 class TestPolicyIdentifiersAndName:
     def test_identifiers_kept_raw(self):
         ident = {
-            "ssn": {"ssnFilterStrategies": [{"strategy": "REDACT", "conditions": "x"}]},
+            "ssn": {"ssnFilterStrategies": [{"strategy": "REDACT", "condition": "x"}]},
             "age": {"ageFilterStrategies": []},
         }
         p = Policy.from_dict({"identifiers": ident})
         # The raw dict is preserved untouched.
         assert p.identifiers == ident
-        assert p.identifiers["ssn"]["ssnFilterStrategies"][0]["conditions"] == "x"
+        assert p.identifiers["ssn"]["ssnFilterStrategies"][0]["condition"] == "x"
 
     def test_identifiers_missing_defaults_empty(self):
         assert Policy.from_dict({}).identifiers == {}
@@ -229,14 +229,35 @@ class TestStrategy:
         assert s.config["redactionFormat"] == DEFAULT_REDACTION_FORMAT
 
     def test_conditions_default_empty(self):
-        assert Strategy({"strategy": "MASK"}).conditions == ""
+        assert Strategy({"strategy": "MASK"}).condition == ""
 
     def test_conditions_null_normalized_to_empty(self):
-        assert Strategy({"strategy": "MASK", "conditions": None}).conditions == ""
+        assert Strategy({"strategy": "MASK", "condition": None}).condition == ""
 
     def test_conditions_exposed(self):
-        s = Strategy.from_dict({"strategy": "MASK", "conditions": "confidence > 0.5"})
-        assert s.conditions == "confidence > 0.5"
+        s = Strategy.from_dict({"strategy": "MASK", "condition": "confidence > 0.5"})
+        assert s.condition == "confidence > 0.5"
+
+    def test_canonical_condition_key_honored(self):
+        # `condition` (singular) is the canonical key (schema + Java/.NET runtimes).
+        s = Strategy.from_dict({"strategy": "REDACT", "condition": 'token == "x"'})
+        assert s.condition == 'token == "x"'
+        assert s.evaluate_condition("x", "c", 1.0) is True
+        assert s.evaluate_condition("y", "c", 1.0) is False
+
+    def test_deprecated_plural_conditions_alias(self):
+        # `conditions` (plural) is accepted as a deprecated alias.
+        s = Strategy.from_dict({"strategy": "REDACT", "conditions": "confidence > 0.5"})
+        assert s.condition == "confidence > 0.5"
+        assert s.evaluate_condition("t", "c", 0.9) is True
+
+    def test_singular_condition_wins_over_plural_alias(self):
+        s = Strategy.from_dict({
+            "strategy": "REDACT",
+            "condition": "confidence > 0.5",
+            "conditions": "confidence > 0.9",
+        })
+        assert s.condition == "confidence > 0.5"
 
     def test_to_dict_copies_config(self):
         s = Strategy({"strategy": "X", "a": 1})

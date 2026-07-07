@@ -15,11 +15,16 @@
 A single filter strategy from a Phileas policy.
 
 A strategy is just the JSON object emitted by the PhiSQL compiler, e.g.
-``{"strategy": "MASK", "maskCharacter": "X", "conditions": "confidence > 0.9"}``.
-This wrapper exposes its ``strategy`` enum and ``conditions``, evaluates the
+``{"strategy": "MASK", "maskCharacter": "X", "condition": "confidence > 0.9"}``.
+This wrapper exposes its ``strategy`` enum and ``condition``, evaluates the
 condition, and computes a replacement by dispatching to :mod:`phileas.actions`
 (keyed by the catalog's ``phileas_enum``). It deliberately holds no per-strategy
 field knowledge of its own — the catalog owns that.
+
+The condition is read from the ``condition`` key, matching the canonical
+redaction policy schema and the Java/.NET Phileas runtimes. The plural
+``conditions`` key is accepted as a **deprecated** alias for backward
+compatibility and may be removed in a future release.
 """
 
 from __future__ import annotations
@@ -36,7 +41,12 @@ class Strategy:
     def __init__(self, config: Optional[dict] = None) -> None:
         self.config = dict(config) if config else {"strategy": "REDACT"}
         self.strategy = self.config.get("strategy", "REDACT")
-        self.conditions = self.config.get("conditions", "") or ""
+        # Canonical key is ``condition`` (singular), matching the schema and the
+        # Java/.NET runtimes; ``conditions`` is a deprecated alias.
+        condition = self.config.get("condition")
+        if condition is None:
+            condition = self.config.get("conditions")
+        self.condition = condition or ""
 
     @classmethod
     def from_dict(cls, data: dict) -> "Strategy":
@@ -49,7 +59,7 @@ class Strategy:
 
     def evaluate_condition(self, token: str, context: str, confidence: float) -> bool:
         """Returns True if this strategy's condition is satisfied."""
-        return evaluate(self.conditions, token, context, confidence)
+        return evaluate(self.condition, token, context, confidence)
 
     def get_replacement(self, filter_type: str, token: str) -> str:
         """Returns the replacement value for *token* under this strategy."""

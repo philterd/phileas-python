@@ -153,7 +153,7 @@ The `zipCode` filter supports a `population` condition that limits redaction to 
 "identifiers": {
     "zipCode": {
         "zipCodeFilterStrategy": [
-            {"strategy": "REDACT", "conditions": "population < 20000"}
+            {"strategy": "REDACT", "condition": "population < 20000"}
         ]
     }
 }

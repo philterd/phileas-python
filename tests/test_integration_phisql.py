@@ -47,10 +47,27 @@ class TestPhiSQLIntegration:
         assert "01/15/2020" in out          # SHIFT(days=10)
         assert "************1111" in out      # LAST_4
 
-    def test_redact_with_condition(self):
+    def test_redact_with_condition_met(self):
+        # PhiSQL compiles WHERE to the singular `condition` key; regex spans have
+        # confidence 1.0, so this condition holds and the mask is applied.
         src = "POLICY p; REDACT SSN WITH MASK(mask_char='#') WHERE CONFIDENCE > 0.5;"
         out = compile_and_run(src, "SSN 123-45-6789.").filtered_text
         assert "###########" in out
+
+    def test_redact_with_condition_not_met(self):
+        # Proves phileas actually reads the compiled `condition`: a condition that
+        # cannot hold (regex confidence is 1.0) leaves the value untouched.
+        src = "POLICY p; REDACT SSN WITH MASK(mask_char='#') WHERE CONFIDENCE < 0.5;"
+        out = compile_and_run(src, "SSN 123-45-6789.").filtered_text
+        assert out == "SSN 123-45-6789."
+
+    def test_compiler_emits_singular_condition_key(self):
+        # Guard: the compiled JSON uses `condition`, not the deprecated `conditions`.
+        policy_json = Compiler().compile(
+            "POLICY p; REDACT SSN WITH REDACT WHERE CONFIDENCE > 0.5;").policy_json()
+        strat = policy_json["identifiers"]["ssn"]["ssnFilterStrategies"][0]
+        assert "condition" in strat
+        assert "conditions" not in strat
 
     def test_custom_identifier(self):
         src = (
