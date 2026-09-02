@@ -48,7 +48,7 @@ policy = Policy.from_dict({
 
 result = service.filter(policy, "app", "doc-2", "Charged to card 4111 1111 1111 1111.")
 print(result.filtered_text)
-# Charged to card ************1111.
+# Charged to card ***************1111.
 ```
 
 ---
@@ -163,16 +163,19 @@ policy = Policy.from_dict({
 })
 
 text = (
-    "Name: Jane Smith, SSN: 987-65-4321, "
+    "Name: Jane Smith, SSN: 123-45-6789, "
     "Phone: (555) 123-4567, Email: jane@example.com, "
     "Card: 5500 0000 0000 0004."
 )
 
 result = service.filter(policy, "app", "doc-7", text)
 print(result.filtered_text)
-# Name: Jane Smith, SSN: {{{REDACTED-ssn}}}, Phone: (***) ***-****, 
-# Email: {{{REDACTED-email-address}}}, Card: ************0004.
+# Name: Jane Smith, SSN: {{{REDACTED-ssn}}}, Phone: **************,
+# Email: {{{REDACTED-email-address}}}, Card: ***************0004.
 ```
+
+`MASK` and `LAST_4` replace the whole matched span character for character, so the
+separators inside a number are masked along with its digits.
 
 ---
 
@@ -466,7 +469,7 @@ result = service.filter(
     "Test: 555-123-4567, Real: 800-867-5309"
 )
 print(result.filtered_text)
-# Test: {{{REDACTED-phone-number}}}, Real: ***-***-****
+# Test: {{{REDACTED-phone-number}}}, Real: ************
 ```
 
 ---
