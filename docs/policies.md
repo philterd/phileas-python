@@ -26,9 +26,34 @@ ignoredPatterns:
 | `identifiers` | object | Map of filter keys to their configuration |
 | `ignored` | array of strings | Terms that are never replaced, regardless of the filter that matched them |
 | `ignoredPatterns` | array of regex strings | Regex patterns whose full matches are never replaced |
+| `config` | object | Policy-wide settings. Preserved on load and save; see [Analysis settings](#analysis-settings) |
+| `generators` | object | Named replacement generators used by `MAP_REPLACE` |
 
 !!! note "Catalog-derived field names"
     Because policy field names come from the PhiSQL catalog, a few are non-obvious. ZIP codes use the **singular** `zipCodeFilterStrategy`, and Bitcoin addresses use `bitcoinFilterStrategies`. Policies emitted by the PhiSQL compiler already use the correct names.
+
+### Analysis settings
+
+`config.analysis` carries two booleans, both defaulting to `true`.
+
+```yaml
+config:
+  analysis:
+    identification: true
+    spanDisambiguation: false
+```
+
+`spanDisambiguation` controls the context-vector step that decides which type an ambiguously
+typed span is — an SSN or a phone number, say. A policy may turn it off but cannot force it on
+where it is disabled globally.
+
+!!! note "Not yet acted on"
+    This engine has no disambiguation step, so neither flag changes what it produces today.
+    Both are parsed, exposed as `policy.span_disambiguation` and `policy.identification`, and
+    written back out unchanged, so a policy shared with the Java engine keeps its meaning.
+
+The rest of `config` — `splitting`, `pdf`, `postFilters` — is likewise preserved verbatim
+rather than dropped, though this engine does not read it.
 
 ## Loading a policy
 
