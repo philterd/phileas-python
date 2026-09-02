@@ -186,3 +186,115 @@ class TestConfigConstruction:
     def test_default_construction(self):
         spans = CreditCardFilter().detect("4111111111111111")
         assert len(spans) == 1
+
+
+class TestSeparators:
+    """Cards written in groups, the way they are printed and typed."""
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "4111 1111 1111 1111",      # Visa, spaces
+            "4111-1111-1111-1111",      # Visa, hyphens
+            "4111-1111 1111-1111",      # mixed
+            "5500 0000 0000 0004",      # MasterCard
+            "5500-0000-0000-0004",
+            "3782 822463 10005",        # Amex, 4-6-5 grouping
+            "6011-1111-1111-1117",      # Discover
+            "3056-930902-5904",         # Diners Club
+            "3530 1113 3330 0000",      # JCB
+        ],
+    )
+    def test_separated_card_detected(self, value):
+        spans = CreditCardFilter().detect(f"Card {value} on file")
+        assert [s.text for s in spans] == [value]
+
+    def test_offsets_cover_the_whole_number(self):
+        text = "Card: 4111 1111 1111 1111."
+        span = CreditCardFilter().detect(text)[0]
+        assert text[span.character_start:span.character_end] == "4111 1111 1111 1111"
+
+    def test_luhn_check_applies_to_separated_numbers(self):
+        good, bad = "4111 1111 1111 1111", "4111 1111 1111 1112"
+        assert [s.text for s in CreditCardFilter({"luhnCheck": True}).detect(good)] == [good]
+        assert CreditCardFilter({"luhnCheck": True}).detect(bad) == []
+        # Without the check the mistyped number is still card-shaped.
+        assert [s.text for s in CreditCardFilter().detect(bad)] == [bad]
+
+    def test_redacted_end_to_end(self):
+        from phileas.policy.policy import Policy
+        from phileas.services.filter_service import FilterService
+
+        policy = Policy.from_dict({"name": "t", "identifiers": {"creditCard": {
+            "creditCardFilterStrategies": [{"strategy": "REDACT"}]}}})
+        r = FilterService().filter(policy, "c", "d", "Card 4111 1111 1111 1111 ok.")
+        assert "4111 1111 1111 1111" not in r.filtered_text
+        assert "{{{REDACTED-credit-card}}}" in r.filtered_text
+
+
+class TestSeparatorsDoNotWiden:
+    """A digit run of card length is only claimed when it carries an issuer prefix."""
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "1234 5678 9012 3456",   # 16 digits, no issuer prefix
+            "9999 9999 9999 9999",
+            "1234567890123",         # 13 digits, no issuer prefix
+            "0000-0000-0000-0000",
+        ],
+    )
+    def test_unrelated_digit_run_not_claimed(self, value):
+        assert CreditCardFilter().detect(f"Ref {value} here") == []
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "call 555-123-4567 now",     # phone
+            "on 2026-01-15 we met",      # date
+            "id 20255512349999 end",     # long digit run
+            "ssn 123-45-6789 here",
+        ],
+    )
+    def test_other_identifiers_not_claimed(self, text):
+        assert CreditCardFilter().detect(text) == []
+
+    def test_separator_must_be_single(self):
+        # One space or hyphen between digits; a wider gap is two numbers, not one.
+        assert CreditCardFilter().detect("4111  1111  1111  1111") == []
+
+    def test_dots_are_not_separators(self):
+        assert CreditCardFilter().detect("4111.1111.1111.1111") == []
+
+    def test_adjacent_cards_are_separate_spans(self):
+        text = "4111 1111 1111 1111 5500 0000 0000 0004"
+        assert [s.text for s in CreditCardFilter().detect(text)] == [
+            "4111 1111 1111 1111", "5500 0000 0000 0004"
+        ]
+
+    def test_over_long_separated_run_claims_its_card_length_head(self):
+        # Characterization: a separated run longer than a card yields its first 16
+        # digits, because the space after them is a word boundary. The contiguous
+        # form has no such boundary and yields nothing. Java's generic pattern
+        # behaves the same way.
+        assert [s.text for s in CreditCardFilter().detect("4111 1111 1111 1111 1111")] == [
+            "4111 1111 1111 1111"
+        ]
+        assert CreditCardFilter().detect("41111111111111111111") == []
+
+    def test_card_beside_other_digits_keeps_its_own_bounds(self):
+        # Regression: an earlier version consumed "89-4258428518601" as one
+        # candidate, failed it, and lost the 13-digit Visa inside it.
+        assert [s.text for s in CreditCardFilter().detect("89-4258428518601")] == [
+            "4258428518601"
+        ]
+
+    def test_separated_card_beside_other_digits(self):
+        assert [s.text for s in CreditCardFilter().detect("89-4111 1111 1111 1111")] == [
+            "4111 1111 1111 1111"
+        ]
+
+    def test_one_span_per_card(self):
+        # Overlapping candidate slices are resolved, so a card is reported once.
+        text = "Card 4111 1111 1111 1111 paid"
+        assert len(CreditCardFilter().detect(text)) == 1
