@@ -1,0 +1,2032 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A Python library to deidentify and redact PII, PHI, and other sensitive information from text">
+      
+      
+      
+        <link rel="canonical" href="https://philterd.github.io/phileas-python/filters/">
+      
+      
+        <link rel="prev" href="../policies/">
+      
+      
+        <link rel="next" href="../examples/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Filters - phileas-python</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#filters" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="phileas-python" class="md-header__button md-logo" aria-label="phileas-python" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            phileas-python
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Filters
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/philterd/phileas-python" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    philterd/phileas-python
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="phileas-python" class="md-nav__button md-logo" aria-label="phileas-python" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    phileas-python
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/philterd/phileas-python" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    philterd/phileas-python
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../policies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Filters
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Filters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#age" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        age
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#emailaddress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        emailAddress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creditcard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        creditCard
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="creditCard">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#luhncheck" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        luhnCheck
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ssn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ssn
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ein" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ein
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ein">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#onlyvalidprefixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        onlyValidPrefixes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phonenumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        phoneNumber
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="phoneNumber">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#region" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        region
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ipaddress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ipAddress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        url
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zipcode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        zipCode
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="zipCode">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#population-condition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Population condition
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vin
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bitcoinaddress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bitcoinAddress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bankroutingnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bankRoutingNumber
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#date" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        date
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#macaddress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        macAddress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#currency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        currency
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#streetaddress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        streetAddress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trackingnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        trackingNumber
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#driverslicense" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        driversLicense
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ibancode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ibanCode
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ibanCode">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#allowspaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        allowSpaces
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#passportnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        passportNumber
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pheye-ner-via-ph-eye" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        phEye (NER via ph-eye)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="phEye (NER via ph-eye)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#remote-inference-http" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remote Inference (HTTP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-inference-gliner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Inference (GLiNER)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dictionaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dictionaries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="dictionaries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#multiple-dictionaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple dictionaries
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#identifiers-custom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        identifiers (custom)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="identifiers (custom)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#validators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validators
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#age" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        age
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#emailaddress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        emailAddress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creditcard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        creditCard
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="creditCard">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#luhncheck" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        luhnCheck
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ssn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ssn
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ein" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ein
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ein">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#onlyvalidprefixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        onlyValidPrefixes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phonenumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        phoneNumber
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="phoneNumber">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#region" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        region
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ipaddress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ipAddress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        url
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zipcode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        zipCode
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="zipCode">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#population-condition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Population condition
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vin
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bitcoinaddress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bitcoinAddress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bankroutingnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bankRoutingNumber
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#date" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        date
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#macaddress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        macAddress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#currency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        currency
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#streetaddress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        streetAddress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trackingnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        trackingNumber
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#driverslicense" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        driversLicense
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ibancode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ibanCode
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ibanCode">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#allowspaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        allowSpaces
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#passportnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        passportNumber
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pheye-ner-via-ph-eye" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        phEye (NER via ph-eye)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="phEye (NER via ph-eye)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#remote-inference-http" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remote Inference (HTTP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-inference-gliner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Inference (GLiNER)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dictionaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dictionaries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="dictionaries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#multiple-dictionaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple dictionaries
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#identifiers-custom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        identifiers (custom)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="identifiers (custom)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#validators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validators
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="filters">Filters<a class="headerlink" href="#filters" title="Permanent link">&para;</a></h1>
+<p>Each filter detects a specific type of sensitive information. Filters are enabled by including their key in the <code>identifiers</code> section of a policy and are disabled by default.</p>
+<p>The table below lists every supported filter, the policy key used to enable it, the internal filter type name returned in <code>Span.filter_type</code>, and example matching values.</p>
+<table>
+<thead>
+<tr>
+<th>Policy key</th>
+<th>Filter type</th>
+<th>Example matches</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>age</code></td>
+<td><code>age</code></td>
+<td><code>35 years old</code>, <code>aged 25</code>, <code>12-year-old</code>, <code>thirty-five years old</code></td>
+</tr>
+<tr>
+<td><code>emailAddress</code></td>
+<td><code>email-address</code></td>
+<td><code>user@example.com</code></td>
+</tr>
+<tr>
+<td><code>creditCard</code></td>
+<td><code>credit-card</code></td>
+<td><code>4111 1111 1111 1111</code>, <code>5500-0000-0000-0004</code></td>
+</tr>
+<tr>
+<td><code>ssn</code></td>
+<td><code>ssn</code></td>
+<td><code>123-45-6789</code>, <code>123 45 6789</code></td>
+</tr>
+<tr>
+<td><code>ein</code></td>
+<td><code>ein</code></td>
+<td><code>12-3456789</code></td>
+</tr>
+<tr>
+<td><code>phoneNumber</code></td>
+<td><code>phone-number</code></td>
+<td><code>(555) 867-5309</code>, <code>555.867.5309</code>, <code>+44 20 7946 0958</code></td>
+</tr>
+<tr>
+<td><code>ipAddress</code></td>
+<td><code>ip-address</code></td>
+<td><code>192.168.1.1</code>, <code>2001:db8::1</code></td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td><code>url</code></td>
+<td><code>https://www.example.com/path?q=1</code></td>
+</tr>
+<tr>
+<td><code>zipCode</code></td>
+<td><code>zip-code</code></td>
+<td><code>90210</code>, <code>10001-1234</code></td>
+</tr>
+<tr>
+<td><code>vin</code></td>
+<td><code>vin</code></td>
+<td><code>1HGBH41JXMN109186</code></td>
+</tr>
+<tr>
+<td><code>bitcoinAddress</code></td>
+<td><code>bitcoin-address</code></td>
+<td><code>1A1zP1eP5QGefi2DMPTfTL5SLmv7Divf…</code></td>
+</tr>
+<tr>
+<td><code>bankRoutingNumber</code></td>
+<td><code>bank-routing-number</code></td>
+<td><code>021000021</code></td>
+</tr>
+<tr>
+<td><code>date</code></td>
+<td><code>date</code></td>
+<td><code>01/15/1990</code>, <code>January 15, 1990</code>, <code>1990-01-15</code></td>
+</tr>
+<tr>
+<td><code>macAddress</code></td>
+<td><code>mac-address</code></td>
+<td><code>00:1A:2B:3C:4D:5E</code>, <code>00-1A-2B-3C-4D-5E</code></td>
+</tr>
+<tr>
+<td><code>currency</code></td>
+<td><code>currency</code></td>
+<td><code>$1,234.56</code>, <code>$99.99</code></td>
+</tr>
+<tr>
+<td><code>streetAddress</code></td>
+<td><code>street-address</code></td>
+<td><code>123 Main St</code>, <code>456 Elm Avenue</code></td>
+</tr>
+<tr>
+<td><code>trackingNumber</code></td>
+<td><code>tracking-number</code></td>
+<td>UPS, FedEx, and USPS tracking numbers</td>
+</tr>
+<tr>
+<td><code>driversLicense</code></td>
+<td><code>drivers-license</code></td>
+<td>US state driver's license numbers</td>
+</tr>
+<tr>
+<td><code>ibanCode</code></td>
+<td><code>iban-code</code></td>
+<td><code>GB82 WEST 1234 5698 7654 32</code></td>
+</tr>
+<tr>
+<td><code>passportNumber</code></td>
+<td><code>passport-number</code></td>
+<td>US passport numbers (e.g. <code>A12345678</code>)</td>
+</tr>
+<tr>
+<td><code>phEye</code></td>
+<td><code>person</code>, <code>location</code>, etc.</td>
+<td>Any NER entity returned by <a href="https://github.com/philterd/ph-eye">ph-eye</a></td>
+</tr>
+<tr>
+<td><code>dictionaries</code></td>
+<td><code>dictionary</code></td>
+<td>Any term from a user-supplied list (e.g. <code>John</code>, <code>classified</code>)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Catalog-derived field names</p>
+<p>Policy field names come from the PhiSQL catalog, so a few are non-obvious. ZIP codes use the <strong>singular</strong> <code>zipCodeFilterStrategy</code>, and Bitcoin addresses use <code>bitcoinFilterStrategies</code>. Policies emitted by the PhiSQL compiler already use the correct names.</p>
+</div>
+<hr />
+<h2 id="age">age<a class="headerlink" href="#age" title="Permanent link">&para;</a></h2>
+<p>Detects age references in text such as "35 years old", "aged 25", or "a 12-year-old child".
+An <code>age</code> or <code>aged</code> keyword may be separated from its value by a colon, an equals sign, or a
+hyphen, with or without surrounding whitespace, so <code>Age: 47</code>, <code>Age = 47</code>, <code>Age - 47</code>, and
+<code>Age 47</code> are all detected.</p>
+<p>Ages spelled out as words are detected too, from <code>zero</code> to <code>one hundred ninety-nine</code>:
+<code>thirty-five years old</code>, <code>a thirty-five-year-old patient</code>, <code>aged forty-two</code>. A compound
+number may be hyphenated or spaced (<code>forty-two</code>, <code>forty two</code>). Elapsed time is not an age,
+so <code>she left five years ago</code> is left alone.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="s2">"age"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        <span class="s2">"ageFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="p">}</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="emailaddress">emailAddress<a class="headerlink" href="#emailaddress" title="Permanent link">&para;</a></h2>
+<p>Detects standard email addresses (<code>local@domain.tld</code>).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="s2">"emailAddress"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>        <span class="s2">"emailAddressFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}],</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="s2">"ignored"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"noreply@example.com"</span><span class="p">]</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="p">}</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="creditcard">creditCard<a class="headerlink" href="#creditcard" title="Permanent link">&para;</a></h2>
+<p>Detects major credit card number formats (Visa, Mastercard, American Express, Discover, and others), with or without spaces/hyphens.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="s2">"creditCard"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>        <span class="s2">"creditCardFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"LAST_4"</span><span class="p">}]</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="p">}</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="luhncheck">luhnCheck<a class="headerlink" href="#luhncheck" title="Permanent link">&para;</a></h3>
+<p><code>luhnCheck</code> (default <code>false</code>) keeps only numbers that pass the Luhn checksum, so a card-shaped value that could not be a real card — a mistyped digit, or a test fixture such as <code>4111111111111112</code> — is left alone.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="s2">"creditCard"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>        <span class="s2">"luhnCheck"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>        <span class="s2">"creditCardFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"LAST_4"</span><span class="p">}]</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="p">}</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="ssn">ssn<a class="headerlink" href="#ssn" title="Permanent link">&para;</a></h2>
+<p>Detects US Social Security Numbers in <code>NNN-NN-NNNN</code>, <code>NNN NN NNNN</code>, and <code>NNNNNNNNN</code> formats, and Taxpayer Identification Numbers in <code>NN-NNNNNNN</code>.</p>
+<p>A TIN span carries confidence <code>0.90</code>, below the <code>1.0</code> of the SSN forms, so the <a href="#ein"><code>ein</code></a> filter wins that shape wherever both filters are enabled.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="s2">"ssn"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>        <span class="s2">"ssnFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"HASH_SHA256_REPLACE"</span><span class="p">}]</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="p">}</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="ein">ein<a class="headerlink" href="#ein" title="Permanent link">&para;</a></h2>
+<p>Detects US Employer Identification Numbers (EINs, the federal tax ID) in the canonical <code>NN-NNNNNNN</code> form.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="s2">"ein"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>        <span class="s2">"einFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="p">}</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="p">}</span>
+</code></pre></div>
+<p>Only the hyphenated form is matched. A bare nine-digit run is left to the <code>ssn</code> filter, since the two are indistinguishable without the hyphen; the hyphen position is what separates them (an EIN hyphenates after the second digit, an SSN after the third and fifth). Both filters can be enabled together — each claims its own form.</p>
+<h3 id="onlyvalidprefixes">onlyValidPrefixes<a class="headerlink" href="#onlyvalidprefixes" title="Permanent link">&para;</a></h3>
+<p><code>onlyValidPrefixes</code> (default <code>false</code>) restricts matches to values whose two-digit prefix is one the IRS issues, so an EIN-shaped number with an unissued prefix such as <code>07-1234567</code> is left alone.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="s2">"ein"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>        <span class="s2">"onlyValidPrefixes"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="s2">"einFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="p">}</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="phonenumber">phoneNumber<a class="headerlink" href="#phonenumber" title="Permanent link">&para;</a></h2>
+<p>Detects phone numbers with <a href="https://github.com/daviddrysdale/python-phonenumbers">libphonenumber</a>. A <code>+</code>-prefixed international number is detected whatever its country (<code>+44 20 7946 0958</code>); a number without one is read as US (<code>(555) 867-5309</code>, <code>555-867-5309</code>, <code>555.867.5309</code>).</p>
+<p>Span confidence reflects how the number is written: <code>0.95</code> for plain NANP formatting, <code>0.75</code> for longer forms, <code>0.60</code> otherwise. A <code>confidence</code> condition sees those values.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="s2">"phoneNumber"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>        <span class="s2">"phoneNumberFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"MASK"</span><span class="p">}]</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="p">}</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="region">region<a class="headerlink" href="#region" title="Permanent link">&para;</a></h3>
+<p><code>region</code> sets which country's national-format numbers are detected — the ones written without a <code>+</code> country code. It takes one ISO 3166-1 alpha-2 code or a list of them, and defaults to <code>US</code>. A <code>+</code>-prefixed number is detected whatever this is set to.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="s2">"phoneNumber"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>        <span class="s2">"region"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"US"</span><span class="p">,</span> <span class="s2">"GB"</span><span class="p">,</span> <span class="s2">"FR"</span><span class="p">],</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>        <span class="s2">"phoneNumberFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="p">}</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="p">}</span>
+</code></pre></div>
+<p>Each region is scanned separately and the results merged, so a number matching under several regions still yields one span. In PhiSQL, write it as <code>REDACT PHONE_NUMBER WITH REDACT OPTIONS(region='GB')</code>.</p>
+<hr />
+<h2 id="ipaddress">ipAddress<a class="headerlink" href="#ipaddress" title="Permanent link">&para;</a></h2>
+<p>Detects IPv4 addresses (e.g. <code>192.168.1.1</code>) and IPv6 addresses (e.g. <code>2001:db8::1</code>).
+IPv6 detection covers the expanded form (<code>2001:0db8:85a3:0000:0000:8a2e:0370:7334</code>), the
+compressed form (<code>FE80::1</code>, <code>::1</code>), the mixed form (<code>1:2:3:4:5:6:1.2.3.4</code>), IPv4-mapped
+addresses (<code>::ffff:192.0.2.128</code>), and a zone identifier when one is present
+(<code>fe80::1%eth0</code>). Each address produces a single span covering the whole address.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="s2">"ipAddress"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>        <span class="s2">"ipAddressFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"STATIC_REPLACE"</span><span class="p">,</span> <span class="s2">"staticReplacement"</span><span class="p">:</span> <span class="s2">"0.0.0.0"</span><span class="p">}]</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="p">}</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="url">url<a class="headerlink" href="#url" title="Permanent link">&para;</a></h2>
+<p>Detects HTTP and HTTPS URLs. A port number is part of the URL, so
+<code>https://example.com:8443/patient/12345</code> is matched in full rather than stopping at the port.
+Punctuation that ends a sentence is not: a trailing period, comma, semicolon, colon,
+exclamation mark, question mark, or closing quote or bracket is left out of the span, while
+punctuation inside a path, query, or fragment is kept.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="s2">"url"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>        <span class="s2">"urlFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="p">}</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="zipcode">zipCode<a class="headerlink" href="#zipcode" title="Permanent link">&para;</a></h2>
+<p>Detects 5-digit ZIP codes (<code>90210</code>) and ZIP+4 codes (<code>90210-1234</code>).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span class="s2">"zipCode"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>        <span class="s2">"zipCodeFilterStrategy"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="p">}</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="population-condition">Population condition<a class="headerlink" href="#population-condition" title="Permanent link">&para;</a></h3>
+<p>The <code>zipCode</code> filter supports a <code>population</code> condition that limits redaction to ZIP codes whose 2020 US Census population satisfies a numeric threshold. ZIP codes not present in the dataset are treated as non-matching.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Redact only ZIP codes with a population below 20,000</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="s2">"zipCode"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>        <span class="s2">"zipCodeFilterStrategy"</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>            <span class="p">{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">,</span> <span class="s2">"condition"</span><span class="p">:</span> <span class="s2">"population &lt; 20000"</span><span class="p">}</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>        <span class="p">]</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="p">}</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="p">}</span>
+</code></pre></div>
+<p>Supported operators: <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>, <code>==</code>, <code>!=</code>. The condition also works with ZIP+4 codes — the 5-digit prefix is used for the lookup (<code>90210-1234</code> → <code>90210</code>).</p>
+<p>See <a href="../policies/#conditions">Conditions</a> for details on combining conditions with <code>and</code>, <code>or</code>, and parentheses, and using other condition types.</p>
+<hr />
+<h2 id="vin">vin<a class="headerlink" href="#vin" title="Permanent link">&para;</a></h2>
+<p>Detects 17-character Vehicle Identification Numbers.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="s2">"vin"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>        <span class="s2">"vinFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    <span class="p">}</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="bitcoinaddress">bitcoinAddress<a class="headerlink" href="#bitcoinaddress" title="Permanent link">&para;</a></h2>
+<p>Detects Bitcoin addresses (P2PKH addresses starting with <code>1</code>, P2SH addresses starting with <code>3</code>, and bech32 addresses starting with <code>bc1</code>).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="s2">"bitcoinAddress"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>        <span class="s2">"bitcoinFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>    <span class="p">}</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="bankroutingnumber">bankRoutingNumber<a class="headerlink" href="#bankroutingnumber" title="Permanent link">&para;</a></h2>
+<p>Detects US ABA bank routing numbers (9-digit numbers).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="s2">"bankRoutingNumber"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>        <span class="s2">"bankRoutingNumberFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"MASK"</span><span class="p">}]</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="p">}</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="date">date<a class="headerlink" href="#date" title="Permanent link">&para;</a></h2>
+<p>Detects dates in several common formats:</p>
+<ul>
+<li><code>MM/DD/YYYY</code> and <code>MM-DD-YYYY</code></li>
+<li><code>YYYY-MM-DD</code> (ISO 8601)</li>
+<li><code>Month DD, YYYY</code> (e.g. <code>January 15, 1990</code>)</li>
+<li><code>DD Month YYYY</code> (e.g. <code>15 January 1990</code>)</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    <span class="s2">"date"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>        <span class="s2">"dateFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"SHIFT"</span><span class="p">,</span> <span class="s2">"shiftYears"</span><span class="p">:</span> <span class="mi">1</span><span class="p">}]</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    <span class="p">}</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="macaddress">macAddress<a class="headerlink" href="#macaddress" title="Permanent link">&para;</a></h2>
+<p>Detects network MAC addresses in colon-separated (<code>AA:BB:CC:DD:EE:FF</code>) and hyphen-separated (<code>AA-BB-CC-DD-EE-FF</code>) formats.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>    <span class="s2">"macAddress"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>        <span class="s2">"macAddressFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="p">}</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="currency">currency<a class="headerlink" href="#currency" title="Permanent link">&para;</a></h2>
+<p>Detects US dollar amounts such as <code>$1,234.56</code> and <code>$99.99</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>    <span class="s2">"currency"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>        <span class="s2">"currencyFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="p">}</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="streetaddress">streetAddress<a class="headerlink" href="#streetaddress" title="Permanent link">&para;</a></h2>
+<p>Detects US street address patterns such as <code>123 Main St</code> or <code>456 Elm Avenue</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>    <span class="s2">"streetAddress"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>        <span class="s2">"streetAddressFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="p">}</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="trackingnumber">trackingNumber<a class="headerlink" href="#trackingnumber" title="Permanent link">&para;</a></h2>
+<p>Detects UPS, FedEx, and USPS package tracking numbers.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>    <span class="s2">"trackingNumber"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>        <span class="s2">"trackingNumberFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="p">}</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="driverslicense">driversLicense<a class="headerlink" href="#driverslicense" title="Permanent link">&para;</a></h2>
+<p>Detects US driver's license numbers (pattern varies by state).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>    <span class="s2">"driversLicense"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>        <span class="s2">"driversLicenseFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>    <span class="p">}</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="ibancode">ibanCode<a class="headerlink" href="#ibancode" title="Permanent link">&para;</a></h2>
+<p>Detects International Bank Account Numbers (IBANs) for all supported country codes, both as transmitted (<code>GB29NWBK60161331926819</code>) and as printed in groups of four (<code>GB82 WEST 1234 5698 7654 32</code>).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>    <span class="s2">"ibanCode"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>        <span class="s2">"ibanCodeFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"MASK"</span><span class="p">}]</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>    <span class="p">}</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="allowspaces">allowSpaces<a class="headerlink" href="#allowspaces" title="Permanent link">&para;</a></h3>
+<p><code>allowSpaces</code> (default <code>true</code>) is what accepts the printed grouping. Set it to <code>false</code> to detect only the unbroken form.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>    <span class="s2">"ibanCode"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>        <span class="s2">"allowSpaces"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>        <span class="s2">"ibanCodeFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"MASK"</span><span class="p">}]</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>    <span class="p">}</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="passportnumber">passportNumber<a class="headerlink" href="#passportnumber" title="Permanent link">&para;</a></h2>
+<p>Detects US passport numbers in the format <code>A12345678</code> (one letter followed by eight digits).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>    <span class="s2">"passportNumber"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>        <span class="s2">"passportNumberFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>    <span class="p">}</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="pheye-ner-via-ph-eye">phEye (NER via ph-eye)<a class="headerlink" href="#pheye-ner-via-ph-eye" title="Permanent link">&para;</a></h2>
+<p>The <code>phEye</code> filter delegates named entity recognition to the <a href="https://github.com/philterd/ph-eye">ph-eye</a> service over HTTP. Unlike the regex-based filters above, ph-eye uses a machine-learning NER model and can detect entities such as person names, locations, and organisations.</p>
+<p>Alternatively, <code>phEye</code> can perform <strong>local on-device inference</strong> using <a href="https://github.com/urchade/GLiNER">GLiNER</a> when <code>modelPath</code> points at a local model directory. When <code>modelPath</code> is set, detection runs on-device and no remote endpoint is called.</p>
+<h3 id="remote-inference-http">Remote Inference (HTTP)<a class="headerlink" href="#remote-inference-http" title="Permanent link">&para;</a></h3>
+<p>Multiple <code>phEye</code> configurations can be listed in an array (for example, to call different ph-eye instances with different label sets).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>    <span class="s2">"phEye"</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>        <span class="p">{</span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>            <span class="s2">"endpoint"</span><span class="p">:</span> <span class="s2">"http://localhost:8080"</span><span class="p">,</span>
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>            <span class="s2">"bearerToken"</span><span class="p">:</span> <span class="s2">"my-token"</span><span class="p">,</span>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>            <span class="s2">"labels"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"PERSON"</span><span class="p">],</span>
+<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>            <span class="s2">"thresholds"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"PERSON"</span><span class="p">:</span> <span class="mf">0.85</span><span class="p">},</span>
+<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>            <span class="s2">"phEyeFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a>        <span class="p">}</span>
+<a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a>    <span class="p">]</span>
+<a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="local-inference-gliner">Local Inference (GLiNER)<a class="headerlink" href="#local-inference-gliner" title="Permanent link">&para;</a></h3>
+<p>To use local inference, install the <code>gliner</code> extra:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"phileas-redact[gliner]"</span>
+</code></pre></div>
+<p>Then set <code>modelPath</code> to a local GLiNER model <strong>directory</strong>: a folder containing the exported ONNX model (<code>model.onnx</code>), its tokenizer, and the GLiNER config (the layout produced for the <code>pheye-local-model</code> example). When <code>modelPath</code> is set, detection runs on-device and no remote endpoint is called. <code>labels</code> is the GLiNER detection prompt, and <code>threshold</code> (default <code>0.5</code>) is the minimum span confidence. This matches what the PhiSQL <code>DETECT PHEYE ... MODEL '&lt;path&gt;'</code> clause compiles to.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>    <span class="s2">"phEye"</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>        <span class="p">{</span>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>            <span class="s2">"modelPath"</span><span class="p">:</span> <span class="s2">"/path/to/ph-eye-model"</span><span class="p">,</span>
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>            <span class="s2">"labels"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"PERSON"</span><span class="p">,</span> <span class="s2">"ORGANIZATION"</span><span class="p">],</span>
+<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>            <span class="s2">"threshold"</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>            <span class="s2">"phEyeFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a>        <span class="p">}</span>
+<a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a>    <span class="p">]</span>
+<a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a><span class="p">}</span>
+</code></pre></div>
+<p>See <a href="../policies/#ph-eye-integration">Policies – ph-eye integration</a> for all configuration options.</p>
+<hr />
+<h2 id="dictionaries">dictionaries<a class="headerlink" href="#dictionaries" title="Permanent link">&para;</a></h2>
+<p>The <code>dictionaries</code> filter lets you supply a list of terms that should be detected and replaced in text. Matching is case-insensitive and is constrained to whole-word boundaries so that a term like <code>John</code> does not match inside <code>Johnson</code>.</p>
+<p>Internally the filter uses a <strong>Bloom filter</strong> for fast O(1) rejection of tokens that are definitely not in the dictionary, followed by an exact-set lookup to eliminate any Bloom false-positives. This makes the filter efficient even for large term lists.</p>
+<p>Multiple independent dictionaries can be listed in an array. Each entry may have its own term list, strategy, and ignored terms.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>    <span class="s2">"dictionaries"</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>        <span class="p">{</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>            <span class="s2">"enabled"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>            <span class="s2">"terms"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"John"</span><span class="p">,</span> <span class="s2">"Jane Smith"</span><span class="p">,</span> <span class="s2">"classified"</span><span class="p">],</span>
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>            <span class="s2">"customFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}],</span>
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>            <span class="s2">"ignored"</span><span class="p">:</span> <span class="p">[]</span>
+<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a>        <span class="p">}</span>
+<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a>    <span class="p">]</span>
+<a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="p">}</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td>bool</td>
+<td><code>true</code></td>
+<td>Whether this dictionary is active</td>
+</tr>
+<tr>
+<td><code>terms</code></td>
+<td>array of strings</td>
+<td><code>[]</code></td>
+<td>The list of terms to detect</td>
+</tr>
+<tr>
+<td><code>customFilterStrategies</code></td>
+<td>array</td>
+<td><code>[{"strategy": "REDACT"}]</code></td>
+<td>Replacement strategies (same as other filters)</td>
+</tr>
+<tr>
+<td><code>ignored</code></td>
+<td>array of strings</td>
+<td><code>[]</code></td>
+<td>Terms to skip even if found in the <code>terms</code> list</td>
+</tr>
+</tbody>
+</table>
+<h3 id="multiple-dictionaries">Multiple dictionaries<a class="headerlink" href="#multiple-dictionaries" title="Permanent link">&para;</a></h3>
+<p>You can define several dictionaries in the same policy — for example, one for person names and another for sensitive keywords:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>    <span class="s2">"dictionaries"</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>        <span class="p">{</span>
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>            <span class="s2">"terms"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"Alice"</span><span class="p">,</span> <span class="s2">"Bob"</span><span class="p">,</span> <span class="s2">"Charlie"</span><span class="p">],</span>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>            <span class="s2">"customFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"STATIC_REPLACE"</span><span class="p">,</span> <span class="s2">"staticReplacement"</span><span class="p">:</span> <span class="s2">"[PERSON]"</span><span class="p">}]</span>
+<a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>        <span class="p">},</span>
+<a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>        <span class="p">{</span>
+<a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a>            <span class="s2">"terms"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"secret"</span><span class="p">,</span> <span class="s2">"classified"</span><span class="p">,</span> <span class="s2">"top-secret"</span><span class="p">],</span>
+<a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a>            <span class="s2">"customFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a>        <span class="p">}</span>
+<a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a>    <span class="p">]</span>
+<a id="__codelineno-29-12" name="__codelineno-29-12" href="#__codelineno-29-12"></a><span class="p">}</span>
+</code></pre></div>
+<h2 id="identifiers-custom">identifiers (custom)<a class="headerlink" href="#identifiers-custom" title="Permanent link">&para;</a></h2>
+<p>The custom <code>identifiers</code> filter detects sensitive values with a user-supplied regular expression. Like dictionaries, it is a list, so a policy may define several custom identifiers.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>    <span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>        <span class="p">{</span>
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>            <span class="s2">"classification"</span><span class="p">:</span> <span class="s2">"account-number"</span><span class="p">,</span>
+<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>            <span class="s2">"pattern"</span><span class="p">:</span> <span class="s2">"</span><span class="se">\\</span><span class="s2">bACC-</span><span class="se">\\</span><span class="s2">d</span><span class="si">{8}</span><span class="se">\\</span><span class="s2">b"</span><span class="p">,</span>
+<a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>            <span class="s2">"caseSensitive"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+<a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a>            <span class="s2">"identifierFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a>        <span class="p">}</span>
+<a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a>    <span class="p">]</span>
+<a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a><span class="p">}</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classification</code></td>
+<td>string</td>
+<td><code>pattern</code></td>
+<td>Label applied to matches (used as the filter type)</td>
+</tr>
+<tr>
+<td><code>pattern</code></td>
+<td>string</td>
+<td>none</td>
+<td>The regular expression to match. Backslashes must be escaped for valid JSON</td>
+</tr>
+<tr>
+<td><code>caseSensitive</code></td>
+<td>bool</td>
+<td><code>true</code></td>
+<td>Whether matching is case-sensitive</td>
+</tr>
+<tr>
+<td><code>groupNumber</code></td>
+<td>int</td>
+<td><code>0</code></td>
+<td>The capture group to extract as the matched value (<code>0</code> is the whole match)</td>
+</tr>
+<tr>
+<td><code>validator</code></td>
+<td>string or object</td>
+<td>none</td>
+<td>An optional named, post-match validator (see below)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="validators">Validators<a class="headerlink" href="#validators" title="Permanent link">&para;</a></h3>
+<p>A regular expression matches a <em>format</em>, not a valid value. The optional <code>validator</code> runs a named, built-in check on each match and keeps the match only if the check passes, so a generic identifier can reject format-valid but checksum-invalid values without embedding executable code in the policy.</p>
+<p>The validator may be written as a string, or as an object when it takes parameters:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="s2">"validator"</span><span class="p">:</span> <span class="s2">"luhn"</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="s2">"validator"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"name"</span><span class="p">:</span> <span class="s2">"mod11"</span><span class="p">,</span> <span class="s2">"params"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"variant"</span><span class="p">:</span> <span class="s2">"cpf"</span><span class="p">}}</span>
+</code></pre></div>
+<p>An unknown or not-yet-implemented validator name is a policy error and the filter raises rather than silently skipping the check. The validators match the Phileas (Java) implementation for the same input.</p>
+<table>
+<thead>
+<tr>
+<th>Validator</th>
+<th>Parameters</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>luhn</code></td>
+<td>none</td>
+<td>Standard mod-10 Luhn checksum over the digits of the match (separators ignored).</td>
+</tr>
+<tr>
+<td><code>mod11</code></td>
+<td><code>variant</code>: <code>cpf</code> or <code>cnpj</code></td>
+<td>Weighted-sum mod-11 check digits for the Brazilian CPF and CNPJ.</td>
+</tr>
+<tr>
+<td><code>mod97</code></td>
+<td><code>variant</code>: <code>nir</code> or <code>iban</code>; <code>substitutions</code> (nir)</td>
+<td>Control from a value mod 97: the French INSEE/NIR (with Corsica substitutions) or an IBAN (MOD-97-10).</td>
+</tr>
+<tr>
+<td><code>mod23-letter</code></td>
+<td><code>substitutions</code></td>
+<td>Control letter from a 23-entry table, for the Spanish DNI and NIE (leading X/Y/Z substitution).</td>
+</tr>
+<tr>
+<td><code>es-cif</code></td>
+<td>none</td>
+<td>Spanish CIF control character (digit or letter).</td>
+</tr>
+<tr>
+<td><code>de-steuerid</code></td>
+<td>none</td>
+<td>German tax ID (Steuer-ID): digit-repetition rule plus ISO/IEC 7064 MOD 11,10 check digit.</td>
+</tr>
+<tr>
+<td><code>de-personalausweis</code></td>
+<td>none</td>
+<td>German ID card number: ICAO 9303 7-3-1 check digit.</td>
+</tr>
+<tr>
+<td><code>bic-structural</code></td>
+<td>none</td>
+<td>SWIFT/BIC structure (ISO 9362) with a valid ISO 3166 country segment.</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      &copy; Philterd, LLC. "Phileas" and "Philter" are registered trademarks of Philterd, LLC. Licensed under the Apache License, Version 2.0.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "navigation.tracking", "navigation.instant", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

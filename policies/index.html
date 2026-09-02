@@ -1,0 +1,1698 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A Python library to deidentify and redact PII, PHI, and other sensitive information from text">
+      
+      
+      
+        <link rel="canonical" href="https://philterd.github.io/phileas-python/policies/">
+      
+      
+        <link rel="prev" href="../quickstart/">
+      
+      
+        <link rel="next" href="../filters/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Policies - phileas-python</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#policies" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="phileas-python" class="md-header__button md-logo" aria-label="phileas-python" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            phileas-python
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Policies
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/philterd/phileas-python" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    philterd/phileas-python
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="phileas-python" class="md-nav__button md-logo" aria-label="phileas-python" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    phileas-python
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/philterd/phileas-python" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    philterd/phileas-python
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Policies
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#policy-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy structure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Policy structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analysis-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analysis settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-a-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loading a policy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enabling-and-disabling-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enabling and disabling filters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filter-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter strategies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Filter strategies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available strategies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strategy-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strategy options
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#map_replace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MAP_REPLACE
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MAP_REPLACE">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-lookup-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The lookup table
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conditions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conditions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supported-condition-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported condition expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#population-condition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Population condition
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ignored-terms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ignored terms
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ph-eye-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ph-eye integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ph-eye integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#remote-inference-http" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remote Inference (HTTP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-inference-gliner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Inference (GLiNER)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dictionary-filter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dictionary filter
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../filters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Filters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#policy-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy structure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Policy structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analysis-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analysis settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-a-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loading a policy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enabling-and-disabling-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enabling and disabling filters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filter-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter strategies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Filter strategies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available strategies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strategy-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strategy options
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#map_replace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MAP_REPLACE
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MAP_REPLACE">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-lookup-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The lookup table
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conditions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conditions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supported-condition-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported condition expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#population-condition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Population condition
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ignored-terms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ignored terms
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ph-eye-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ph-eye integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ph-eye integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#remote-inference-http" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remote Inference (HTTP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-inference-gliner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Inference (GLiNER)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dictionary-filter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dictionary filter
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="policies">Policies<a class="headerlink" href="#policies" title="Permanent link">&para;</a></h1>
+<p>A <strong>policy</strong> is the configuration object that tells phileas-python what to detect and what to do with each match. Policies are expressed as Python dicts, JSON strings, or YAML strings and are loaded into a <code>Policy</code> object before being passed to <code>FilterService</code>.</p>
+<h2 id="policy-structure">Policy structure<a class="headerlink" href="#policy-structure" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-policy</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">identifiers</span><span class="p">:</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">emailAddress</span><span class="p">:</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">emailAddressFilterStrategies</span><span class="p">:</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">REDACT</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">        </span><span class="nt">redactionFormat</span><span class="p">:</span><span class="w"> </span><span class="s">"{{{REDACTED-%t}}}"</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="nt">ignored</span><span class="p">:</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value-to-skip</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="nt">ignored</span><span class="p">:</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">global-term-to-skip</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="nt">ignoredPatterns</span><span class="p">:</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"\\d{3}-555-\\d{4}"</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>A human-readable name for the policy</td>
+</tr>
+<tr>
+<td><code>identifiers</code></td>
+<td>object</td>
+<td>Map of filter keys to their configuration</td>
+</tr>
+<tr>
+<td><code>ignored</code></td>
+<td>array of strings</td>
+<td>Terms that are never replaced, regardless of the filter that matched them</td>
+</tr>
+<tr>
+<td><code>ignoredPatterns</code></td>
+<td>array of regex strings</td>
+<td>Regex patterns whose full matches are never replaced</td>
+</tr>
+<tr>
+<td><code>config</code></td>
+<td>object</td>
+<td>Policy-wide settings. Preserved on load and save; see <a href="#analysis-settings">Analysis settings</a></td>
+</tr>
+<tr>
+<td><code>generators</code></td>
+<td>object</td>
+<td>Named replacement generators used by <code>MAP_REPLACE</code></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Catalog-derived field names</p>
+<p>Because policy field names come from the PhiSQL catalog, a few are non-obvious. ZIP codes use the <strong>singular</strong> <code>zipCodeFilterStrategy</code>, and Bitcoin addresses use <code>bitcoinFilterStrategies</code>. Policies emitted by the PhiSQL compiler already use the correct names.</p>
+</div>
+<h3 id="analysis-settings">Analysis settings<a class="headerlink" href="#analysis-settings" title="Permanent link">&para;</a></h3>
+<p><code>config.analysis</code> carries two booleans, both defaulting to <code>true</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">config</span><span class="p">:</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">analysis</span><span class="p">:</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">identification</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">spanDisambiguation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</code></pre></div>
+<p><code>spanDisambiguation</code> controls the context-vector step that decides which type an ambiguously
+typed span is — an SSN or a phone number, say. A policy may turn it off but cannot force it on
+where it is disabled globally.</p>
+<div class="admonition note">
+<p class="admonition-title">Not yet acted on</p>
+<p>This engine has no disambiguation step, so neither flag changes what it produces today.
+Both are parsed, exposed as <code>policy.span_disambiguation</code> and <code>policy.identification</code>, and
+written back out unchanged, so a policy shared with the Java engine keeps its meaning.</p>
+</div>
+<p>The rest of <code>config</code> — <code>splitting</code>, <code>pdf</code>, <code>postFilters</code> — is likewise preserved verbatim
+rather than dropped, though this engine does not read it.</p>
+<h2 id="loading-a-policy">Loading a policy<a class="headerlink" href="#loading-a-policy" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">phileas.policy.policy</span><span class="w"> </span><span class="kn">import</span> <span class="n">Policy</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># From a Python dict</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">policy</span> <span class="o">=</span> <span class="n">Policy</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span><span class="o">...</span><span class="p">})</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># From a JSON string</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">policy</span> <span class="o">=</span> <span class="n">Policy</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="s1">'{"name": "p", "identifiers": {...}}'</span><span class="p">)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># From a YAML string</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">policy</span> <span class="o">=</span> <span class="n">Policy</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="s2">"name: p</span><span class="se">\n</span><span class="s2">identifiers:</span><span class="se">\n</span><span class="s2">  ..."</span><span class="p">)</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># Serialise back</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="n">json_str</span> <span class="o">=</span> <span class="n">policy</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="n">yaml_str</span> <span class="o">=</span> <span class="n">policy</span><span class="o">.</span><span class="n">to_yaml</span><span class="p">()</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="n">d</span> <span class="o">=</span> <span class="n">policy</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+</code></pre></div>
+<h2 id="enabling-and-disabling-filters">Enabling and disabling filters<a class="headerlink" href="#enabling-and-disabling-filters" title="Permanent link">&para;</a></h2>
+<p>Every filter is <strong>disabled by default</strong>. To enable a filter, include its key in <code>identifiers</code>. To explicitly disable a filter that would otherwise be enabled, set <code>"enabled": false</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">policy</span> <span class="o">=</span> <span class="n">Policy</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"selective"</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>        <span class="s2">"emailAddress"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>            <span class="s2">"emailAddressFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>        <span class="p">},</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>        <span class="s2">"url"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"enabled"</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>   <span class="c1"># explicitly disabled</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="p">}</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">})</span>
+</code></pre></div>
+<h2 id="filter-strategies">Filter strategies<a class="headerlink" href="#filter-strategies" title="Permanent link">&para;</a></h2>
+<p>Each enabled filter requires at least one strategy entry in its <code>*FilterStrategies</code> array. The first strategy is applied to every match.</p>
+<h3 id="available-strategies">Available strategies<a class="headerlink" href="#available-strategies" title="Permanent link">&para;</a></h3>
+<p>The set of valid strategies comes from the PhiSQL catalog. The <code>strategy</code> value in a policy is the catalog's <code>phileas_enum</code>; the matching PhiSQL keyword is shown for reference.</p>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>PhiSQL keyword</th>
+<th>Description</th>
+<th>Example output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>REDACT</code></td>
+<td><code>REDACT</code></td>
+<td>Replace with a redaction tag</td>
+<td><code>{{{REDACTED-email-address}}}</code></td>
+</tr>
+<tr>
+<td><code>MASK</code></td>
+<td><code>MASK</code></td>
+<td>Replace every character with <code>maskCharacter</code> (default <code>*</code>)</td>
+<td><code>***@*******.***</code></td>
+</tr>
+<tr>
+<td><code>RANDOM_REPLACE</code></td>
+<td><code>RANDOM_REPLACE</code></td>
+<td>Replace with a randomly generated value of the same type</td>
+<td><code>jane@domain.org</code></td>
+</tr>
+<tr>
+<td><code>STATIC_REPLACE</code></td>
+<td><code>STATIC_REPLACE</code></td>
+<td>Replace with a fixed string</td>
+<td><code>[REMOVED]</code></td>
+</tr>
+<tr>
+<td><code>CRYPTO_REPLACE</code></td>
+<td><code>ENCRYPT</code></td>
+<td>Encrypt the value (requires an externally-configured key); emits a stable marker in this engine</td>
+<td><code>{{{ENCRYPTED-ssn}}}</code></td>
+</tr>
+<tr>
+<td><code>FPE_ENCRYPT_REPLACE</code></td>
+<td><code>FPE_ENCRYPT</code></td>
+<td>Format-preserving encryption (requires an externally-configured key); emits a stable marker in this engine</td>
+<td><code>{{{ENCRYPTED-ssn}}}</code></td>
+</tr>
+<tr>
+<td><code>HASH_SHA256_REPLACE</code></td>
+<td><code>HASH_SHA256</code></td>
+<td>Replace with the SHA-256 hex digest of the matched value</td>
+<td><code>a665a4592...</code></td>
+</tr>
+<tr>
+<td><code>LAST_4</code></td>
+<td><code>LAST_4</code></td>
+<td>Mask all but the last 4 characters</td>
+<td><code>****6789</code></td>
+</tr>
+<tr>
+<td><code>TRUNCATE</code></td>
+<td><code>TRUNCATE</code></td>
+<td>Keep only the first 4 characters</td>
+<td><code>john***</code></td>
+</tr>
+<tr>
+<td><code>TRUNCATE_TO_YEAR</code></td>
+<td><code>TRUNCATE_TO_YEAR</code></td>
+<td>Reduce a detected date to just its year</td>
+<td><code>1990</code></td>
+</tr>
+<tr>
+<td><code>SHIFT</code></td>
+<td><code>SHIFT</code></td>
+<td>Shift a detected date by a configurable number of years/months/days</td>
+<td><code>01/20/1995</code></td>
+</tr>
+<tr>
+<td><code>RELATIVE</code></td>
+<td><code>RELATIVE</code></td>
+<td>Pass the value through unchanged</td>
+<td><code>123-45-6789</code></td>
+</tr>
+<tr>
+<td><code>ABBREVIATE</code></td>
+<td><code>ABBREVIATE</code></td>
+<td>Replace with the initials of each word</td>
+<td><code>J. S.</code></td>
+</tr>
+<tr>
+<td><code>MAP_REPLACE</code></td>
+<td><code>MAP_REPLACE</code></td>
+<td>Replace from a lookup table, falling back to a generator and then to <code>fallbackStrategy</code></td>
+<td><code>Joe's Ice Cream Shop</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>CRYPTO_REPLACE</code> and <code>FPE_ENCRYPT_REPLACE</code> require an externally-configured key and emit a stable marker in this engine. <code>RELATIVE</code> passes the value through unchanged.</p>
+<h3 id="strategy-options">Strategy options<a class="headerlink" href="#strategy-options" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">REDACT</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nt">redactionFormat</span><span class="p">:</span><span class="w"> </span><span class="s">"{{{REDACTED-%t}}}"</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nt">staticReplacement</span><span class="p">:</span><span class="w"> </span><span class="s">"[REMOVED]"</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="nt">maskCharacter</span><span class="p">:</span><span class="w"> </span><span class="s">"*"</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="s">""</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="nt">shiftYears</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="nt">shiftMonths</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="nt">shiftDays</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="nt">color</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">black</span>
+</code></pre></div>
+<ul>
+<li><strong><code>redactionFormat</code></strong> — used by <code>REDACT</code>. The placeholder <code>%t</code> is replaced with the filter type name (e.g. <code>email-address</code>).</li>
+<li><strong><code>staticReplacement</code></strong> — used by <code>STATIC_REPLACE</code>.</li>
+<li><strong><code>maskCharacter</code></strong> — character used by <code>MASK</code> (default: <code>*</code>).</li>
+<li><strong><code>shiftYears</code> / <code>shiftMonths</code> / <code>shiftDays</code></strong> — offsets used by <code>SHIFT</code>.</li>
+<li><strong><code>condition</code></strong> — optional expression that must evaluate to <code>true</code> for this strategy to be applied. See <a href="#conditions">Conditions</a> below.</li>
+<li><strong><code>mappings</code> / <code>mappingFiles</code> / <code>caseSensitive</code> / <code>generator</code> / <code>fallbackStrategy</code></strong> — used by <code>MAP_REPLACE</code>. See <a href="#map_replace">MAP_REPLACE</a> below.</li>
+<li><strong><code>color</code></strong> — colour of the bar drawn over a redacted span when a policy is used to render a PDF or image. Accepted and ignored here: phileas-python redacts text, so <code>color</code> never changes its output. It is kept so one policy can be shared with the PDF-capable Java engine.</li>
+</ul>
+<h2 id="map_replace">MAP_REPLACE<a class="headerlink" href="#map_replace" title="Permanent link">&para;</a></h2>
+<p><code>MAP_REPLACE</code> replaces a detected value with one you supply, from a lookup table. For a value
+that is not in the table it can call a <strong>generator</strong> — a local model that produces a
+structure-preserving replacement — and if that produces nothing usable it applies
+<code>fallbackStrategy</code>. A detected value is never left in the clear.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="s2">"dictionaries"</span><span class="p">:</span> <span class="p">[{</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>        <span class="s2">"classification"</span><span class="p">:</span> <span class="s2">"business"</span><span class="p">,</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>        <span class="s2">"terms"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"Jon's Ice Cream Shop"</span><span class="p">],</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>        <span class="s2">"customFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>            <span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"MAP_REPLACE"</span><span class="p">,</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>            <span class="s2">"mappings"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"jon's ice cream shop"</span><span class="p">:</span> <span class="s2">"Joe's Ice Cream Shop"</span><span class="p">},</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>            <span class="s2">"mappingFiles"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"/etc/phileas/businesses.tsv"</span><span class="p">],</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>            <span class="s2">"caseSensitive"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>            <span class="s2">"generator"</span><span class="p">:</span> <span class="s2">"local"</span><span class="p">,</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>            <span class="s2">"fallbackStrategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>        <span class="p">}]</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="p">}]</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="p">}</span>
+</code></pre></div>
+<p>Resolution order for each detected value:</p>
+<ol>
+<li><strong>Lookup table</strong> — the value's replacement, if it is present.</li>
+<li><strong>Generator</strong> — when <code>generator</code> names one, and its output passes validation.</li>
+<li><strong><code>fallbackStrategy</code></strong> — anything else. Defaults to <code>REDACT</code>.</li>
+</ol>
+<h3 id="the-lookup-table">The lookup table<a class="headerlink" href="#the-lookup-table" title="Permanent link">&para;</a></h3>
+<p><code>mappings</code> is an inline object. <code>mappingFiles</code> is a list of local TSV paths, one tab-delimited
+key and value per row; a row without a tab is skipped, and everything after the first tab is
+the value. Files are read once at first use and merged in order, so a later file wins a
+duplicate key, and inline <code>mappings</code> win over every file.</p>
+<p><code>caseSensitive</code> (default <code>false</code>) applies to both sides of the lookup: keys are folded when
+the table is built and the detected value is folded the same way when it is looked up.</p>
+<h3 id="generators">Generators<a class="headerlink" href="#generators" title="Permanent link">&para;</a></h3>
+<p>A generator is declared once in the top-level <code>generators</code> block and referenced by name.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="s2">"generators"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="s2">"local"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"ollama"</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="s2">"endpoint"</span><span class="p">:</span> <span class="s2">"http://localhost:11434"</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="s2">"model"</span><span class="p">:</span> <span class="s2">"llama3.1"</span><span class="p">,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="s2">"prompt"</span><span class="p">:</span> <span class="s2">"Rewrite {{token}} as a different {{label}}. Reply with the value only."</span><span class="p">,</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        <span class="s2">"timeoutMs"</span><span class="p">:</span> <span class="mi">2000</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="p">}</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="p">}</span>
+</code></pre></div>
+<p><code>{{token}}</code> is replaced with the detected value and <code>{{label}}</code> with its entity label. The
+endpoint should be local: the detected value is sent to it. No credential is read from the
+policy — configure any auth on the server or in the environment.</p>
+<p><code>timeoutMs</code> is required, so a generator can never block the pipeline. Generated output is
+rejected — and the fallback applied — when it is blank, when it repeats the original value
+ignoring case, or when re-scanning it finds PII the generator introduced.</p>
+<p>A resolved value is cached per context, so a repeated value gets the same replacement and the
+generator runs at most once for it.</p>
+<hr />
+<h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Redact with a custom format</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="p">{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">,</span> <span class="s2">"redactionFormat"</span><span class="p">:</span> <span class="s2">"[PII-%t]"</span><span class="p">}</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Mask with a custom character</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="p">{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"MASK"</span><span class="p">,</span> <span class="s2">"maskCharacter"</span><span class="p">:</span> <span class="s2">"X"</span><span class="p">}</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># Replace with a fixed string</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="p">{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"STATIC_REPLACE"</span><span class="p">,</span> <span class="s2">"staticReplacement"</span><span class="p">:</span> <span class="s2">"[REMOVED]"</span><span class="p">}</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="c1"># Shift a date forward by 2 years and 3 days</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="p">{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"SHIFT"</span><span class="p">,</span> <span class="s2">"shiftYears"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"shiftDays"</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+</code></pre></div>
+<h2 id="conditions">Conditions<a class="headerlink" href="#conditions" title="Permanent link">&para;</a></h2>
+<p>A <code>condition</code> expression is an optional string attached to a strategy that gates its application. The strategy is only applied when the condition evaluates to <code>true</code>. When multiple strategies are listed, the first one whose condition is satisfied is used.</p>
+<blockquote>
+<p>The key is <code>condition</code> (singular), matching the redaction policy schema and the Java and .NET Phileas runtimes. The plural <code>conditions</code> is accepted as a deprecated alias for backward compatibility and may be removed in a future release; prefer <code>condition</code>.</p>
+</blockquote>
+<p>Sub-expressions may be combined with <code>and</code> and <code>or</code>, and grouped with parentheses. Conditions can test <code>confidence</code>, <code>token</code>, <code>context</code>, and <code>population</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">,</span> <span class="s2">"condition"</span><span class="p">:</span> <span class="s1">'token startswith "4" and confidence &gt;= 0.9'</span><span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">,</span> <span class="s2">"condition"</span><span class="p">:</span> <span class="s1">'(token startswith "4" or token startswith "5") and confidence &gt;= 0.9'</span><span class="p">}</span>
+</code></pre></div>
+<h3 id="supported-condition-expressions">Supported condition expressions<a class="headerlink" href="#supported-condition-expressions" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>token == "value"</code></td>
+<td>Matched text equals <code>value</code> (case-sensitive)</td>
+</tr>
+<tr>
+<td><code>token != "value"</code></td>
+<td>Matched text does not equal <code>value</code></td>
+</tr>
+<tr>
+<td><code>token startswith "prefix"</code></td>
+<td>Matched text starts with <code>prefix</code></td>
+</tr>
+<tr>
+<td><code>token endswith "suffix"</code></td>
+<td>Matched text ends with <code>suffix</code></td>
+</tr>
+<tr>
+<td><code>token contains "substring"</code></td>
+<td>Matched text contains <code>substring</code></td>
+</tr>
+<tr>
+<td><code>context == "value"</code></td>
+<td>Current context equals <code>value</code></td>
+</tr>
+<tr>
+<td><code>context != "value"</code></td>
+<td>Current context does not equal <code>value</code></td>
+</tr>
+<tr>
+<td><code>confidence &lt;op&gt; 0.9</code></td>
+<td>Match confidence compared to a threshold (<code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code>, <code>==</code>, <code>!=</code>)</td>
+</tr>
+<tr>
+<td><code>population &lt;op&gt; 20000</code></td>
+<td>ZIP code population compared to a threshold — see <a href="#population-condition">Population condition</a></td>
+</tr>
+</tbody>
+</table>
+<h3 id="population-condition">Population condition<a class="headerlink" href="#population-condition" title="Permanent link">&para;</a></h3>
+<p>The <code>population</code> condition is specific to the <code>zipCode</code> filter. It evaluates to <code>true</code> when the 2020 US Census population of the matched ZIP code satisfies the given comparison. ZIP codes not found in the dataset evaluate to <code>false</code>.</p>
+<p>Supported operators: <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>, <code>==</code>, <code>!=</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Only redact ZIP codes with a population below 20,000</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="p">{</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="s2">"zipCode"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>        <span class="s2">"zipCodeFilterStrategy"</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>            <span class="p">{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">,</span> <span class="s2">"condition"</span><span class="p">:</span> <span class="s2">"population &lt; 20000"</span><span class="p">}</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>        <span class="p">]</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="p">}</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Redact small ZIP codes; statically replace large ones</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">s_small</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">,</span>         <span class="s2">"condition"</span><span class="p">:</span> <span class="s2">"population &lt; 20000"</span><span class="p">}</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">s_large</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"STATIC_REPLACE"</span><span class="p">,</span> <span class="s2">"staticReplacement"</span><span class="p">:</span> <span class="s2">"[LARGE-ZIP]"</span><span class="p">,</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>           <span class="s2">"condition"</span><span class="p">:</span> <span class="s2">"population &gt;= 20000"</span><span class="p">}</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="p">{</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="s2">"zipCode"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>        <span class="s2">"zipCodeFilterStrategy"</span><span class="p">:</span> <span class="p">[</span><span class="n">s_small</span><span class="p">,</span> <span class="n">s_large</span><span class="p">]</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>    <span class="p">}</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="p">}</span>
+</code></pre></div>
+<p>The condition can also be combined with other expressions using <code>and</code> or <code>or</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="p">{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">,</span> <span class="s2">"condition"</span><span class="p">:</span> <span class="s1">'population &lt; 20000 and context == "medical"'</span><span class="p">}</span>
+</code></pre></div>
+<h2 id="ignored-terms">Ignored terms<a class="headerlink" href="#ignored-terms" title="Permanent link">&para;</a></h2>
+<p>Use <code>ignored</code> on an individual filter to skip specific values:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">{</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="s2">"emailAddress"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>        <span class="s2">"emailAddressFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}],</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>        <span class="s2">"ignored"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"noreply@internal.com"</span><span class="p">,</span> <span class="s2">"admin@internal.com"</span><span class="p">]</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    <span class="p">}</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="p">}</span>
+</code></pre></div>
+<p>Use the top-level <code>ignored</code> list to skip terms regardless of which filter matched them, and <code>ignoredPatterns</code> for regex-based exclusions:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">policy</span> <span class="o">=</span> <span class="n">Policy</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"allow-list"</span><span class="p">,</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>        <span class="s2">"phoneNumber"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>            <span class="s2">"phoneNumberFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>        <span class="p">}</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>    <span class="p">},</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>    <span class="s2">"ignored"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"555-000-0000"</span><span class="p">],</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>    <span class="s2">"ignoredPatterns"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"</span><span class="se">\\</span><span class="s2">d</span><span class="si">{3}</span><span class="s2">-555-</span><span class="se">\\</span><span class="s2">d</span><span class="si">{4}</span><span class="s2">"</span><span class="p">]</span>   <span class="c1"># ignore 555-xxx numbers</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="p">})</span>
+</code></pre></div>
+<h2 id="ph-eye-integration">ph-eye integration<a class="headerlink" href="#ph-eye-integration" title="Permanent link">&para;</a></h2>
+<p><a href="https://github.com/philterd/ph-eye">ph-eye</a> is a standalone NER service that phileas-python can call to detect named entities such as person names. Alternatively, phileas-python can perform local on-device inference using <a href="https://github.com/urchade/GLiNER">GLiNER</a> when <code>modelPath</code> points at a local model directory. When <code>modelPath</code> is set, detection runs on-device and no remote endpoint is called.</p>
+<h3 id="remote-inference-http">Remote Inference (HTTP)<a class="headerlink" href="#remote-inference-http" title="Permanent link">&para;</a></h3>
+<p>To use a remote ph-eye service, provide the <code>endpoint</code> URL:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">policy</span> <span class="o">=</span> <span class="n">Policy</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"ner-policy"</span><span class="p">,</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>        <span class="s2">"phEye"</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>            <span class="p">{</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>                <span class="s2">"endpoint"</span><span class="p">:</span> <span class="s2">"http://localhost:8080"</span><span class="p">,</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>                <span class="s2">"bearerToken"</span><span class="p">:</span> <span class="s2">"secret"</span><span class="p">,</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>                <span class="s2">"labels"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"PERSON"</span><span class="p">,</span> <span class="s2">"LOCATION"</span><span class="p">],</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>                <span class="s2">"thresholds"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"PERSON"</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">},</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>                <span class="s2">"phEyeFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>            <span class="p">}</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>        <span class="p">]</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>    <span class="p">}</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="p">})</span>
+</code></pre></div>
+<h3 id="local-inference-gliner">Local Inference (GLiNER)<a class="headerlink" href="#local-inference-gliner" title="Permanent link">&para;</a></h3>
+<p>To use local on-device inference, set <code>modelPath</code> to a local GLiNER model <strong>directory</strong>: a folder containing the exported ONNX model (<code>model.onnx</code>), its tokenizer, and the GLiNER config (the layout produced for the <code>pheye-local-model</code> example). When <code>modelPath</code> is set, detection runs on-device and no remote endpoint is called, even if one is configured. <code>labels</code> is the GLiNER detection prompt, and <code>threshold</code> (default <code>0.5</code>) is the minimum span confidence. This is what the PhiSQL <code>DETECT PHEYE ... MODEL '&lt;path&gt;'</code> clause compiles to.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">policy</span> <span class="o">=</span> <span class="n">Policy</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"local-ner-policy"</span><span class="p">,</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>        <span class="s2">"phEye"</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>            <span class="p">{</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>                <span class="s2">"modelPath"</span><span class="p">:</span> <span class="s2">"/path/to/ph-eye-model"</span><span class="p">,</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>                <span class="s2">"labels"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"PERSON"</span><span class="p">],</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>                <span class="s2">"threshold"</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>                <span class="s2">"phEyeFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>            <span class="p">}</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>        <span class="p">]</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>    <span class="p">}</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="p">})</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>endpoint</code></td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Base URL of the ph-eye service (for remote inference)</td>
+</tr>
+<tr>
+<td><code>bearerToken</code></td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Optional Bearer token for authentication (for remote inference)</td>
+</tr>
+<tr>
+<td><code>modelPath</code></td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Path to a local GLiNER model directory (ONNX model, tokenizer, and GLiNER config). When set, detection runs on-device and takes precedence over <code>endpoint</code>.</td>
+</tr>
+<tr>
+<td><code>threshold</code></td>
+<td>number</td>
+<td><code>0.5</code></td>
+<td>Minimum span confidence for the local model to return a detection</td>
+</tr>
+<tr>
+<td><code>timeout</code></td>
+<td>int</td>
+<td><code>30</code></td>
+<td>Request timeout in seconds (for remote inference)</td>
+</tr>
+<tr>
+<td><code>labels</code></td>
+<td>list of strings</td>
+<td><code>["PERSON"]</code></td>
+<td>NER label types to process</td>
+</tr>
+<tr>
+<td><code>thresholds</code></td>
+<td>object</td>
+<td><code>{}</code></td>
+<td>Minimum confidence per label, e.g. <code>{"PERSON": 0.9}</code></td>
+</tr>
+<tr>
+<td><code>removePunctuation</code></td>
+<td>bool</td>
+<td><code>false</code></td>
+<td>Strip punctuation from entity text before replacement</td>
+</tr>
+</tbody>
+</table>
+<h2 id="dictionary-filter">Dictionary filter<a class="headerlink" href="#dictionary-filter" title="Permanent link">&para;</a></h2>
+<p>The <code>dictionaries</code> filter matches terms from a user-supplied list anywhere in the text. It is useful for redacting known names, keywords, or any other fixed vocabulary.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">phileas.policy.policy</span><span class="w"> </span><span class="kn">import</span> <span class="n">Policy</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">phileas.services.filter_service</span><span class="w"> </span><span class="kn">import</span> <span class="n">FilterService</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="n">policy</span> <span class="o">=</span> <span class="n">Policy</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"dictionary-policy"</span><span class="p">,</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>    <span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>        <span class="s2">"dictionaries"</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>            <span class="p">{</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>                <span class="s2">"terms"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"John"</span><span class="p">,</span> <span class="s2">"Jane Smith"</span><span class="p">,</span> <span class="s2">"classified"</span><span class="p">],</span>
+<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>                <span class="s2">"customFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>            <span class="p">}</span>
+<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>        <span class="p">]</span>
+<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>    <span class="p">}</span>
+<a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a><span class="p">})</span>
+<a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a>
+<a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a><span class="n">service</span> <span class="o">=</span> <span class="n">FilterService</span><span class="p">()</span>
+<a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a><span class="n">result</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+<a id="__codelineno-17-18" name="__codelineno-17-18" href="#__codelineno-17-18"></a>    <span class="n">policy</span><span class="p">,</span> <span class="s2">"app"</span><span class="p">,</span> <span class="s2">"doc-1"</span><span class="p">,</span>
+<a id="__codelineno-17-19" name="__codelineno-17-19" href="#__codelineno-17-19"></a>    <span class="s2">"John called Jane Smith about the classified project."</span>
+<a id="__codelineno-17-20" name="__codelineno-17-20" href="#__codelineno-17-20"></a><span class="p">)</span>
+<a id="__codelineno-17-21" name="__codelineno-17-21" href="#__codelineno-17-21"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">filtered_text</span><span class="p">)</span>
+<a id="__codelineno-17-22" name="__codelineno-17-22" href="#__codelineno-17-22"></a><span class="c1"># {{{REDACTED-dictionary}}} called {{{REDACTED-dictionary}}} about the {{{REDACTED-dictionary}}} project.</span>
+</code></pre></div>
+<p>Like <code>phEye</code>, <code>dictionaries</code> is a list — you can include multiple independent dictionaries in a single policy:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">phileas.policy.policy</span><span class="w"> </span><span class="kn">import</span> <span class="n">Policy</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">phileas.services.filter_service</span><span class="w"> </span><span class="kn">import</span> <span class="n">FilterService</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="n">policy</span> <span class="o">=</span> <span class="n">Policy</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"multi-dict-policy"</span><span class="p">,</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    <span class="s2">"identifiers"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>        <span class="s2">"dictionaries"</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>            <span class="p">{</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>                <span class="s2">"terms"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"Alice"</span><span class="p">,</span> <span class="s2">"Bob"</span><span class="p">],</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>                <span class="s2">"customFilterStrategies"</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>                    <span class="p">{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"STATIC_REPLACE"</span><span class="p">,</span> <span class="s2">"staticReplacement"</span><span class="p">:</span> <span class="s2">"[PERSON]"</span><span class="p">}</span>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>                <span class="p">]</span>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>            <span class="p">},</span>
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>            <span class="p">{</span>
+<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>                <span class="s2">"terms"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"secret"</span><span class="p">,</span> <span class="s2">"classified"</span><span class="p">],</span>
+<a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>                <span class="s2">"customFilterStrategies"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"strategy"</span><span class="p">:</span> <span class="s2">"REDACT"</span><span class="p">}]</span>
+<a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>            <span class="p">}</span>
+<a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a>        <span class="p">]</span>
+<a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a>    <span class="p">}</span>
+<a id="__codelineno-18-20" name="__codelineno-18-20" href="#__codelineno-18-20"></a><span class="p">})</span>
+<a id="__codelineno-18-21" name="__codelineno-18-21" href="#__codelineno-18-21"></a>
+<a id="__codelineno-18-22" name="__codelineno-18-22" href="#__codelineno-18-22"></a><span class="n">service</span> <span class="o">=</span> <span class="n">FilterService</span><span class="p">()</span>
+<a id="__codelineno-18-23" name="__codelineno-18-23" href="#__codelineno-18-23"></a><span class="n">result</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+<a id="__codelineno-18-24" name="__codelineno-18-24" href="#__codelineno-18-24"></a>    <span class="n">policy</span><span class="p">,</span> <span class="s2">"app"</span><span class="p">,</span> <span class="s2">"doc-2"</span><span class="p">,</span>
+<a id="__codelineno-18-25" name="__codelineno-18-25" href="#__codelineno-18-25"></a>    <span class="s2">"Alice told Bob about the secret project marked classified."</span>
+<a id="__codelineno-18-26" name="__codelineno-18-26" href="#__codelineno-18-26"></a><span class="p">)</span>
+<a id="__codelineno-18-27" name="__codelineno-18-27" href="#__codelineno-18-27"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">filtered_text</span><span class="p">)</span>
+<a id="__codelineno-18-28" name="__codelineno-18-28" href="#__codelineno-18-28"></a><span class="c1"># [PERSON] told [PERSON] about the {{{REDACTED-dictionary}}} project marked {{{REDACTED-dictionary}}}.</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td>bool</td>
+<td><code>true</code></td>
+<td>Whether this dictionary is active</td>
+</tr>
+<tr>
+<td><code>terms</code></td>
+<td>array of strings</td>
+<td><code>[]</code></td>
+<td>The list of terms to detect (case-insensitive, whole-word)</td>
+</tr>
+<tr>
+<td><code>customFilterStrategies</code></td>
+<td>array</td>
+<td><code>[{"strategy": "REDACT"}]</code></td>
+<td>Replacement strategies</td>
+</tr>
+<tr>
+<td><code>ignored</code></td>
+<td>array of strings</td>
+<td><code>[]</code></td>
+<td>Terms to skip even if present in <code>terms</code></td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      &copy; Philterd, LLC. "Phileas" and "Philter" are registered trademarks of Philterd, LLC. Licensed under the Apache License, Version 2.0.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "navigation.tracking", "navigation.instant", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
