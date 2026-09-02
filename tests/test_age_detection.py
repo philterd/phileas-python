@@ -83,6 +83,52 @@ class TestPositiveDetections:
         assert len(age_filter.detect(text)) >= 1
 
 
+class TestKeywordSeparators:
+    """The separator set between an "age"/"aged" keyword and its value, matching Phileas (Java)."""
+
+    @pytest.mark.parametrize(
+        "text,expected",
+        [
+            # Colon, the form an intake record usually takes.
+            ("Age: 47", "Age: 47"),
+            ("Age : 47", "Age : 47"),
+            ("age:47", "age:47"),
+            ("Age :47", "Age :47"),
+            # Equals and hyphen, added for parity with Java.
+            ("Age = 47", "Age = 47"),
+            ("age=47", "age=47"),
+            ("Age= 47", "Age= 47"),
+            ("Age - 47", "Age - 47"),
+            ("age-47", "age-47"),
+            ("Age -47", "Age -47"),
+            ("aged - 47", "aged - 47"),
+            ("aged=47", "aged=47"),
+            # No separator at all.
+            ("Age 47", "Age 47"),
+            ("age  47", "age  47"),
+            ("aged 25", "aged 25"),
+            ("aged25", "aged25"),
+        ],
+    )
+    def test_separator_forms_detected(self, age_filter, text, expected):
+        assert _texts(age_filter.detect(text)) == [expected]
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            # A hyphen separator must not turn a date into an age. The keyword is required.
+            "2026-01-15",
+            "1990-05-20",
+            "Seen on 2026-01-15.",
+            # The keyword has to be its own word.
+            "storage=47",
+            "package-12",
+        ],
+    )
+    def test_separator_does_not_match_dates_or_substrings(self, age_filter, text):
+        assert age_filter.detect(text) == []
+
+
 class TestSpanAttributes:
     def test_filter_type_is_age(self, age_filter):
         spans = age_filter.detect("She is 45 years old.")

@@ -36,6 +36,9 @@ The table below lists every supported filter, the policy key used to enable it, 
 ## age
 
 Detects age references in text such as "35 years old", "aged 25", or "a 12-year-old child".
+An `age` or `aged` keyword may be separated from its value by a colon, an equals sign, or a
+hyphen, with or without surrounding whitespace, so `Age: 47`, `Age = 47`, `Age - 47`, and
+`Age 47` are all detected.
 
 ```python
 "identifiers": {

@@ -21,9 +21,15 @@ from phileas.models.span import Span
 from .base import BaseFilter, FilterType
 
 
+# Optional separator between an "age"/"aged" keyword and its value, e.g. "Age: 47", "Age - 47".
+# Whitespace sits inside the group to avoid ambiguous backtracking. The separator set is the one
+# Phileas (Java) settled on, so a policy behaves the same whichever language runs it.
+_AGE_SEPARATOR = r"\s*(?:[:=-]\s*)?"
+
+
 _PATTERNS = [
     re.compile(r"\b[0-9.]+[\s]*(year|years|yrs|yr|yo)(\.?)(\s)*(old)?\b", re.IGNORECASE),
-    re.compile(r"\b(age)(d)?(\s*:?\s*)[0-9.]+\b", re.IGNORECASE),
+    re.compile(r"\b(age)(d)?" + _AGE_SEPARATOR + r"[0-9.]+\b", re.IGNORECASE),
     re.compile(r"\b[0-9.]+[-]*(year|years|yrs|yr|yo)(\.?)(-)*(old)?\b", re.IGNORECASE),
     re.compile(r"\b([0-9]{1,3}) (y\/o)\b", re.IGNORECASE),
 ]
