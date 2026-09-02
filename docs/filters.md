@@ -78,6 +78,19 @@ Detects major credit card number formats (Visa, Mastercard, American Express, Di
 }
 ```
 
+### luhnCheck
+
+`luhnCheck` (default `false`) keeps only numbers that pass the Luhn checksum, so a card-shaped value that could not be a real card — a mistyped digit, or a test fixture such as `4111111111111112` — is left alone.
+
+```python
+"identifiers": {
+    "creditCard": {
+        "luhnCheck": True,
+        "creditCardFilterStrategies": [{"strategy": "LAST_4"}]
+    }
+}
+```
+
 ---
 
 ## ssn
