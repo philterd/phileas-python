@@ -99,3 +99,19 @@ class TestPolicy:
     def test_yaml_round_trip_ignored_patterns(self):
         p = Policy.from_dict({"identifiers": {}, "ignoredPatterns": [{"pattern": r"\d+"}]})
         assert Policy.from_yaml(p.to_yaml()).ignored_patterns == [r"\d+"]
+
+    def test_metadata_round_trips(self):
+        # Keys beyond description are allowed by the schema, so they have to survive too.
+        metadata = {
+            "description": "Client intake forms.",
+            "author": "records team",
+            "labels": ["intake", "pii"],
+        }
+        p = Policy.from_dict({"metadata": metadata, "identifiers": {}})
+        assert p.metadata == metadata
+        assert Policy.from_json(p.to_json()).metadata == metadata
+
+    def test_policy_without_metadata_omits_it(self):
+        p = Policy.from_dict({"identifiers": {}})
+        assert p.metadata is None
+        assert "metadata" not in p.to_dict()

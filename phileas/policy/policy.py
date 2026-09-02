@@ -75,8 +75,12 @@ class Policy:
         ignored_patterns: List[str] | None = None,
         generators: dict | None = None,
         config: dict | None = None,
+        metadata: dict | None = None,
     ) -> None:
         self.name = name
+        #: Raw ``metadata`` object, kept as-is so keys the engine does not know
+        #: about survive a load-and-save round trip. Never read during filtering.
+        self.metadata: dict | None = metadata
         #: Raw Phileas-JSON ``identifiers`` object (entity field -> filter node).
         self.identifiers: dict = identifiers if identifiers is not None else {}
         #: Flat list of policy-level ignored terms.
@@ -99,6 +103,7 @@ class Policy:
             ignored_patterns=_parse_ignored_patterns(data.get("ignoredPatterns", [])),
             generators=data.get("generators", {}) or {},
             config=data.get("config", {}) or {},
+            metadata=data.get("metadata"),
         )
 
     def _analysis_flag(self, name: str) -> bool:
@@ -129,7 +134,7 @@ class Policy:
         return cls.from_dict(yaml.safe_load(yaml_str))
 
     def to_dict(self) -> dict:
-        return {
+        data = {
             "name": self.name,
             "identifiers": self.identifiers,
             "ignored": [{"terms": list(self.ignored)}] if self.ignored else [],
@@ -137,6 +142,9 @@ class Policy:
             **({"generators": self.generators} if self.generators else {}),
             **({"config": self.config} if self.config else {}),
         }
+        if self.metadata is not None:
+            data["metadata"] = self.metadata
+        return data
 
     def to_json(self) -> str:
         return json.dumps(self.to_dict(), indent=2)
