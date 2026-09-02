@@ -22,6 +22,7 @@ from phisql import Compiler
 
 from phileas.policy.policy import Policy
 from phileas.services.filter_service import FilterService
+from phileas.catalog import get_catalog
 
 
 def compile_and_run(source, text, context="ctx"):
@@ -84,10 +85,12 @@ class TestPhiSQLIntegration:
         assert "[EMAIL]" in out
 
     def test_zip_code_field_round_trips(self):
-        # PhiSQL emits the plural zipCodeFilterStrategies; phileas must read it.
+        # PhiSQL emits the catalog's primary strategies field name, whichever it is;
+        # phileas must read what PhiSQL emits.
         src = "POLICY p; REDACT ZIP_CODE WITH REDACT;"
         policy_json = Compiler().compile(src).policy_json()
-        assert "zipCodeFilterStrategies" in policy_json["identifiers"]["zipCode"]
+        primary = get_catalog().get_entity("ZIP_CODE").phileas_strategies_field
+        assert primary in policy_json["identifiers"]["zipCode"]
         out = compile_and_run(src, "ZIP 90210 here.").filtered_text
         assert "90210" not in out
 

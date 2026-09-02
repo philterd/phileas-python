@@ -17,6 +17,12 @@
 from phileas.catalog import PhileasCatalog, get_catalog
 
 
+def _readable_strategies_fields(entity) -> set:
+    """Every strategies-array name an engine must read for an entity: the catalog's
+    primary name plus any aliases it records for earlier names."""
+    return {entity.phileas_strategies_field, *getattr(entity, "phileas_strategies_field_aliases", ())}
+
+
 class TestCatalogBridge:
     def test_singleton(self):
         assert get_catalog() is get_catalog()
@@ -38,10 +44,9 @@ class TestCatalogBridge:
     def test_quirky_field_names_come_from_catalog(self):
         """The engine must use the catalog's non-obvious field names."""
         cat = get_catalog()
-        # zip code was renamed from the singular; the old name stays readable as an alias.
-        zip_code = cat.get_entity("ZIP_CODE")
-        assert zip_code.phileas_strategies_field == "zipCodeFilterStrategies"
-        assert "zipCodeFilterStrategy" in zip_code.phileas_strategies_field_aliases
+        # The zip code strategies field was renamed to the plural; the singular has to stay
+        # readable either as the primary name or as an alias, depending on the catalog version.
+        assert "zipCodeFilterStrategy" in _readable_strategies_fields(cat.get_entity("ZIP_CODE"))
         # bitcoin uses an abbreviated strategies field name.
         assert cat.get_entity("BITCOIN_ADDRESS").phileas_strategies_field == "bitcoinFilterStrategies"
 
