@@ -95,6 +95,20 @@ _CUSTOM_SECTIONS: List[Tuple[str, Type[BaseFilter], str]] = [
 ]
 
 
+def _strategies_node(node: dict, entity) -> list:
+    """Reads a filter's strategies array by its catalog field name, falling back to
+    the catalog's aliases. An alias is a name the field had in an earlier schema, so
+    a policy written against that schema keeps working."""
+    strategies = node.get(entity.phileas_strategies_field)
+    if strategies is not None:
+        return strategies
+    for alias in getattr(entity, "phileas_strategies_field_aliases", ()) or ():
+        strategies = node.get(alias)
+        if strategies is not None:
+            return strategies
+    return []
+
+
 class FilterService:
     def __init__(self, context_service: AbstractContextService | None = None) -> None:
         self._context_service = (
@@ -115,9 +129,7 @@ class FilterService:
             node = identifiers.get(entity.phileas_field)
             if not isinstance(node, dict) or node.get("enabled", True) is False:
                 continue
-            strategies = self._strategies(
-                node.get(entity.phileas_strategies_field, []), policy
-            )
+            strategies = self._strategies(_strategies_node(node, entity), policy)
             detected = filter_cls(node).detect(text, context)
             spans.extend(self._apply_strategies(detected, strategies, node, context))
 

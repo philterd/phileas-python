@@ -92,10 +92,14 @@ class TestEntities:
     def test_entity_name_matches_lookup(self, name):
         assert get_catalog().get_entity(name).name == name
 
-    def test_zip_code_quirk_singular_strategies_field(self):
-        # ZIP_CODE uses a *singular* strategies field name.
+    def test_zip_code_singular_strategies_field_stays_readable(self):
+        # ZIP_CODE used a singular strategies field name until schema 1.3.0 renamed it to
+        # the plural. Whichever the catalog calls primary, the singular must stay readable
+        # so a policy written against an earlier schema keeps working.
         entity = get_catalog().get_entity("ZIP_CODE")
-        assert entity.phileas_strategies_field == "zipCodeFilterStrategy"
+        readable = {entity.phileas_strategies_field,
+                    *getattr(entity, "phileas_strategies_field_aliases", ())}
+        assert "zipCodeFilterStrategy" in readable
 
     def test_bitcoin_quirk_abbreviated_strategies_field(self):
         # BITCOIN_ADDRESS uses an abbreviated strategies field name.

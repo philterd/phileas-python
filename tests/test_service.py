@@ -14,6 +14,7 @@
 
 """End-to-end tests for the catalog-driven FilterService."""
 
+from phileas.catalog import get_catalog
 from phileas.policy.policy import Policy
 from phileas.services.context.in_memory_context_service import InMemoryContextService
 from phileas.services.filter_service import FilterService
@@ -49,8 +50,21 @@ class TestBasicPipeline:
 
 
 class TestCatalogDrivenFieldNames:
-    def test_zip_code_singular_strategy_field(self):
-        # The catalog says the field is `zipCodeFilterStrategy` (singular).
+    def test_zip_code_strategy_field(self):
+        # Every name the catalog says is readable must actually drive the filter: the
+        # primary name, and any alias recording what the field was called earlier.
+        entity = get_catalog().get_entity("ZIP_CODE")
+        names = {entity.phileas_strategies_field,
+                 *getattr(entity, "phileas_strategies_field_aliases", ())}
+        for name in names:
+            r = run({"zipCode": {name: [{"strategy": "STATIC_REPLACE", "staticReplacement": "ZZZZZ"}]}},
+                    "ZIP 90210 here.")
+            assert "ZZZZZ" in r.filtered_text, name
+            assert "90210" not in r.filtered_text, name
+
+    def test_zip_code_singular_strategy_field_still_read(self):
+        # The field was singular until schema 1.3.0. A policy written against an
+        # earlier schema must keep redacting rather than silently losing its strategies.
         r = run({"zipCode": {"zipCodeFilterStrategy": [{"strategy": "STATIC_REPLACE", "staticReplacement": "ZZZZZ"}]}},
                 "ZIP 90210 here.")
         assert "ZZZZZ" in r.filtered_text
