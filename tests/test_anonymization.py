@@ -21,7 +21,7 @@ from phileas.policy.policy import Policy
 from phileas.services.filter_service import FilterService
 
 _FILTER_TYPES = [
-    "age", "email-address", "credit-card", "ssn", "phone-number", "ip-address",
+    "age", "email-address", "credit-card", "ssn", "ein", "phone-number", "ip-address",
     "url", "zip-code", "vin", "bitcoin-address", "bank-routing-number", "date",
     "mac-address", "currency", "street-address", "tracking-number",
     "drivers-license", "iban-code", "passport-number",

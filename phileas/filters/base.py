@@ -40,6 +40,7 @@ class FilterType:
     EMAIL_ADDRESS = "email-address"
     CREDIT_CARD = "credit-card"
     SSN = "ssn"
+    EIN = "ein"
     PHONE_NUMBER = "phone-number"
     IP_ADDRESS = "ip-address"
     URL = "url"

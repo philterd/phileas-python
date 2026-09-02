@@ -10,6 +10,7 @@ The table below lists every supported filter, the policy key used to enable it, 
 | `emailAddress` | `email-address` | `user@example.com` |
 | `creditCard` | `credit-card` | `4111 1111 1111 1111`, `5500-0000-0000-0004` |
 | `ssn` | `ssn` | `123-45-6789`, `123 45 6789` |
+| `ein` | `ein` | `12-3456789` |
 | `phoneNumber` | `phone-number` | `(555) 867-5309`, `555.867.5309` |
 | `ipAddress` | `ip-address` | `192.168.1.1`, `2001:db8::1` |
 | `url` | `url` | `https://www.example.com/path?q=1` |
@@ -87,6 +88,35 @@ Detects US Social Security Numbers (SSNs) and Taxpayer Identification Numbers (T
 "identifiers": {
     "ssn": {
         "ssnFilterStrategies": [{"strategy": "HASH_SHA256_REPLACE"}]
+    }
+}
+```
+
+---
+
+## ein
+
+Detects US Employer Identification Numbers (EINs, the federal tax ID) in the canonical `NN-NNNNNNN` form.
+
+```python
+"identifiers": {
+    "ein": {
+        "einFilterStrategies": [{"strategy": "REDACT"}]
+    }
+}
+```
+
+Only the hyphenated form is matched. A bare nine-digit run is left to the `ssn` filter, since the two are indistinguishable without the hyphen; the hyphen position is what separates them (an EIN hyphenates after the second digit, an SSN after the third and fifth). Both filters can be enabled together — each claims its own form.
+
+### onlyValidPrefixes
+
+`onlyValidPrefixes` (default `false`) restricts matches to values whose two-digit prefix is one the IRS issues, so an EIN-shaped number with an unissued prefix such as `07-1234567` is left alone.
+
+```python
+"identifiers": {
+    "ein": {
+        "onlyValidPrefixes": True,
+        "einFilterStrategies": [{"strategy": "REDACT"}]
     }
 }
 ```

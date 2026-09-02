@@ -38,6 +38,7 @@ from phileas.filters.age_filter import AgeFilter
 from phileas.filters.email_address_filter import EmailAddressFilter
 from phileas.filters.credit_card_filter import CreditCardFilter
 from phileas.filters.ssn_filter import SSNFilter
+from phileas.filters.ein_filter import EINFilter
 from phileas.filters.phone_number_filter import PhoneNumberFilter
 from phileas.filters.ip_address_filter import IPAddressFilter
 from phileas.filters.url_filter import URLFilter
@@ -67,6 +68,7 @@ _BUILTIN_FILTERS: List[Tuple[Type[BaseFilter], str]] = [
     (EmailAddressFilter, "EMAIL_ADDRESS"),
     (CreditCardFilter, "CREDIT_CARD"),
     (SSNFilter, "SSN"),
+    (EINFilter, "EIN"),
     (PhoneNumberFilter, "PHONE_NUMBER"),
     (IPAddressFilter, "IP_ADDRESS"),
     (URLFilter, "URL"),

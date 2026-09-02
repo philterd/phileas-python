@@ -90,3 +90,20 @@ class TestPhiSQLIntegration:
         assert "zipCodeFilterStrategy" in policy_json["identifiers"]["zipCode"]
         out = compile_and_run(src, "ZIP 90210 here.").filtered_text
         assert "90210" not in out
+
+    def test_ein_round_trips(self):
+        # EIN entered the catalog in redaction policy schema 1.2.0. Compiling it here
+        # proves the entity name, the `ein` field, and `einFilterStrategies` agree
+        # across the compiler and the engine.
+        src = "POLICY p; REDACT EIN WITH REDACT;"
+        policy_json = Compiler().compile(src).policy_json()
+        assert "einFilterStrategies" in policy_json["identifiers"]["ein"]
+        out = compile_and_run(src, "EIN 12-3456789 here.").filtered_text
+        assert "12-3456789" not in out
+        assert "{{{REDACTED-ein}}}" in out
+
+    def test_ein_and_ssn_together(self):
+        src = "POLICY p; DEIDENTIFY EIN AS REDACT, SSN AS REDACT;"
+        out = compile_and_run(src, "EIN 12-3456789, SSN 123-45-6789.").filtered_text
+        assert "{{{REDACTED-ein}}}" in out
+        assert "{{{REDACTED-ssn}}}" in out

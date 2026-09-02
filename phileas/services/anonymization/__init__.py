@@ -19,6 +19,7 @@ from .age_anonymization_service import AgeAnonymizationService
 from .email_address_anonymization_service import EmailAddressAnonymizationService
 from .credit_card_anonymization_service import CreditCardAnonymizationService
 from .ssn_anonymization_service import SSNAnonymizationService
+from .ein_anonymization_service import EINAnonymizationService
 from .phone_number_anonymization_service import PhoneNumberAnonymizationService
 from .ip_address_anonymization_service import IPAddressAnonymizationService
 from .url_anonymization_service import URLAnonymizationService
@@ -41,6 +42,7 @@ _REGISTRY: dict[str, AbstractAnonymizationService] = {
     "email-address": EmailAddressAnonymizationService(),
     "credit-card": CreditCardAnonymizationService(),
     "ssn": SSNAnonymizationService(),
+    "ein": EINAnonymizationService(),
     "phone-number": PhoneNumberAnonymizationService(),
     "ip-address": IPAddressAnonymizationService(),
     "url": URLAnonymizationService(),
@@ -70,6 +72,7 @@ __all__ = [
     "EmailAddressAnonymizationService",
     "CreditCardAnonymizationService",
     "SSNAnonymizationService",
+    "EINAnonymizationService",
     "PhoneNumberAnonymizationService",
     "IPAddressAnonymizationService",
     "URLAnonymizationService",

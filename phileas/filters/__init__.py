@@ -17,6 +17,7 @@ from .age_filter import AgeFilter
 from .email_address_filter import EmailAddressFilter
 from .credit_card_filter import CreditCardFilter
 from .ssn_filter import SSNFilter
+from .ein_filter import EINFilter
 from .phone_number_filter import PhoneNumberFilter
 from .ip_address_filter import IPAddressFilter
 from .url_filter import URLFilter
@@ -38,7 +39,7 @@ from .pattern_filter import PatternFilter
 
 __all__ = [
     "BaseFilter", "FilterType",
-    "AgeFilter", "EmailAddressFilter", "CreditCardFilter", "SSNFilter",
+    "AgeFilter", "EmailAddressFilter", "CreditCardFilter", "SSNFilter", "EINFilter",
     "PhoneNumberFilter", "IPAddressFilter", "URLFilter", "ZipCodeFilter",
     "VINFilter", "BitcoinAddressFilter", "BankRoutingNumberFilter", "DateFilter",
     "MACAddressFilter", "CurrencyFilter", "StreetAddressFilter",

@@ -22,7 +22,7 @@ from phileas.services.anonymization import get_anonymization_service
 
 # All 19 registered filter types.
 _FILTER_TYPES = [
-    "age", "email-address", "credit-card", "ssn", "phone-number", "ip-address",
+    "age", "email-address", "credit-card", "ssn", "ein", "phone-number", "ip-address",
     "url", "zip-code", "vin", "bitcoin-address", "bank-routing-number", "date",
     "mac-address", "currency", "street-address", "tracking-number",
     "drivers-license", "iban-code", "passport-number",
@@ -33,8 +33,8 @@ _REPS = 25
 
 
 class TestRegistry:
-    def test_all_19_types_registered(self):
-        assert len(_FILTER_TYPES) == 19
+    def test_all_20_types_registered(self):
+        assert len(_FILTER_TYPES) == 20
         for filter_type in _FILTER_TYPES:
             assert get_anonymization_service(filter_type) is not None
 
