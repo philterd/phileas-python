@@ -14,11 +14,8 @@
 
 """Detection tests for :class:`PhoneNumberFilter`.
 
-These are characterization tests: they assert what the filter actually does,
-which is regex-based detection. Note that some patterns overlap, so a single
-phone number can produce more than one (sometimes duplicate) span; tests here
-assert on the *presence* of the expected span rather than exact list equality
-where overlap occurs.
+Detection runs through libphonenumber's scanner, so a number yields exactly one
+span covering the whole number, and confidence varies by how it is written.
 """
 
 import pytest
@@ -74,9 +71,12 @@ class TestSpanMetadata:
         assert spans
         assert all(s.filter_type == FILTER_TYPE for s in spans)
 
-    def test_confidence_is_one(self):
-        spans = _spans("Call 800-555-1234.")
-        assert all(s.confidence == 1.0 for s in spans)
+    def test_confidence_tiers(self):
+        # Plain NANP formatting earns 0.95; anything else is 0.75 above 14
+        # characters and 0.60 below, matching the Java filter.
+        assert _spans("Call 800-555-1234.")[0].confidence == 0.95
+        assert _spans("Call +1-800-555-1234.")[0].confidence == 0.75
+        assert _spans("Call 2025551234.")[0].confidence == 0.60
 
     def test_replacement_is_empty(self):
         spans = _spans("Call 800-555-1234.")
@@ -119,27 +119,17 @@ class TestPositiveDetection:
         assert _has_span(f"Reach me at {number} today", number)
 
     def test_paren_format_detected(self):
-        # The leading "(" is not included by the pattern (word boundary), but
-        # the rest of the number including the ")" is captured.
-        text = "Reach me at (800) 555-1234 today"
-        assert _has_span(text, "800) 555-1234")
+        # The whole number is one span, open paren included.
+        assert _texts("Reach me at (800) 555-1234 today") == ["(800) 555-1234"]
 
-    def test_paren_format_excludes_open_paren(self):
-        # Characterization: the open paren is not part of any detected span.
-        assert not _has_span("Call (800) 555-1234", "(800) 555-1234")
+    def test_paren_format_without_separator_detected(self):
+        assert _texts("Call (800)555-1234 now") == ["(800)555-1234"]
 
     def test_plus_one_space_format(self):
-        text = "Reach me at +1 800 555 1234 today"
-        texts = _texts(text)
-        assert "+1 800 555 1234" in texts
-        # overlapping pattern also matches the trailing 10-digit grouping
-        assert "800 555 1234" in texts
+        assert _texts("Reach me at +1 800 555 1234 today") == ["+1 800 555 1234"]
 
     def test_plus_one_dash_format(self):
-        text = "Reach me at +1-800-555-1234 today"
-        texts = _texts(text)
-        assert "+1-800-555-1234" in texts
-        assert "800-555-1234" in texts
+        assert _texts("Reach me at +1-800-555-1234 today") == ["+1-800-555-1234"]
 
     def test_ten_digit_starts_2_through_9(self):
         # First digit and fourth digit must be 2-9 for the no-separator pattern.
@@ -188,18 +178,11 @@ class TestNegativeDetection:
     def test_letters_in_place_of_digits(self):
         assert _spans("Call ABC-DEF-GHIJ now") == []
 
-    def test_ten_digits_starting_with_1_not_matched(self):
-        # No-separator pattern requires first digit 2-9; "1..." is not matched.
-        assert "1005551234" not in _texts("num 1005551234 end")
-
-    def test_ten_digits_bad_fourth_digit_not_matched(self):
-        # Fourth digit must be 2-9; "1234567890" (4th digit '4' ok? no, 4 is ok)
-        # Use a clearly-invalid one whose 4th digit is < 2.
-        assert "5550005678" not in _texts("num 5550005678 end")
-
-    def test_paren_without_separator_not_matched(self):
-        # "(800)555-1234" lacks the required separator after the area code.
-        assert _spans("Call (800)555-1234 now") == []
+    def test_possible_leniency_accepts_unassigned_nanp_digits(self):
+        # POSSIBLE leniency judges length, not NANP digit rules, so numbers the
+        # old regex excluded on their first or fourth digit are now detected.
+        assert "1005551234" in _texts("num 1005551234 end")
+        assert "5550005678" in _texts("num 5550005678 end")
 
     def test_only_letters(self):
         assert _spans("the quick brown fox") == []
@@ -211,10 +194,10 @@ class TestNegativeDetection:
 
 
 class TestBoundaries:
-    def test_eleven_digit_plus_grouping_truncated(self):
-        # "+1 800 555 12345" matches the +1 pattern up to 4 trailing digits.
-        text = "Call +1 800 555 12345 now"
-        assert "+1 800 555 1234" in _texts(text)
+    def test_eleven_digit_grouping_not_truncated(self):
+        # The old regex cut this down to a valid-looking "+1 800 555 1234".
+        # libphonenumber rejects the whole run instead of reporting part of it.
+        assert _spans("Call +1 800 555 12345 now") == []
 
     def test_number_embedded_in_longer_digit_run_no_separator(self):
         # A 14-digit run should not yield a clean 10-digit no-separator match
@@ -227,3 +210,59 @@ class TestBoundaries:
         first = [(s.text, s.character_start, s.character_end) for s in f.detect(text)]
         second = [(s.text, s.character_start, s.character_end) for s in f.detect(text)]
         assert first == second
+
+
+class TestInternational:
+    """The gap this filter was rewritten to close: non-NANP numbers were shipped
+    unredacted by the old regex. A "+" prefix is found whatever the region."""
+
+    @pytest.mark.parametrize(
+        "number",
+        [
+            "+44 20 7946 0958",
+            "+33 1 42 68 53 00",
+            "+91 98765 43210",
+            "+49 30 901820",
+            "+81 3-3224-9999",
+            "+61 2 9374 4000",
+        ],
+    )
+    def test_international_number_detected(self, number):
+        assert _texts(f"Reach me at {number} today") == [number]
+
+    def test_international_number_redacted_end_to_end(self):
+        from phileas.policy.policy import Policy
+        from phileas.services.filter_service import FilterService
+
+        policy = Policy.from_dict(
+            {"name": "t", "identifiers": {"phoneNumber": {
+                "phoneNumberFilterStrategies": [{"strategy": "REDACT"}]}}}
+        )
+        r = FilterService().filter(policy, "c", "d", "Call +44 20 7946 0958 today.")
+        assert "+44 20 7946 0958" not in r.filtered_text
+        assert "{{{REDACTED-phone-number}}}" in r.filtered_text
+
+    def test_national_format_foreign_number_not_claimed(self):
+        # Without a "+", a foreign national-format number is not a US number,
+        # so it is not detected while the region is US. Region config is #48.
+        assert _spans("Reach me at 020 7946 0958 today") == []
+
+
+class TestNANPRegression:
+    """The formats the old regex handled must keep working."""
+
+    @pytest.mark.parametrize(
+        "number",
+        [
+            "(555) 123-4567",
+            "+1 555 123 4567",
+            "555-123-4567",
+            "555.123.4567",
+            "5551234567",
+            "(800) 555-1234",
+            "+1-800-555-1234",
+            "800 555 1234",
+        ],
+    )
+    def test_nanp_format_detected(self, number):
+        assert _texts(f"Reach me at {number} today") == [number]

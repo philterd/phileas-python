@@ -11,7 +11,7 @@ The table below lists every supported filter, the policy key used to enable it, 
 | `creditCard` | `credit-card` | `4111 1111 1111 1111`, `5500-0000-0000-0004` |
 | `ssn` | `ssn` | `123-45-6789`, `123 45 6789` |
 | `ein` | `ein` | `12-3456789` |
-| `phoneNumber` | `phone-number` | `(555) 867-5309`, `555.867.5309` |
+| `phoneNumber` | `phone-number` | `(555) 867-5309`, `555.867.5309`, `+44 20 7946 0958` |
 | `ipAddress` | `ip-address` | `192.168.1.1`, `2001:db8::1` |
 | `url` | `url` | `https://www.example.com/path?q=1` |
 | `zipCode` | `zip-code` | `90210`, `10001-1234` |
@@ -138,7 +138,9 @@ Only the hyphenated form is matched. A bare nine-digit run is left to the `ssn` 
 
 ## phoneNumber
 
-Detects US phone numbers in common formats: `(555) 867-5309`, `555-867-5309`, `555.867.5309`.
+Detects phone numbers with [libphonenumber](https://github.com/daviddrysdale/python-phonenumbers). A `+`-prefixed international number is detected whatever its country (`+44 20 7946 0958`); a number without one is read as US (`(555) 867-5309`, `555-867-5309`, `555.867.5309`).
+
+Span confidence reflects how the number is written: `0.95` for plain NANP formatting, `0.75` for longer forms, `0.60` otherwise. A `confidence` condition sees those values.
 
 ```python
 "identifiers": {

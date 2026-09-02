@@ -11,26 +11,35 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Phone numbers, detected with libphonenumber (the ``phonenumbers`` package).
+
+A ``+``-prefixed number is found whatever the region; a bare national-format
+number is found for the default region only. Mirrors the Java filter's scanner,
+region, leniency, and confidence tiers.
+"""
 
 from __future__ import annotations
 
 import re
 from typing import List
 
+from phonenumbers import Leniency, PhoneNumberMatcher
+
 from phileas.models.span import Span
 from .base import BaseFilter, FilterType
 
 
-_PATTERNS = [
-    # (NXX) NXX-XXXX
-    re.compile(r"\b\(?\d{3}\)?[\s.\-]\d{3}[\s.\-]\d{4}\b"),
-    # NXX-NXX-XXXX
-    re.compile(r"\b\d{3}[\-\.]\d{3}[\-\.]\d{4}\b"),
-    # +1 NXX NXX XXXX or +1-NXX-NXX-XXXX
-    re.compile(r"\+1[\s\-]\(?\d{3}\)?[\s\-]\d{3}[\s\-]\d{4}"),
-    # 10-digit no separator
-    re.compile(r"\b[2-9]\d{2}[2-9]\d{6}\b"),
-]
+DEFAULT_REGION = "US"
+
+# A number written the plain NANP way. Matching it is what earns full confidence.
+_NANP_FORMAT = re.compile(r"(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}")
+
+
+def _confidence(raw: str) -> float:
+    if _NANP_FORMAT.fullmatch(raw):
+        return 0.95
+    return 0.75 if len(raw) > 14 else 0.60
 
 
 class PhoneNumberFilter(BaseFilter):
@@ -38,4 +47,18 @@ class PhoneNumberFilter(BaseFilter):
         super().__init__(FilterType.PHONE_NUMBER, config)
 
     def detect(self, text: str, context: str = "default") -> List[Span]:
-        return self._detect_patterns(_PATTERNS, text, context)
+        spans: List[Span] = []
+        for match in PhoneNumberMatcher(text, DEFAULT_REGION, leniency=Leniency.POSSIBLE):
+            spans.append(
+                Span(
+                    character_start=match.start,
+                    character_end=match.end,
+                    filter_type=self.filter_type,
+                    context=context,
+                    confidence=_confidence(match.raw_string),
+                    text=match.raw_string,
+                    replacement="",
+                    ignored=False,
+                )
+            )
+        return spans

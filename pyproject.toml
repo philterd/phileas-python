@@ -51,6 +51,8 @@ dependencies = [
     # The PhiSQL reference implementation is the source of truth for policy
     # actions (redaction strategies) and entity-type field mappings.
     "phisql==1.2.0",
+    # Phone detection uses libphonenumber's scanner, matching the Java engine.
+    "phonenumbers>=8.13",
 ]
 
 [project.urls]
