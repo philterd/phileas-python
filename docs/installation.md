@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Python 3.9 or later
+- Python 3.11 or later
 - [PyYAML](https://pypi.org/project/PyYAML/) (installed automatically as a dependency)
 - The [`phisql`](https://github.com/philterd) package, which supplies the **catalog** of policy actions — the single source of truth for the available redaction strategies and the entity-type field mappings used by policies.
 

@@ -8,7 +8,7 @@ version = "1.1.0"
 description = "A Python library to deidentify and redact PII, PHI, and other sensitive information from text"
 readme = "README.md"
 license = {text = "Apache-2.0"}
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 authors = [
     {name = "Philterd, LLC", email = "support@philterd.ai"},
 ]
@@ -38,8 +38,6 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Security",
