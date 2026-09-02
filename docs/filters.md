@@ -107,6 +107,10 @@ Detects US phone numbers in common formats: `(555) 867-5309`, `555-867-5309`, `5
 ## ipAddress
 
 Detects IPv4 addresses (e.g. `192.168.1.1`) and IPv6 addresses (e.g. `2001:db8::1`).
+IPv6 detection covers the expanded form (`2001:0db8:85a3:0000:0000:8a2e:0370:7334`), the
+compressed form (`FE80::1`, `::1`), the mixed form (`1:2:3:4:5:6:1.2.3.4`), IPv4-mapped
+addresses (`::ffff:192.0.2.128`), and a zone identifier when one is present
+(`fe80::1%eth0`). Each address produces a single span covering the whole address.
 
 ```python
 "identifiers": {
