@@ -168,3 +168,73 @@ class TestSSNBoundaries:
     def test_two_valid_formatted_both_detected(self):
         spans = SSNFilter().detect("123-45-6789 and 567-89-1234")
         assert sorted(_texts(spans)) == ["123-45-6789", "567-89-1234"]
+
+
+class TestSSNSpaceSeparated:
+    """The printed form, `NNN NN NNNN` (issue #62)."""
+
+    def test_space_separated_detected(self):
+        spans = SSNFilter().detect("SSN 123 45 6789.")
+        assert len(spans) == 1
+        span = spans[0]
+        assert span.text == "123 45 6789"
+        assert span.filter_type == "ssn"
+        assert span.confidence == 1.0
+        assert span.character_start == 4
+        assert span.character_end == 15
+
+    def test_offsets_match_source_text(self):
+        text = "My number is 123 45 6789 ok"
+        span = SSNFilter().detect(text)[0]
+        assert text[span.character_start:span.character_end] == span.text
+
+    @pytest.mark.parametrize(
+        "value", ["123 45 6789", "567 89 1234", "001 01 0001", "899 99 9999"]
+    )
+    def test_valid_spaced_values(self, value):
+        assert _texts(SSNFilter().detect(value)) == [value]
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            # The area exclusions carry over.
+            "000 45 6789", "666 45 6789", "900 45 6789", "999 45 6789",
+            # Group 00 and serial 0000.
+            "123 00 6789", "123 45 0000",
+            # The two advertising numbers.
+            "219 09 9999", "078 05 1120",
+        ],
+    )
+    def test_exclusions_apply_to_the_spaced_form(self, value):
+        assert SSNFilter().detect(value) == []
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "2026 01 15",      # a date, not 3-2-4
+            "12 345 6789",
+            "123 456 789",
+            "1234 56 7890",
+            "123 45 67890",
+            "123 45 678",
+            "x123 45 6789",
+            "123 45 6789x",
+        ],
+    )
+    def test_other_digit_groupings_not_detected(self, text):
+        assert SSNFilter().detect(text) == []
+
+    def test_mixed_separators_not_detected(self):
+        # Only one separator style per number. Java accepts a mix; this does not.
+        assert SSNFilter().detect("123-45 6789") == []
+        assert SSNFilter().detect("123 45-6789") == []
+
+    def test_redacted_end_to_end(self):
+        from phileas.policy.policy import Policy
+        from phileas.services.filter_service import FilterService
+
+        policy = Policy.from_dict({"name": "t", "identifiers": {"ssn": {
+            "ssnFilterStrategies": [{"strategy": "REDACT"}]}}})
+        r = FilterService().filter(policy, "c", "d", "SSN 123 45 6789 here.")
+        assert "123 45 6789" not in r.filtered_text
+        assert "{{{REDACTED-ssn}}}" in r.filtered_text
