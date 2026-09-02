@@ -266,3 +266,91 @@ class TestNANPRegression:
     )
     def test_nanp_format_detected(self, number):
         assert _texts(f"Reach me at {number} today") == [number]
+
+
+class TestRegionOption:
+    """`region` sets which national-format numbers are detected. String or list, default US."""
+
+    def test_default_is_us(self):
+        assert PhoneNumberFilter().regions == ["US"]
+        assert PhoneNumberFilter({}).regions == ["US"]
+
+    @pytest.mark.parametrize(
+        "config,expected",
+        [
+            ({"region": "GB"}, ["GB"]),
+            ({"region": ["US", "GB", "FR"]}, ["US", "GB", "FR"]),
+            # Lower case is normalised: libphonenumber silently finds nothing otherwise.
+            ({"region": "gb"}, ["GB"]),
+            ({"region": [" de "]}, ["DE"]),
+            # Anything unusable falls back to the default rather than failing.
+            ({"region": []}, ["US"]),
+            ({"region": None}, ["US"]),
+            ({"region": ""}, ["US"]),
+            ({"region": 42}, ["US"]),
+            ({"region": ["US", 42]}, ["US"]),
+        ],
+    )
+    def test_region_parsing(self, config, expected):
+        assert PhoneNumberFilter(config).regions == expected
+
+    def test_uk_national_format_needs_gb(self):
+        text = "Ring 020 7946 0958 today"
+        assert _spans(text) == []
+        assert _texts(text, {"region": "GB"}) == ["020 7946 0958"]
+
+    def test_each_configured_region_contributes(self):
+        text = "UK 020 7946 0958 and US 555-123-4567."
+        found = _texts(text, {"region": ["US", "GB"]})
+        assert "020 7946 0958" in found
+        assert "555-123-4567" in found
+
+    @pytest.mark.parametrize("region", ["US", "GB", "FR", ["DE"], ["US", "GB", "FR"]])
+    def test_plus_prefixed_found_whatever_the_region(self, region):
+        assert "+44 20 7946 0958" in _texts("Ring +44 20 7946 0958 today", {"region": region})
+
+    def test_us_default_unchanged_by_the_option_existing(self):
+        # Backward compatibility: a policy without `region` behaves as before.
+        text = "Call (555) 123-4567 now"
+        assert _texts(text) == _texts(text, {"region": "US"}) == ["(555) 123-4567"]
+
+
+class TestMultiRegionDedupe:
+    def test_number_found_under_several_regions_yields_one_span(self):
+        text = "Ring +44 20 7946 0958 or 020 7946 0958 or 555-123-4567."
+        spans = _spans(text, {"region": ["US", "GB", "FR"]})
+        bounds = [(s.character_start, s.character_end) for s in spans]
+        assert len(bounds) == len(set(bounds)) == 3
+        assert _texts(text, {"region": ["US", "GB", "FR"]}) == [
+            "+44 20 7946 0958", "020 7946 0958", "555-123-4567"
+        ]
+
+    def test_spans_are_in_document_order(self):
+        text = "One 020 7946 0958, two +33 1 42 68 53 00, three 555-123-4567."
+        starts = [s.character_start for s in _spans(text, {"region": ["US", "GB", "FR"]})]
+        assert starts == sorted(starts)
+
+    def test_no_overlapping_spans(self):
+        text = "Ring +44 20 7946 0958 or 020 7946 0958 or 555-123-4567."
+        spans = _spans(text, {"region": ["US", "GB", "FR", "DE", "IN"]})
+        for a, b in zip(spans, spans[1:]):
+            assert a.character_end <= b.character_start
+
+    def test_region_reaches_the_filter_through_the_policy(self):
+        from phileas.policy.policy import Policy
+        from phileas.services.filter_service import FilterService
+
+        policy = Policy.from_dict({"name": "t", "identifiers": {"phoneNumber": {
+            "region": "GB",
+            "phoneNumberFilterStrategies": [{"strategy": "REDACT"}]}}})
+        r = FilterService().filter(policy, "c", "d", "Ring 020 7946 0958 today.")
+        assert "020 7946 0958" not in r.filtered_text
+        assert "{{{REDACTED-phone-number}}}" in r.filtered_text
+
+
+class TestRegionDeduplication:
+    def test_repeated_regions_are_scanned_once(self):
+        assert PhoneNumberFilter({"region": ["US", "US", "us", " US "]}).regions == ["US"]
+
+    def test_order_is_preserved(self):
+        assert PhoneNumberFilter({"region": ["GB", "US", "GB"]}).regions == ["GB", "US"]

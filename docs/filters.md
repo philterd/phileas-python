@@ -150,6 +150,21 @@ Span confidence reflects how the number is written: `0.95` for plain NANP format
 }
 ```
 
+### region
+
+`region` sets which country's national-format numbers are detected — the ones written without a `+` country code. It takes one ISO 3166-1 alpha-2 code or a list of them, and defaults to `US`. A `+`-prefixed number is detected whatever this is set to.
+
+```python
+"identifiers": {
+    "phoneNumber": {
+        "region": ["US", "GB", "FR"],
+        "phoneNumberFilterStrategies": [{"strategy": "REDACT"}]
+    }
+}
+```
+
+Each region is scanned separately and the results merged, so a number matching under several regions still yields one span. In PhiSQL, write it as `REDACT PHONE_NUMBER WITH REDACT OPTIONS(region='GB')`.
+
 ---
 
 ## ipAddress

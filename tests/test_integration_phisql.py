@@ -107,3 +107,17 @@ class TestPhiSQLIntegration:
         out = compile_and_run(src, "EIN 12-3456789, SSN 123-45-6789.").filtered_text
         assert "{{{REDACTED-ein}}}" in out
         assert "{{{REDACTED-ssn}}}" in out
+
+    def test_phone_number_region_round_trips(self):
+        # PhiSQL 1.2.0 compiles OPTIONS(region=...) to a `region` key on the node.
+        src = "POLICY p; REDACT PHONE_NUMBER WITH REDACT OPTIONS(region='GB');"
+        policy_json = Compiler().compile(src).policy_json()
+        assert policy_json["identifiers"]["phoneNumber"]["region"] == "GB"
+        out = compile_and_run(src, "Ring 020 7946 0958 today.").filtered_text
+        assert "020 7946 0958" not in out
+        assert "{{{REDACTED-phone-number}}}" in out
+
+    def test_phone_number_without_region_is_us(self):
+        src = "POLICY p; REDACT PHONE_NUMBER WITH REDACT;"
+        out = compile_and_run(src, "Ring 020 7946 0958 today.").filtered_text
+        assert "020 7946 0958" in out
