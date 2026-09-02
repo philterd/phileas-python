@@ -114,15 +114,33 @@ class TestKeywordSeparators:
         assert _texts(age_filter.detect(text)) == [expected]
 
     @pytest.mark.parametrize(
+        "text,expected",
+        [
+            # A label on one line with its value on the next: the separator's whitespace is
+            # \s, so a line break is just more whitespace.
+            ("Age:\n47", "Age:\n47"),
+            ("Age =\n47", "Age =\n47"),
+            ("Age\n47", "Age\n47"),
+            ("Age:\r\n47", "Age:\r\n47"),
+            ("Age:\t47", "Age:\t47"),
+        ],
+    )
+    def test_separator_spans_a_line_break(self, age_filter, text, expected):
+        assert _texts(age_filter.detect(text)) == [expected]
+
+    @pytest.mark.parametrize(
         "text",
         [
             # A hyphen separator must not turn a date into an age. The keyword is required.
             "2026-01-15",
             "1990-05-20",
             "Seen on 2026-01-15.",
-            # The keyword has to be its own word.
+            # The keyword has to be its own word, so a word merely ending in "age" is not one.
             "storage=47",
             "package-12",
+            "coverage: 47",
+            "coverage = 47",
+            "mileage: 45000",
         ],
     )
     def test_separator_does_not_match_dates_or_substrings(self, age_filter, text):
