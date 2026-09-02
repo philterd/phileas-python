@@ -73,6 +73,7 @@ class Policy:
         identifiers: dict | None = None,
         ignored: List[str] | None = None,
         ignored_patterns: List[str] | None = None,
+        generators: dict | None = None,
     ) -> None:
         self.name = name
         #: Raw Phileas-JSON ``identifiers`` object (entity field -> filter node).
@@ -83,6 +84,8 @@ class Policy:
         self.ignored_patterns: List[str] = (
             ignored_patterns if ignored_patterns is not None else []
         )
+        #: Named replacement generators, referenced by a MAP_REPLACE strategy.
+        self.generators: dict = generators if generators is not None else {}
 
     @classmethod
     def from_dict(cls, data: dict) -> "Policy":
@@ -91,6 +94,7 @@ class Policy:
             identifiers=data.get("identifiers", {}) or {},
             ignored=_parse_ignored_terms(data.get("ignored", [])),
             ignored_patterns=_parse_ignored_patterns(data.get("ignoredPatterns", [])),
+            generators=data.get("generators", {}) or {},
         )
 
     @classmethod
@@ -107,6 +111,7 @@ class Policy:
             "identifiers": self.identifiers,
             "ignored": [{"terms": list(self.ignored)}] if self.ignored else [],
             "ignoredPatterns": [{"pattern": p} for p in self.ignored_patterns],
+            **({"generators": self.generators} if self.generators else {}),
         }
 
     def to_json(self) -> str:

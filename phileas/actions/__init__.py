@@ -149,6 +149,21 @@ def _abbreviate(strategy, config, filter_type, token):
 # PhiSQL keyword -> handler. Keys are catalog keywords; the registry below is
 # re-keyed by the catalog's phileas_enum so policy JSON (which uses the enum)
 # dispatches correctly.
+def _map_replace(strategy, config, filter_type, token):
+    """The inline table, then the fallback.
+
+    Reached by a direct call; FilterService resolves through Strategy, which can
+    also reach the policy's generators.
+    """
+    from phileas.policy.map_replace import MapReplaceResolver
+
+    resolver = MapReplaceResolver(config)
+    replacement = resolver.resolve(token, filter_type)
+    if replacement is not None:
+        return replacement
+    return get_replacement(resolver.fallback, config, filter_type, token)
+
+
 _HANDLERS: Dict[str, Action] = {
     "REDACT": _redact,
     "MASK": _mask,
@@ -163,6 +178,7 @@ _HANDLERS: Dict[str, Action] = {
     "SHIFT": _shift,
     "RELATIVE": _relative,
     "ABBREVIATE": _abbreviate,
+    "MAP_REPLACE": _map_replace,
 }
 
 _registry: Optional[Dict[str, Tuple[Optional[Strategy], Action]]] = None

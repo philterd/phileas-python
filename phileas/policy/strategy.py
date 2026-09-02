@@ -38,9 +38,20 @@ from .conditions import evaluate
 class Strategy:
     """Wraps one strategy object from a policy's filter-strategies array."""
 
-    def __init__(self, config: Optional[dict] = None) -> None:
+    def __init__(
+        self,
+        config: Optional[dict] = None,
+        generators: Optional[dict] = None,
+        contains_pii=None,
+    ) -> None:
         self.config = dict(config) if config else {"strategy": "REDACT"}
         self.strategy = self.config.get("strategy", "REDACT")
+        # MAP_REPLACE resolves through a lookup table and an optional generator.
+        self.map_replace = None
+        if str(self.strategy).upper() == "MAP_REPLACE":
+            from .map_replace import MapReplaceResolver
+
+            self.map_replace = MapReplaceResolver(self.config, generators, contains_pii)
         # Canonical key is ``condition`` (singular), matching the schema and the
         # Java/.NET runtimes; ``conditions`` is a deprecated alias.
         condition = self.config.get("condition")
@@ -49,8 +60,8 @@ class Strategy:
         self.condition = condition or ""
 
     @classmethod
-    def from_dict(cls, data: dict) -> "Strategy":
-        return cls(data)
+    def from_dict(cls, data: dict, generators: Optional[dict] = None, contains_pii=None) -> "Strategy":
+        return cls(data, generators, contains_pii)
 
     @classmethod
     def default(cls) -> "Strategy":
@@ -61,8 +72,15 @@ class Strategy:
         """Returns True if this strategy's condition is satisfied."""
         return evaluate(self.condition, token, context, confidence)
 
-    def get_replacement(self, filter_type: str, token: str) -> str:
+    def get_replacement(self, filter_type: str, token: str, context: str = "") -> str:
         """Returns the replacement value for *token* under this strategy."""
+        if self.map_replace is not None:
+            replacement = self.map_replace.resolve(token, filter_type, context)
+            if replacement is not None:
+                return replacement
+            return get_replacement(
+                self.map_replace.fallback, self.config, filter_type, token
+            )
         return get_replacement(self.strategy, self.config, filter_type, token)
 
     def to_dict(self) -> dict:

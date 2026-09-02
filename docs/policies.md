@@ -89,6 +89,7 @@ The set of valid strategies comes from the PhiSQL catalog. The `strategy` value 
 | `SHIFT` | `SHIFT` | Shift a detected date by a configurable number of years/months/days | `01/20/1995` |
 | `RELATIVE` | `RELATIVE` | Pass the value through unchanged | `123-45-6789` |
 | `ABBREVIATE` | `ABBREVIATE` | Replace with the initials of each word | `J. S.` |
+| `MAP_REPLACE` | `MAP_REPLACE` | Replace from a lookup table, falling back to a generator and then to `fallbackStrategy` | `Joe's Ice Cream Shop` |
 
 `CRYPTO_REPLACE` and `FPE_ENCRYPT_REPLACE` require an externally-configured key and emit a stable marker in this engine. `RELATIVE` passes the value through unchanged.
 
@@ -111,7 +112,77 @@ color: black
 - **`maskCharacter`** — character used by `MASK` (default: `*`).
 - **`shiftYears` / `shiftMonths` / `shiftDays`** — offsets used by `SHIFT`.
 - **`condition`** — optional expression that must evaluate to `true` for this strategy to be applied. See [Conditions](#conditions) below.
+- **`mappings` / `mappingFiles` / `caseSensitive` / `generator` / `fallbackStrategy`** — used by `MAP_REPLACE`. See [MAP_REPLACE](#map_replace) below.
 - **`color`** — colour of the bar drawn over a redacted span when a policy is used to render a PDF or image. Accepted and ignored here: phileas-python redacts text, so `color` never changes its output. It is kept so one policy can be shared with the PDF-capable Java engine.
+
+## MAP_REPLACE
+
+`MAP_REPLACE` replaces a detected value with one you supply, from a lookup table. For a value
+that is not in the table it can call a **generator** — a local model that produces a
+structure-preserving replacement — and if that produces nothing usable it applies
+`fallbackStrategy`. A detected value is never left in the clear.
+
+```python
+"identifiers": {
+    "dictionaries": [{
+        "classification": "business",
+        "terms": ["Jon's Ice Cream Shop"],
+        "customFilterStrategies": [{
+            "strategy": "MAP_REPLACE",
+            "mappings": {"jon's ice cream shop": "Joe's Ice Cream Shop"},
+            "mappingFiles": ["/etc/phileas/businesses.tsv"],
+            "caseSensitive": False,
+            "generator": "local",
+            "fallbackStrategy": "REDACT"
+        }]
+    }]
+}
+```
+
+Resolution order for each detected value:
+
+1. **Lookup table** — the value's replacement, if it is present.
+2. **Generator** — when `generator` names one, and its output passes validation.
+3. **`fallbackStrategy`** — anything else. Defaults to `REDACT`.
+
+### The lookup table
+
+`mappings` is an inline object. `mappingFiles` is a list of local TSV paths, one tab-delimited
+key and value per row; a row without a tab is skipped, and everything after the first tab is
+the value. Files are read once at first use and merged in order, so a later file wins a
+duplicate key, and inline `mappings` win over every file.
+
+`caseSensitive` (default `false`) applies to both sides of the lookup: keys are folded when
+the table is built and the detected value is folded the same way when it is looked up.
+
+### Generators
+
+A generator is declared once in the top-level `generators` block and referenced by name.
+
+```python
+"generators": {
+    "local": {
+        "type": "ollama",
+        "endpoint": "http://localhost:11434",
+        "model": "llama3.1",
+        "prompt": "Rewrite {{token}} as a different {{label}}. Reply with the value only.",
+        "timeoutMs": 2000
+    }
+}
+```
+
+`{{token}}` is replaced with the detected value and `{{label}}` with its entity label. The
+endpoint should be local: the detected value is sent to it. No credential is read from the
+policy — configure any auth on the server or in the environment.
+
+`timeoutMs` is required, so a generator can never block the pipeline. Generated output is
+rejected — and the fallback applied — when it is blank, when it repeats the original value
+ignoring case, or when re-scanning it finds PII the generator introduced.
+
+A resolved value is cached per context, so a repeated value gets the same replacement and the
+generator runs at most once for it.
+
+---
 
 ### Examples
 

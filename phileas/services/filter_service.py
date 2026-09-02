@@ -115,7 +115,9 @@ class FilterService:
             node = identifiers.get(entity.phileas_field)
             if not isinstance(node, dict) or node.get("enabled", True) is False:
                 continue
-            strategies = self._strategies(node.get(entity.phileas_strategies_field, []))
+            strategies = self._strategies(
+                node.get(entity.phileas_strategies_field, []), policy
+            )
             detected = filter_cls(node).detect(text, context)
             spans.extend(self._apply_strategies(detected, strategies, node, context))
 
@@ -124,7 +126,7 @@ class FilterService:
             for node in identifiers.get(field, []) or []:
                 if not isinstance(node, dict) or node.get("enabled", True) is False:
                     continue
-                strategies = self._strategies(node.get(strategies_field, []))
+                strategies = self._strategies(node.get(strategies_field, []), policy)
                 detected = filter_cls(node).detect(text, context)
                 spans.extend(self._apply_strategies(detected, strategies, node, context))
 
@@ -150,9 +152,51 @@ class FilterService:
             spans=spans,
         )
 
-    @staticmethod
-    def _strategies(raw) -> List[Strategy]:
-        return [Strategy.from_dict(s) for s in (raw or []) if isinstance(s, dict)]
+    def _strategies(self, raw, policy: Policy) -> List[Strategy]:
+        generators = getattr(policy, "generators", None) or None
+        contains_pii = None
+        if generators:
+            # Only a generated value is re-scanned.
+            def contains_pii(candidate: str) -> bool:
+                try:
+                    return bool(self._detect_only(policy, candidate))
+                except Exception:  # noqa: BLE001
+                    # Unverifiable, so treat the value as unsafe and fall back.
+                    return True
+
+        return [
+            Strategy.from_dict(s, generators, contains_pii)
+            for s in (raw or [])
+            if isinstance(s, dict)
+        ]
+
+    def _detect_only(self, policy: Policy, text: str) -> List[Span]:
+        """Detection only, to check a generated value for reintroduced PII.
+
+        Applying no strategies means this cannot re-enter MAP_REPLACE.
+        """
+        identifiers = policy.identifiers or {}
+        spans: List[Span] = []
+
+        for filter_cls, entity_name in _BUILTIN_FILTERS:
+            entity = self._catalog.get_entity(entity_name)
+            if entity is None:
+                continue
+            node = identifiers.get(entity.phileas_field)
+            if not isinstance(node, dict) or node.get("enabled", True) is False:
+                continue
+            spans.extend(filter_cls(node).detect(text, "rescan"))
+
+        for field, filter_cls, _ in _CUSTOM_SECTIONS:
+            # ph-eye calls a model over the network; a validation pass stays local.
+            if filter_cls is PhEyeFilter:
+                continue
+            for node in identifiers.get(field, []) or []:
+                if not isinstance(node, dict) or node.get("enabled", True) is False:
+                    continue
+                spans.extend(filter_cls(node).detect(text, "rescan"))
+
+        return spans
 
     def _apply_strategies(
         self,
@@ -191,7 +235,12 @@ class FilterService:
             if matched is None:
                 matched = Strategy.default()
 
-            span.replacement = matched.get_replacement(span.filter_type, token)
+            cached = self._context_service.get(context, token)
+            span.replacement = (
+                cached
+                if cached is not None
+                else matched.get_replacement(span.filter_type, token, context)
+            )
             result.append(span)
         return result
 
