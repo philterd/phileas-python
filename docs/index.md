@@ -30,18 +30,18 @@ service = FilterService()
 result = service.filter(policy, "app", "doc-1", "Call me at 555-867-5309 or email me at john@example.com.")
 
 print(result.filtered_text)
-# Call me at ***-***-**** or email me at {{{REDACTED-email-address}}}.
+# Call me at ************ or email me at {{{REDACTED-email-address}}}.
 ```
 
 ## Supported PII / PHI Types
 
 | Policy Key | Filter Type | Description |
 |---|---|---|
-| `age` | `age` | Age references (e.g., "35 years old") |
+| `age` | `age` | Age references, numeric or spelled out |
 | `emailAddress` | `email-address` | Email addresses |
 | `creditCard` | `credit-card` | Credit card numbers |
 | `ssn` | `ssn` | Social Security Numbers and TINs |
-| `phoneNumber` | `phone-number` | US phone numbers |
+| `phoneNumber` | `phone-number` | Phone numbers, international and US |
 | `ipAddress` | `ip-address` | IPv4 and IPv6 addresses |
 | `url` | `url` | HTTP/HTTPS URLs |
 | `zipCode` | `zip-code` | US ZIP codes |
@@ -56,6 +56,7 @@ print(result.filtered_text)
 | `driversLicense` | `drivers-license` | US driver's license numbers |
 | `ibanCode` | `iban-code` | International Bank Account Numbers |
 | `passportNumber` | `passport-number` | US passport numbers |
+| `ein` | `ein` | Employer Identification Numbers (US federal tax IDs) |
 | `phEye` | `person` (and others) | Named entities via the [ph-eye](https://github.com/philterd/ph-eye) NER service |
 
 ## Differences from the Java Phileas

@@ -4,17 +4,13 @@
 
 - Python 3.11 or later
 - [PyYAML](https://pypi.org/project/PyYAML/) (installed automatically as a dependency)
-- The [`phisql`](https://github.com/philterd) package, which supplies the **catalog** of policy actions — the single source of truth for the available redaction strategies and the entity-type field mappings used by policies.
+- The [`phisql`](https://pypi.org/project/phisql/) package, which supplies the **catalog** of policy actions — the single source of truth for the available redaction strategies and the entity-type field mappings used by policies. It installs automatically as a dependency.
 
 ## The phisql catalog dependency
 
-phileas now depends on the `phisql` package. The PhiSQL catalog defines every valid policy action (strategy) and the field names each entity type uses in a policy, so phileas reads them from the catalog rather than from hand-coded classes.
+phileas depends on the [`phisql`](https://pypi.org/project/phisql/) package. The PhiSQL catalog defines every valid policy action (strategy) and the field names each entity type uses in a policy, so phileas reads them from the catalog rather than from hand-coded classes.
 
-`phisql` is **not yet published on PyPI**, so for now it must be installed editable from a local checkout:
-
-```bash
-pip install -e /path/to/phisql/reference/python
-```
+`phisql` installs automatically with phileas; nothing extra is needed.
 
 ## Install from PyPI
 
@@ -24,7 +20,7 @@ pip install phileas-redact
 
 ## Install in development mode
 
-Clone the repository and install with the `dev` extras to get testing and documentation dependencies:
+Clone the repository and install with the `dev` extras to get the testing dependencies:
 
 ```bash
 git clone https://github.com/philterd/phileas-python.git

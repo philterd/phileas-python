@@ -480,7 +480,7 @@ Multiple independent dictionaries can be listed in an array. Each entry may have
         {
             "enabled": true,
             "terms": ["John", "Jane Smith", "classified"],
-            "dictionaryFilterStrategies": [{"strategy": "REDACT"}],
+            "customFilterStrategies": [{"strategy": "REDACT"}],
             "ignored": []
         }
     ]
@@ -491,7 +491,7 @@ Multiple independent dictionaries can be listed in an array. Each entry may have
 |---|---|---|---|
 | `enabled` | bool | `true` | Whether this dictionary is active |
 | `terms` | array of strings | `[]` | The list of terms to detect |
-| `dictionaryFilterStrategies` | array | `[{"strategy": "REDACT"}]` | Replacement strategies (same as other filters) |
+| `customFilterStrategies` | array | `[{"strategy": "REDACT"}]` | Replacement strategies (same as other filters) |
 | `ignored` | array of strings | `[]` | Terms to skip even if found in the `terms` list |
 
 ### Multiple dictionaries
@@ -503,11 +503,11 @@ You can define several dictionaries in the same policy — for example, one for 
     "dictionaries": [
         {
             "terms": ["Alice", "Bob", "Charlie"],
-            "dictionaryFilterStrategies": [{"strategy": "STATIC_REPLACE", "staticReplacement": "[PERSON]"}]
+            "customFilterStrategies": [{"strategy": "STATIC_REPLACE", "staticReplacement": "[PERSON]"}]
         },
         {
             "terms": ["secret", "classified", "top-secret"],
-            "dictionaryFilterStrategies": [{"strategy": "REDACT"}]
+            "customFilterStrategies": [{"strategy": "REDACT"}]
         }
     ]
 }

@@ -14,7 +14,7 @@ from phileas.policy.policy import Policy
 service = FilterService()
 
 # Or provide a custom context service
-from phileas.services.context_service import InMemoryContextService
+from phileas.services.context import InMemoryContextService
 ctx_svc = InMemoryContextService()
 service = FilterService(context_service=ctx_svc)
 ```
@@ -186,6 +186,8 @@ from phileas.models.span import Span
 | `confidence` | `float` | Confidence score in the range 0.0–1.0 |
 | `ignored` | `bool` | `True` if the span was matched but not replaced (because it appeared in an ignore list or matched an ignored pattern) |
 | `context` | `str` | The `context` value from the `filter()` call |
+| `applied` | `bool` | `True` when a strategy produced this span's replacement. Defaults to `True` |
+| `salt` | `str` | Salt used by a strategy that needs one. Empty by default |
 
 ### Methods
 
@@ -248,7 +250,7 @@ Return a default `Strategy` (the `REDACT` strategy).
 
 Return `True` if this strategy's `condition` expression is satisfied for the given `token`, `context`, and `confidence` (a strategy with no condition always returns `True`).
 
-#### `get_replacement(filter_type, token) -> str`
+#### `get_replacement(filter_type, token, context="") -> str`
 
 Return the replacement string for `token` based on the configured strategy.
 
@@ -256,12 +258,12 @@ Return the replacement string for `token` based on the configured strategy.
 
 ## AbstractContextService
 
-`phileas.services.context_service.AbstractContextService`
+`phileas.services.context.AbstractContextService`
 
 Abstract base class for context service implementations. Subclass this to provide a custom backend (e.g., Redis, database, etc.).
 
 ```python
-from phileas.services.context_service import AbstractContextService
+from phileas.services.context import AbstractContextService
 from phileas.services.filter_service import FilterService
 from phileas.policy.policy import Policy
 
@@ -306,12 +308,12 @@ class RedisContextService(AbstractContextService):
 
 ## InMemoryContextService
 
-`phileas.services.context_service.InMemoryContextService`
+`phileas.services.context.InMemoryContextService`
 
 Default implementation of `AbstractContextService` backed by a `dict[str, dict[str, str]]`. Suitable for single-process, in-memory use.
 
 ```python
-from phileas.services.context_service import InMemoryContextService
+from phileas.services.context import InMemoryContextService
 from phileas.services.filter_service import FilterService
 from phileas.policy.policy import Policy
 

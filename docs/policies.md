@@ -389,7 +389,7 @@ policy = Policy.from_dict({
         "dictionaries": [
             {
                 "terms": ["John", "Jane Smith", "classified"],
-                "dictionaryFilterStrategies": [{"strategy": "REDACT"}]
+                "customFilterStrategies": [{"strategy": "REDACT"}]
             }
         ]
     }
@@ -416,13 +416,13 @@ policy = Policy.from_dict({
         "dictionaries": [
             {
                 "terms": ["Alice", "Bob"],
-                "dictionaryFilterStrategies": [
+                "customFilterStrategies": [
                     {"strategy": "STATIC_REPLACE", "staticReplacement": "[PERSON]"}
                 ]
             },
             {
                 "terms": ["secret", "classified"],
-                "dictionaryFilterStrategies": [{"strategy": "REDACT"}]
+                "customFilterStrategies": [{"strategy": "REDACT"}]
             }
         ]
     }
@@ -441,5 +441,5 @@ print(result.filtered_text)
 |---|---|---|---|
 | `enabled` | bool | `true` | Whether this dictionary is active |
 | `terms` | array of strings | `[]` | The list of terms to detect (case-insensitive, whole-word) |
-| `dictionaryFilterStrategies` | array | `[{"strategy": "REDACT"}]` | Replacement strategies |
+| `customFilterStrategies` | array | `[{"strategy": "REDACT"}]` | Replacement strategies |
 | `ignored` | array of strings | `[]` | Terms to skip even if present in `terms` |

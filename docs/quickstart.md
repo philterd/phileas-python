@@ -105,7 +105,7 @@ text = "SSN 123-45-6789, phone 555-867-5309, email bob@example.com."
 
 result = service.filter(policy, "demo-app", "doc-1", text)
 print(result.filtered_text)
-# SSN {{{REDACTED-ssn}}}, phone ***-***-****, email {{{REDACTED-email-address}}}.
+# SSN {{{REDACTED-ssn}}}, phone ************, email {{{REDACTED-email-address}}}.
 ```
 
 ## Next steps

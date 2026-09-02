@@ -424,7 +424,7 @@ policy = Policy.from_dict({
         "dictionaries": [
             {
                 "terms": ["John Smith", "Jane Doe", "confidential", "proprietary"],
-                "dictionaryFilterStrategies": [{"strategy": "REDACT"}]
+                "customFilterStrategies": [{"strategy": "REDACT"}]
             }
         ]
     }
