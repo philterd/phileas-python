@@ -21,9 +21,18 @@ from phileas.models.span import Span
 from .base import BaseFilter, FilterType
 
 
+# The host charset has no ":", so without a port group the match stopped at the port and left the
+# rest of the URL, path included, in the document. Digits are required after the colon, so a colon
+# that is sentence punctuation rather than a port does not extend the match. The bound matches the
+# Java port, which uses "(:[\d]{1,5})?".
+_PORT = r"(?::\d{1,5})?"
+
+
 _PATTERNS = [
     re.compile(
-        r"https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+(?:/(?:[-\w.~!$&'()*+,;=:@%]|(?:%[\da-fA-F]{2}))*)*(?:\?(?:[-\w.~!$&'()*+,;=:@/?%]|(?:%[\da-fA-F]{2}))*)?(?:#(?:[-\w.~!$&'()*+,;=:@/?%]|(?:%[\da-fA-F]{2}))*)?",
+        r"https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+"
+        + _PORT
+        + r"(?:/(?:[-\w.~!$&'()*+,;=:@%]|(?:%[\da-fA-F]{2}))*)*(?:\?(?:[-\w.~!$&'()*+,;=:@/?%]|(?:%[\da-fA-F]{2}))*)?(?:#(?:[-\w.~!$&'()*+,;=:@/?%]|(?:%[\da-fA-F]{2}))*)?",
         re.IGNORECASE,
     ),
 ]

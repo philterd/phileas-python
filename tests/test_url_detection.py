@@ -108,19 +108,59 @@ def test_scheme_handling(url_filter, scheme, expected_count):
 
 
 # ---------------------------------------------------------------------------
-# Port behavior (characterization): the host charset does not include ':' so
-# a port is NOT captured. The match stops at the host.
+# Port behavior: a port and everything after it belong to the URL.
 # ---------------------------------------------------------------------------
 
 @pytest.mark.parametrize("text,expected", [
-    ("Port http://example.com:8080/path here", "http://example.com"),
-    ("Port only http://example.com:8080 here", "http://example.com"),
-    ("http://localhost:3000", "http://localhost"),
+    # A port with a path. The path is what was left in the document before.
+    ("Port http://example.com:8080/path here", "http://example.com:8080/path"),
+    ("https://portal.hospital.org:8443/patient/12345",
+     "https://portal.hospital.org:8443/patient/12345"),
+    ("http://example.com:8080/path/secret", "http://example.com:8080/path/secret"),
+    # A port with no path.
+    ("Port only http://example.com:8080 here", "http://example.com:8080"),
+    ("http://localhost:3000", "http://localhost:3000"),
+    ("http://localhost:3000/", "http://localhost:3000/"),
+    # A port with a query or a fragment.
+    ("http://example.com:80?q=1", "http://example.com:80?q=1"),
+    ("http://example.com:443#top", "http://example.com:443#top"),
+    ("https://example.com:8443/a/b?q=1#frag", "https://example.com:8443/a/b?q=1#frag"),
+    # The bounds of the port itself.
+    ("http://a.com:1", "http://a.com:1"),
+    ("http://a.com:65535", "http://a.com:65535"),
 ])
-def test_port_not_captured(url_filter, text, expected):
+def test_port_captured(url_filter, text, expected):
     spans = url_filter.detect(text)
     assert len(spans) == 1
     assert spans[0].text == expected
+    assert text[spans[0].character_start:spans[0].character_end] == expected
+
+
+@pytest.mark.parametrize("text,expected", [
+    # Digits are required after the colon, so sentence punctuation does not extend the match.
+    ("Visit http://example.com: the time is 12:30", "http://example.com"),
+    ("Note http://example.com:8080: the port is odd", "http://example.com:8080"),
+    ("http://example.com:abc/path", "http://example.com"),
+    ("http://example.com:/path", "http://example.com"),
+    ("Link http://example.com:: odd", "http://example.com"),
+])
+def test_colon_that_is_not_a_port_does_not_extend_match(url_filter, text, expected):
+    spans = url_filter.detect(text)
+    assert len(spans) == 1
+    assert spans[0].text == expected
+
+
+def test_port_longer_than_five_digits_truncates(url_filter):
+    # Characterization: the port is bounded at five digits, matching the Java port, so a longer
+    # run of digits is not consumed in full. No valid port exceeds 65535.
+    spans = url_filter.detect("http://a.com:123456")
+    assert len(spans) == 1
+    assert spans[0].text == "http://a.com:12345"
+
+
+def test_two_urls_with_ports(url_filter):
+    spans = url_filter.detect("A http://a.com:1/x B http://b.com:2/y")
+    assert [s.text for s in spans] == ["http://a.com:1/x", "http://b.com:2/y"]
 
 
 # ---------------------------------------------------------------------------
