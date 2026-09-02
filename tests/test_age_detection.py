@@ -283,3 +283,116 @@ class TestReturnShape:
 
     def test_empty_input_returns_empty_list(self, age_filter):
         assert age_filter.detect("") == []
+
+
+class TestSpelledOutAges:
+    """Ages written as words (issue #57)."""
+
+    @pytest.mark.parametrize(
+        "text,expected",
+        [
+            ("the patient is thirty-five years old", "thirty-five years old"),
+            ("a thirty-five-year-old patient", "thirty-five-year-old"),
+            ("she is aged forty-two", "aged forty-two"),
+            ("he is one hundred years old", "one hundred years old"),
+            # Hyphen or space inside a compound number.
+            ("forty two years old", "forty two years old"),
+            ("forty-two years old", "forty-two years old"),
+            # The keyword form as well as the unit form.
+            ("age thirty-five", "age thirty-five"),
+            ("aged sixteen", "aged sixteen"),
+            # Every band of the number word.
+            ("zero years old", "zero years old"),
+            ("nine years old", "nine years old"),
+            ("nineteen years old", "nineteen years old"),
+            ("twenty years old", "twenty years old"),
+            ("ninety-nine years old", "ninety-nine years old"),
+            ("a hundred years old", "a hundred years old"),
+            ("one hundred and five years old", "one hundred and five years old"),
+            ("one hundred nineteen years old", "one hundred nineteen years old"),
+            # The shorter units.
+            ("five yo", "five yo"),
+            ("nineteen yrs", "nineteen yrs"),
+        ],
+    )
+    def test_spelled_out_detected(self, age_filter, text, expected):
+        assert expected in _texts(age_filter.detect(text))
+
+    @pytest.mark.parametrize(
+        "text,expected",
+        [
+            ("THIRTY-FIVE YEARS OLD", "THIRTY-FIVE YEARS OLD"),
+            ("Thirty-Five Years Old", "Thirty-Five Years Old"),
+            ("AGED FORTY-TWO", "AGED FORTY-TWO"),
+        ],
+    )
+    def test_case_insensitive(self, age_filter, text, expected):
+        assert expected in _texts(age_filter.detect(text))
+
+    def test_offsets_match_source_text(self, age_filter):
+        text = "the patient is thirty-five years old today"
+        span = age_filter.detect(text)[0]
+        assert text[span.character_start:span.character_end] == span.text
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            # A number word inside a longer word is not an age.
+            "someone years old",
+            "the agent one",
+            # No number word at all.
+            "a year old",
+            "years old",
+            "many years old",
+        ],
+    )
+    def test_not_detected(self, age_filter, text):
+        assert age_filter.detect(text) == []
+
+    def test_redacted_end_to_end(self):
+        from phileas.policy.policy import Policy
+        from phileas.services.filter_service import FilterService
+
+        policy = Policy.from_dict({"name": "t", "identifiers": {"age": {
+            "ageFilterStrategies": [{"strategy": "REDACT"}]}}})
+        r = FilterService().filter(policy, "c", "d", "She is thirty-five years old.")
+        assert "thirty-five years old" not in r.filtered_text
+        assert "{{{REDACTED-age}}}" in r.filtered_text
+
+
+class TestYearsAgo:
+    """Elapsed time is not an age, spelled out or numeric."""
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "she left five years ago",
+            "she left 5 years ago",
+            "it was ten years ago.",
+            "it was 10 years ago",
+            "twenty years ago",
+        ],
+    )
+    def test_years_ago_not_detected(self, age_filter, text):
+        assert age_filter.detect(text) == []
+
+    def test_an_age_beside_an_elapsed_time_is_still_found(self, age_filter):
+        assert _texts(age_filter.detect("5 years ago and 6 years old")) == ["6 years old"]
+
+    @pytest.mark.parametrize(
+        "text", ["two hundred years old", "nine hundred years old", "hundred years old"]
+    )
+    def test_hundred_needs_one_or_a(self, age_filter, text):
+        # Without the article "two hundred years old" matched from "hundred".
+        assert age_filter.detect(text) == []
+
+    @pytest.mark.parametrize(
+        "text,expected",
+        [
+            ("one hundred ninety-nine years old", "one hundred ninety-nine years old"),
+            ("age one hundred", "age one hundred"),
+            ("aged a hundred", "aged a hundred"),
+        ],
+    )
+    def test_upper_end_of_the_range(self, age_filter, text, expected):
+        assert expected in _texts(age_filter.detect(text))

@@ -6,7 +6,7 @@ The table below lists every supported filter, the policy key used to enable it, 
 
 | Policy key | Filter type | Example matches |
 |---|---|---|
-| `age` | `age` | `35 years old`, `aged 25`, `12-year-old` |
+| `age` | `age` | `35 years old`, `aged 25`, `12-year-old`, `thirty-five years old` |
 | `emailAddress` | `email-address` | `user@example.com` |
 | `creditCard` | `credit-card` | `4111 1111 1111 1111`, `5500-0000-0000-0004` |
 | `ssn` | `ssn` | `123-45-6789`, `123 45 6789` |
@@ -40,6 +40,11 @@ Detects age references in text such as "35 years old", "aged 25", or "a 12-year-
 An `age` or `aged` keyword may be separated from its value by a colon, an equals sign, or a
 hyphen, with or without surrounding whitespace, so `Age: 47`, `Age = 47`, `Age - 47`, and
 `Age 47` are all detected.
+
+Ages spelled out as words are detected too, from `zero` to `one hundred ninety-nine`:
+`thirty-five years old`, `a thirty-five-year-old patient`, `aged forty-two`. A compound
+number may be hyphenated or spaced (`forty-two`, `forty two`). Elapsed time is not an age,
+so `she left five years ago` is left alone.
 
 ```python
 "identifiers": {

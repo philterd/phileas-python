@@ -32,11 +32,39 @@ _AGE_SEPARATOR = r"\s*(?:[:=-]\s*)?"
 _AGE_VALUE = r"0*(?:1[01]\d|12[0-5]|\d{1,2})(?:\.\d+)?"
 
 
+# Spelled-out numbers covering a realistic age range, 0 to about 119. Mirrors Java.
+_ONES = "one|two|three|four|five|six|seven|eight|nine"
+_TEENS = "ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen"
+_TENS = "twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety"
+_ONE_TO_NINETY_NINE = rf"(?:(?:{_TENS})(?:[\s-](?:{_ONES}))?|{_TEENS}|{_ONES}|zero)"
+# "one|a" is required: without it "two hundred years old" matched from "hundred".
+_NUMBER_WORD = (
+    rf"(?:(?:one|a)\s+hundred(?:\s+(?:and\s+)?{_ONE_TO_NINETY_NINE})?"
+    rf"|{_ONE_TO_NINETY_NINE})"
+)
+
+# "five years ago" counts elapsed time, not an age.
+_NOT_AGO = r"(?!\s*ago\b)"
+
+
 _PATTERNS = [
-    re.compile(r"\b[0-9.]+[\s]*(year|years|yrs|yr|yo)(\.?)(\s)*(old)?\b", re.IGNORECASE),
+    re.compile(
+        r"\b[0-9.]+[\s]*(year|years|yrs|yr|yo)(\.?)(\s)*(old)?\b" + _NOT_AGO, re.IGNORECASE
+    ),
     re.compile(r"\b(age)(d)?" + _AGE_SEPARATOR + _AGE_VALUE + r"\b", re.IGNORECASE),
-    re.compile(r"\b[0-9.]+[-]*(year|years|yrs|yr|yo)(\.?)(-)*(old)?\b", re.IGNORECASE),
+    re.compile(
+        r"\b[0-9.]+[-]*(year|years|yrs|yr|yo)(\.?)(-)*(old)?\b" + _NOT_AGO, re.IGNORECASE
+    ),
     re.compile(r"\b([0-9]{1,3}) (y\/o)\b", re.IGNORECASE),
+    # Spelled out: "thirty-five years old", "thirty-five-year-old".
+    re.compile(
+        rf"\b({_NUMBER_WORD})[\s-]*(year|years|yrs|yr|yo)(\.?)[\s-]*(old)?\b" + _NOT_AGO,
+        re.IGNORECASE,
+    ),
+    # Spelled out after the keyword: "age thirty-five", "aged forty-two".
+    re.compile(
+        r"\b(age)(d)?" + _AGE_SEPARATOR + rf"({_NUMBER_WORD})\b", re.IGNORECASE
+    ),
 ]
 
 
