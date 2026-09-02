@@ -21,11 +21,13 @@ from phileas.models.span import Span
 from .base import BaseFilter, FilterType
 
 
-# The host charset has no ":", so without a port group the match stopped at the port and left the
-# rest of the URL, path included, in the document. Digits are required after the colon, so a colon
-# that is sentence punctuation rather than a port does not extend the match. The bound matches the
-# Java port, which uses "(:[\d]{1,5})?".
+# Digits are required, so a sentence colon does not extend a match. Bound matches the Java port.
 _PORT = r"(?::\d{1,5})?"
+
+
+# Punctuation that prose puts after a URL rather than in one. Only the tail is trimmed, so
+# punctuation inside a path, query, or fragment is kept.
+_TRAILING_PUNCTUATION = ".,;:!?\"')]}>"
 
 
 _PATTERNS = [
@@ -43,4 +45,17 @@ class URLFilter(BaseFilter):
         super().__init__(FilterType.URL, config)
 
     def detect(self, text: str, context: str = "default") -> List[Span]:
-        return self._detect_patterns(_PATTERNS, text, context)
+        spans: List[Span] = []
+
+        for span in self._detect_patterns(_PATTERNS, text, context):
+            trimmed = span.text.rstrip(_TRAILING_PUNCTUATION)
+
+            # "http://..." in prose is not a URL.
+            if trimmed.lower() in ("http://", "https://"):
+                continue
+
+            span.character_end -= len(span.text) - len(trimmed)
+            span.text = trimmed
+            spans.append(span)
+
+        return spans

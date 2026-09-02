@@ -129,6 +129,9 @@ addresses (`::ffff:192.0.2.128`), and a zone identifier when one is present
 
 Detects HTTP and HTTPS URLs. A port number is part of the URL, so
 `https://example.com:8443/patient/12345` is matched in full rather than stopping at the port.
+Punctuation that ends a sentence is not: a trailing period, comma, semicolon, colon,
+exclamation mark, question mark, or closing quote or bracket is left out of the span, while
+punctuation inside a path, query, or fragment is kept.
 
 ```python
 "identifiers": {

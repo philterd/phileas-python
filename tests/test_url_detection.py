@@ -204,12 +204,94 @@ def test_percent_encoded_query(url_filter):
     assert span.text == "https://example.com/s?q=a%20b%26c"
 
 
-def test_trailing_period_included_in_host(url_filter):
-    # The host charset includes '.', so a sentence-ending period adjacent to a
-    # bare-host URL is captured as part of the match.
+def test_trailing_period_excluded_from_host(url_filter):
+    # The host charset includes '.', so a sentence-ending period adjacent to a bare-host URL was
+    # once captured as part of the match. It belongs to the sentence, not to the URL.
     text = "See http://example.com."
     span = url_filter.detect(text)[0]
-    assert span.text == "http://example.com."
+    assert span.text == "http://example.com"
+
+
+# ---------------------------------------------------------------------------
+# Trailing punctuation: it belongs to the prose around a URL, not to the URL.
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("text,expected", [
+    ("Visit https://example.com/page, then", "https://example.com/page"),
+    ("Visit http://ex.com. Next", "http://ex.com"),
+    ("A https://example.com/p; b", "https://example.com/p"),
+    ("A https://example.com/p: b", "https://example.com/p"),
+    ("A https://example.com/p! b", "https://example.com/p"),
+    ("A https://example.com/p? b", "https://example.com/p"),
+])
+def test_sentence_punctuation_excluded(url_filter, text, expected):
+    spans = url_filter.detect(text)
+    assert len(spans) == 1
+    assert spans[0].text == expected
+    assert text[spans[0].character_start:spans[0].character_end] == expected
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("Visit (https://example.com/page). Then", "https://example.com/page"),
+    ("(https://example.com/p)", "https://example.com/p"),
+    ("'https://example.com/p'", "https://example.com/p"),
+    ('"https://example.com/p"', "https://example.com/p"),
+    ("[https://example.com/p]", "https://example.com/p"),
+    ("{https://example.com/p}", "https://example.com/p"),
+    ("<https://example.com/p>", "https://example.com/p"),
+])
+def test_closing_delimiter_excluded(url_filter, text, expected):
+    spans = url_filter.detect(text)
+    assert len(spans) == 1
+    assert spans[0].text == expected
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("Visit http://example.com/path... then", "http://example.com/path"),
+    ("http://example.com/p...", "http://example.com/p"),
+    ("Mixed http://ex.com/p).,;!", "http://ex.com/p"),
+    # A trailing period at the very end of the input.
+    ("End of input http://ex.com.", "http://ex.com"),
+    ("http://example.com/p.", "http://example.com/p"),
+])
+def test_run_of_trailing_punctuation_excluded(url_filter, text, expected):
+    spans = url_filter.detect(text)
+    assert len(spans) == 1
+    assert spans[0].text == expected
+
+
+@pytest.mark.parametrize("text,expected", [
+    # Punctuation inside a path, query, or fragment is part of the URL.
+    ("P https://example.com/a/b.html ok", "https://example.com/a/b.html"),
+    ("Q https://example.com/s?q=1,2 ok", "https://example.com/s?q=1,2"),
+    ("F https://example.com/p#frag.x ok", "https://example.com/p#frag.x"),
+    ("D https://example.com/a,b;c=d ok", "https://example.com/a,b;c=d"),
+    ("C https://example.com/p:q ok", "https://example.com/p:q"),
+    # A trailing slash ends a URL and is not punctuation.
+    ("S https://example.com/path/ ok", "https://example.com/path/"),
+    # A percent-encoded delimiter is not trimmed: the span ends on the hex digit.
+    ("E https://example.com/a%29 ok", "https://example.com/a%29"),
+    # The port fix and this one compose.
+    ("Port https://example.com:8443/a/b.html. ok", "https://example.com:8443/a/b.html"),
+])
+def test_inner_punctuation_retained(url_filter, text, expected):
+    spans = url_filter.detect(text)
+    assert len(spans) == 1
+    assert spans[0].text == expected
+
+
+@pytest.mark.parametrize("text", [
+    # Trimming leaves nothing but the scheme, so there is no URL to report.
+    "Visit http://... here",
+    "Visit http://. here",
+])
+def test_scheme_only_match_is_dropped(url_filter, text):
+    assert url_filter.detect(text) == []
+
+
+def test_two_urls_each_trimmed(url_filter):
+    text = "See http://a.com/x, and http://b.org/y."
+    assert [s.text for s in url_filter.detect(text)] == ["http://a.com/x", "http://b.org/y"]
 
 
 # ---------------------------------------------------------------------------
