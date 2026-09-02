@@ -129,6 +129,65 @@ class TestKeywordSeparators:
         assert age_filter.detect(text) == []
 
 
+class TestKeywordValueBounds:
+    """A number after an "age"/"aged" keyword has to be a plausible age: 0 to 125."""
+
+    @pytest.mark.parametrize(
+        "text,expected",
+        [
+            ("Age: 47", "Age: 47"),
+            ("aged 39", "aged 39"),
+            ("age 0", "age 0"),
+            ("age 9", "age 9"),
+            ("age 100", "age 100"),
+            ("age 119", "age 119"),
+            # Decimal ages survive the bound.
+            ("age 39.5", "age 39.5"),
+            ("aged 0.5", "aged 0.5"),
+            # The ceiling is inclusive.
+            ("age 125", "age 125"),
+            # Fixed-width exports zero-pad the field.
+            ("AGE 045", "AGE 045"),
+            ("age 007", "age 007"),
+            ("Age: 09", "Age: 09"),
+        ],
+    )
+    def test_plausible_value_detected(self, age_filter, text, expected):
+        assert _texts(age_filter.detect(text)) == [expected]
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            # The two cases from the issue: a form year and a historical period.
+            "form AGE 2024",
+            "Bronze Age 1200",
+            # One past the ceiling, and further past it.
+            "age 126",
+            "aged 130",
+            "Age: 200",
+            "age 1899",
+            # Zero padding does not smuggle an implausible value past the bound.
+            "age 0126",
+            "AGE 02024",
+        ],
+    )
+    def test_implausible_value_not_detected(self, age_filter, text):
+        assert age_filter.detect(text) == []
+
+    @pytest.mark.parametrize(
+        "text,expected",
+        [
+            # The bound belongs to the keyword pattern alone. These forms name a unit, which
+            # is its own evidence that the number is an age, so they stay unbounded.
+            ("1200 years old", "1200 years old"),
+            ("2024 yrs", "2024 yrs"),
+            ("999 yo", "999 yo"),
+        ],
+    )
+    def test_bound_does_not_apply_to_unit_forms(self, age_filter, text, expected):
+        assert expected in _texts(age_filter.detect(text))
+
+
 class TestSpanAttributes:
     def test_filter_type_is_age(self, age_filter):
         spans = age_filter.detect("She is 45 years old.")
