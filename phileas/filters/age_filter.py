@@ -26,17 +26,9 @@ from .base import BaseFilter, FilterType
 _AGE_SEPARATOR = r"\s*(?:[:=-]\s*)?"
 
 
-# A plausible age following an "age"/"aged" keyword: 0 to 125, with an optional fractional
-# part so "age 39.5" still matches. Without a bound the keyword alone is enough to redact any
-# number after it, which caught "form AGE 2024" and "Bronze Age 1200". The ceiling sits well
-# past a typical lifespan on purpose -- the job here is only to reject values that cannot be
-# an age, so a genuine "Age: 130" is a knowingly accepted loss.
-#
-# This applies to the keyword pattern alone. The "y/o" and "years old" forms carry their own
-# evidence that a number is an age, so they stay unbounded.
-#
-# Leading zeros are allowed because fixed-width record exports zero-pad the field ("AGE 045").
-# They are stripped before the bound is read, so "age 0126" is still rejected.
+# A plausible age after an "age"/"aged" keyword: 0 to 125, optionally fractional and
+# zero-padded ("AGE 045"). Only the keyword pattern needs the bound -- without it "form AGE
+# 2024" reads as an age; the "y/o" and "years old" forms carry their own evidence.
 _AGE_VALUE = r"0*(?:1[01]\d|12[0-5]|\d{1,2})(?:\.\d+)?"
 
 
