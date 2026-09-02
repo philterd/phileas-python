@@ -191,3 +191,113 @@ def test_glued_to_letters_not_matched(filt):
 def test_leading_letters_break_country_code(filt):
     iban = "GB29NWBK60161331926819"
     assert filt.detect("xxx" + iban) == []
+
+
+# ---------------------------------------------------------------------------
+# The printed form: groups of four (issue #63)
+# ---------------------------------------------------------------------------
+
+SPACED_IBANS = [
+    "GB82 WEST 1234 5698 7654 32",
+    "GB29 NWBK 6016 1331 9268 19",
+    "DE89 3704 0044 0532 0130 00",
+    "NL91 ABNA 0417 1643 00",
+    "ES91 2100 0418 4502 0005 1332",
+    "CH93 0076 2011 6238 5295 7",
+    "FR14 2004 1010 0505 0001 3M02 606",
+]
+
+
+@pytest.mark.parametrize("iban", SPACED_IBANS)
+def test_detects_spaced_ibans(filt, iban):
+    assert [s.text for s in filt.detect(iban)] == [iban]
+
+
+def test_spaced_iban_offsets(filt):
+    text = "Pay to GB82 WEST 1234 5698 7654 32 today."
+    span = filt.detect(text)[0]
+    assert text[span.character_start:span.character_end] == "GB82 WEST 1234 5698 7654 32"
+
+
+def test_two_spaced_ibans(filt):
+    text = "GB82 WEST 1234 5698 7654 32 and DE89 3704 0044 0532 0130 00"
+    assert [s.text for s in filt.detect(text)] == [
+        "GB82 WEST 1234 5698 7654 32", "DE89 3704 0044 0532 0130 00"
+    ]
+
+
+def test_spaced_iban_redacted_end_to_end():
+    from phileas.policy.policy import Policy
+    from phileas.services.filter_service import FilterService
+
+    policy = Policy.from_dict({"name": "t", "identifiers": {"ibanCode": {
+        "ibanCodeFilterStrategies": [{"strategy": "REDACT"}]}}})
+    r = FilterService().filter(policy, "c", "d", "Pay GB82 WEST 1234 5698 7654 32 now.")
+    assert "GB82 WEST 1234 5698 7654 32" not in r.filtered_text
+    assert "{{{REDACTED-iban-code}}}" in r.filtered_text
+
+
+class TestAllowSpaces:
+    """Matches the Java option: same name, same ``true`` default."""
+
+    def test_default_is_on(self):
+        assert IBANCodeFilter().allow_spaces is True
+        assert IBANCodeFilter({}).allow_spaces is True
+        assert IBANCodeFilter(None).allow_spaces is True
+
+    def test_explicit_true(self):
+        f = IBANCodeFilter({"allowSpaces": True})
+        assert [s.text for s in f.detect("GB82 WEST 1234 5698 7654 32")] == [
+            "GB82 WEST 1234 5698 7654 32"
+        ]
+
+    def test_false_rejects_the_printed_form(self):
+        f = IBANCodeFilter({"allowSpaces": False})
+        assert f.detect("GB82 WEST 1234 5698 7654 32") == []
+
+    def test_false_keeps_the_transmitted_form(self):
+        f = IBANCodeFilter({"allowSpaces": False})
+        assert [s.text for s in f.detect("GB29NWBK60161331926819")] == [
+            "GB29NWBK60161331926819"
+        ]
+
+    @pytest.mark.parametrize("iban", REAL_IBANS)
+    def test_transmitted_form_unaffected_by_the_option(self, iban):
+        assert [s.text for s in IBANCodeFilter().detect(iban)] == [iban]
+        assert [s.text for s in IBANCodeFilter({"allowSpaces": False}).detect(iban)] == [iban]
+
+
+class TestSpacedBoundaries:
+    def test_single_space_only(self, filt):
+        assert filt.detect("GB82  WEST  1234  5698  7654  32") == []
+
+    def test_hyphens_are_not_group_separators(self, filt):
+        assert filt.detect("GB82-WEST-1234-5698-7654-32") == []
+
+    def test_lowercase_word_after_is_not_absorbed(self, filt):
+        assert [s.text for s in filt.detect("ES91 2100 0418 4502 0005 1332 paid")] == [
+            "ES91 2100 0418 4502 0005 1332"
+        ]
+
+    def test_punctuation_ends_the_match(self, filt):
+        assert [s.text for s in filt.detect("ES91 2100 0418 4502 0005 1332.")] == [
+            "ES91 2100 0418 4502 0005 1332"
+        ]
+
+    def test_iban_after_a_same_shaped_word_is_still_found(self, filt):
+        # Regression: a leading "ZZ99" used to swallow the IBAN behind it.
+        assert [s.text for s in filt.detect("ZZ99 GB29NWBK60161331926819")] == [
+            "GB29NWBK60161331926819"
+        ]
+        assert [s.text for s in filt.detect("AB12 CD34 GB29NWBK60161331926819")] == [
+            "GB29NWBK60161331926819"
+        ]
+
+    def test_trailing_upper_case_word_is_absorbed(self, filt):
+        # A short upper-case word after a full final group reads as another group.
+        assert [s.text for s in filt.detect("ES91 2100 0418 4502 0005 1332 PAID")] == [
+            "ES91 2100 0418 4502 0005 1332 PAID"
+        ]
+        assert [s.text for s in filt.detect("GB29NWBK60161331926819 ZZ99")] == [
+            "GB29NWBK60161331926819 ZZ99"
+        ]

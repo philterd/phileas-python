@@ -369,11 +369,24 @@ Detects US driver's license numbers (pattern varies by state).
 
 ## ibanCode
 
-Detects International Bank Account Numbers (IBANs) for all supported country codes.
+Detects International Bank Account Numbers (IBANs) for all supported country codes, both as transmitted (`GB29NWBK60161331926819`) and as printed in groups of four (`GB82 WEST 1234 5698 7654 32`).
 
 ```python
 "identifiers": {
     "ibanCode": {
+        "ibanCodeFilterStrategies": [{"strategy": "MASK"}]
+    }
+}
+```
+
+### allowSpaces
+
+`allowSpaces` (default `true`) is what accepts the printed grouping. Set it to `false` to detect only the unbroken form.
+
+```python
+"identifiers": {
+    "ibanCode": {
+        "allowSpaces": False,
         "ibanCodeFilterStrategies": [{"strategy": "MASK"}]
     }
 }
