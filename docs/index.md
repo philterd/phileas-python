@@ -58,6 +58,22 @@ print(result.filtered_text)
 | `passportNumber` | `passport-number` | US passport numbers |
 | `phEye` | `person` (and others) | Named entities via the [ph-eye](https://github.com/philterd/ph-eye) NER service |
 
+## Differences from the Java Phileas
+
+This port is not 1:1 with [Phileas (Java)](https://github.com/philterd/phileas).
+
+Present here and not there:
+
+- Local inference for named entities through [GLiNER](https://github.com/urchade/GLiNER), alongside remote [ph-eye](https://github.com/philterd/ph-eye) services.
+- Policies in YAML as well as JSON.
+- A [command-line interface](cli.md).
+- An [evaluation mode](cli.md#evaluate-against-ground-truth-annotations) that measures precision and recall.
+
+Present there and not here:
+
+- Some redaction strategies.
+- PDF documents.
+
 ## Next steps
 
 - [Install phileas-python](installation.md)
