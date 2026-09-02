@@ -103,6 +103,7 @@ condition: ""
 shiftYears: 0
 shiftMonths: 0
 shiftDays: 0
+color: black
 ```
 
 - **`redactionFormat`** — used by `REDACT`. The placeholder `%t` is replaced with the filter type name (e.g. `email-address`).
@@ -110,6 +111,7 @@ shiftDays: 0
 - **`maskCharacter`** — character used by `MASK` (default: `*`).
 - **`shiftYears` / `shiftMonths` / `shiftDays`** — offsets used by `SHIFT`.
 - **`condition`** — optional expression that must evaluate to `true` for this strategy to be applied. See [Conditions](#conditions) below.
+- **`color`** — colour of the bar drawn over a redacted span when a policy is used to render a PDF or image. Accepted and ignored here: phileas-python redacts text, so `color` never changes its output. It is kept so one policy can be shared with the PDF-capable Java engine.
 
 ### Examples
 

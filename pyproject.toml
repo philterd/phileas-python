@@ -66,6 +66,8 @@ Changelog = "https://github.com/philterd/phileas-python/releases"
 dev = [
     "pytest>=7.0",
     "mkdocs>=1.5",
+    # Validates policies against the redaction policy schema phisql ships.
+    "jsonschema>=4.18",
 ]
 gliner = [
     "gliner>=0.1.0",
