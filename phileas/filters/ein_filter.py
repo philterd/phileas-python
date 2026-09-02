@@ -29,8 +29,9 @@ from .base import BaseFilter, FilterType
 
 
 _PATTERNS = [
-    # Canonical EIN: NN-NNNNNNN.
-    re.compile(r"\b\d{2}-\d{7}\b"),
+    # Canonical EIN: NN-NNNNNNN. A neighbouring hyphen makes it part of a longer
+    # identifier, not an EIN (philterd/phileas#343).
+    re.compile(r"(?<![\w-])\d{2}-\d{7}(?![\w-])"),
 ]
 
 

@@ -94,10 +94,17 @@ class TestEINBoundaries:
 
 
 class TestSSNDistinction:
-    """The hyphen position is the whole distinction, so neither filter takes the other's form."""
+    """Both filters claim ``NN-NNNNNNN``; ein outranks ssn on it. See issue #64."""
 
-    def test_ein_form_is_not_an_ssn(self):
-        assert SSNFilter().detect("12-3456789") == []
+    def test_ssn_claims_the_tin_form_at_lower_confidence(self):
+        spans = SSNFilter().detect("12-3456789")
+        assert [s.text for s in spans] == ["12-3456789"]
+        assert spans[0].confidence == 0.90
+
+    def test_ein_claims_the_same_form_at_full_confidence(self):
+        spans = EINFilter().detect("12-3456789")
+        assert [s.text for s in spans] == ["12-3456789"]
+        assert spans[0].confidence == 1.0
 
     def test_ssn_form_is_not_an_ein(self):
         assert EINFilter().detect("123-45-6789") == []
@@ -117,6 +124,22 @@ class TestSSNDistinction:
         )
         by_type = {s.filter_type: s.text for s in r.spans}
         assert by_type == {"ein": "12-3456789", "ssn": "123-45-6789"}
+
+    def test_ein_wins_the_tin_form_when_both_are_enabled(self):
+        r = run(
+            {
+                "ein": {"einFilterStrategies": [{"strategy": "REDACT"}]},
+                "ssn": {"ssnFilterStrategies": [{"strategy": "REDACT"}]},
+            },
+            "Tax ID 12-3456789.",
+        )
+        assert [(s.filter_type, s.text) for s in r.spans] == [("ein", "12-3456789")]
+
+    def test_ssn_alone_still_redacts_the_tin_form(self):
+        r = run({"ssn": {"ssnFilterStrategies": [{"strategy": "REDACT"}]}},
+                "Tax ID 12-3456789.")
+        assert [(s.filter_type, s.text) for s in r.spans] == [("ssn", "12-3456789")]
+        assert "12-3456789" not in r.filtered_text
 
     def test_both_enabled_bare_run_is_ssn(self):
         r = run(
@@ -232,12 +255,36 @@ class TestEINRandomReplace:
             assert service.anonymize("12-3456789")[:2] in VALID_PREFIXES
 
 
-class TestTrailingSegment:
-    """A hyphen is a word boundary, so a longer identifier's EIN-shaped head matches.
-    The SSN filter and the Java EinFilter do the same; recorded, not special-cased."""
+class TestHyphenBoundaries:
+    """A neighbouring hyphen means the digits belong to a longer identifier."""
 
-    def test_leading_ein_shape_of_a_longer_identifier(self):
-        assert _texts(EINFilter().detect("12-3456789-01")) == ["12-3456789"]
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "12-3456789-01",
+            "ID-12-3456789",
+            "-12-3456789",
+            "12-3456789-",
+            "2026-12-3456789",
+            # philterd/phileas#343: "45-6789123" used to match inside this.
+            "123-45-6789123-45-6789",
+        ],
+    )
+    def test_hyphenated_neighbour_is_not_an_ein(self, text):
+        assert EINFilter().detect(text) == []
 
-    def test_ssn_filter_behaves_the_same_way(self):
+    @pytest.mark.parametrize(
+        "text,expected",
+        [
+            ("12-3456789", "12-3456789"),
+            ("EIN: 12-3456789.", "12-3456789"),
+            ("(12-3456789)", "12-3456789"),
+            ("12-3456789, paid", "12-3456789"),
+        ],
+    )
+    def test_ordinary_punctuation_still_delimits(self, text, expected):
+        assert _texts(EINFilter().detect(text)) == [expected]
+
+    def test_ssn_filter_still_claims_its_own_hyphenated_head(self):
+        # SSNFilter keeps the looser boundary; see issue #64.
         assert _texts(SSNFilter().detect("123-45-6789-01")) == ["123-45-6789"]

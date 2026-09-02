@@ -238,3 +238,40 @@ class TestSSNSpaceSeparated:
         r = FilterService().filter(policy, "c", "d", "SSN 123 45 6789 here.")
         assert "123 45 6789" not in r.filtered_text
         assert "{{{REDACTED-ssn}}}" in r.filtered_text
+
+
+class TestTINForm:
+    """`NN-NNNNNNN`, ported from Java's SsnFilter. See issue #64."""
+
+    @pytest.mark.parametrize("value", ["12-3456789", "98-7654321", "07-1234567"])
+    def test_tin_detected(self, value):
+        spans = SSNFilter().detect(f"Tax ID {value} on file")
+        assert [s.text for s in spans] == [value]
+        assert spans[0].confidence == 0.90
+
+    def test_ssn_forms_keep_full_confidence(self):
+        for value in ["123-45-6789", "123456789", "123 45 6789"]:
+            assert SSNFilter().detect(value)[0].confidence == 1.0
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "12-3456789-01",
+            "ID-12-3456789",
+            "2026-12-3456789",
+            "123-45-6789123-45-6789",
+            "12-34567890",
+            "112-3456789",
+            "12 3456789",
+        ],
+    )
+    def test_tin_hyphen_boundaries(self, text):
+        assert [s.text for s in SSNFilter().detect(text) if s.confidence == 0.90] == []
+
+    def test_tin_does_not_overlap_the_ssn_forms(self):
+        for text in ["123-45-6789", "123456789", "123 45 6789"]:
+            spans = SSNFilter().detect(text)
+            for i, a in enumerate(spans):
+                for b in spans[i + 1:]:
+                    assert not (a.character_start < b.character_end
+                                and b.character_start < a.character_end)

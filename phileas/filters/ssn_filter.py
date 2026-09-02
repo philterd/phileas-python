@@ -36,10 +36,22 @@ _PATTERNS = [
     ),
 ]
 
+# TIN: NN-NNNNNNN, the shape the ein filter also detects. Scored below the SSN
+# forms so `ein` wins the span wherever both filters are enabled.
+_TIN_PATTERNS = [
+    re.compile(r"(?<![\w-])\d{2}-\d{7}(?![\w-])"),
+]
+
+_TIN_CONFIDENCE = 0.90
+
 
 class SSNFilter(BaseFilter):
     def __init__(self, config=None):
         super().__init__(FilterType.SSN, config)
 
     def detect(self, text: str, context: str = "default") -> List[Span]:
-        return self._detect_patterns(_PATTERNS, text, context)
+        spans = self._detect_patterns(_PATTERNS, text, context)
+        spans.extend(
+            self._detect_patterns(_TIN_PATTERNS, text, context, confidence=_TIN_CONFIDENCE)
+        )
+        return spans
