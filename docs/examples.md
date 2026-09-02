@@ -255,7 +255,7 @@ policy = Policy.from_dict({
     "identifiers": {
         "zipCode": {
             "zipCodeFilterStrategy": [
-                {"strategy": "REDACT", "condition": "population < 20000"}
+                {"strategy": "REDACT", "condition": "population < 25000"}
             ]
         }
     }
@@ -267,8 +267,8 @@ result = service.filter(
 )
 print(result.filtered_text)
 # Offices in {{{REDACTED-zip-code}}} and 10001.
-# (90210 population ≈ 21,134 — below 20,000 threshold → redacted;
-#  10001 population ≈ 32,612 — above threshold → kept)
+# (90210 population 21,134 — below the 25,000 threshold → redacted;
+#  10001 population 32,612 — above it → kept)
 ```
 
 Multiple strategies can handle different population ranges differently:
@@ -405,7 +405,7 @@ result = service.filter(
     "Employee EMP-123456 has passport AB123456."
 )
 print(result.filtered_text)
-# Employee {{{REDACTED-employee-id}}} has passport *********.
+# Employee {{{REDACTED-employee-id}}} has passport ********.
 ```
 
 ---
@@ -505,15 +505,18 @@ doc2 = service.filter(
 
 # The hash will be identical in both documents
 print(doc1.filtered_text)
-# Patient emailed from 5bb8a5cbf6...
+# Patient emailed from 855f96e983...
 
 print(doc2.filtered_text)
-# Follow-up: 5bb8a5cbf6... responded
+# Follow-up: 855f96e983... responded
 
-# Different context = different hash
 doc3 = service.filter(
     policy, "patient-456", "note-1",
     "Patient emailed from john@example.com"
 )
-# Hash will be different in patient-456 context
+# A SHA-256 hash is deterministic, so this is the same value again.
 ```
+
+The context matters for strategies whose replacement is *not* determined by the
+value itself. With `RANDOM_REPLACE`, the same email keeps one random replacement
+throughout `patient-123` and gets a different one in `patient-456`.
