@@ -17,6 +17,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: docs/requirements.txt
       - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
       - uses: actions/cache@v4
         with:
@@ -24,5 +26,8 @@ jobs:
           path: .cache
           restore-keys: |
             mkdocs-material-
-      - run: pip install -e ".[dev]"
-      - run: mkdocs gh-deploy --force
+      - run: pip install -r docs/requirements.txt
+      - name: Build the site
+        run: mkdocs build --strict
+      - name: Deploy
+        run: mkdocs gh-deploy --force
