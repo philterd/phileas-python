@@ -49,8 +49,15 @@ class TestBasicPipeline:
 
 
 class TestCatalogDrivenFieldNames:
-    def test_zip_code_singular_strategy_field(self):
-        # The catalog says the field is `zipCodeFilterStrategy` (singular).
+    def test_zip_code_strategy_field(self):
+        r = run({"zipCode": {"zipCodeFilterStrategies": [{"strategy": "STATIC_REPLACE", "staticReplacement": "ZZZZZ"}]}},
+                "ZIP 90210 here.")
+        assert "ZZZZZ" in r.filtered_text
+        assert "90210" not in r.filtered_text
+
+    def test_zip_code_singular_strategy_field_still_read(self):
+        # The field was singular until schema 1.3.0. A policy written against an
+        # earlier schema must keep redacting rather than silently losing its strategies.
         r = run({"zipCode": {"zipCodeFilterStrategy": [{"strategy": "STATIC_REPLACE", "staticReplacement": "ZZZZZ"}]}},
                 "ZIP 90210 here.")
         assert "ZZZZZ" in r.filtered_text

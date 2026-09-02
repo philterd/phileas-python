@@ -83,11 +83,11 @@ class TestPhiSQLIntegration:
         out = compile_and_run(src, "Mail a@b.com here.").filtered_text
         assert "[EMAIL]" in out
 
-    def test_zip_code_quirky_field_round_trips(self):
-        # PhiSQL emits the singular zipCodeFilterStrategy; phileas must read it.
+    def test_zip_code_field_round_trips(self):
+        # PhiSQL emits the plural zipCodeFilterStrategies; phileas must read it.
         src = "POLICY p; REDACT ZIP_CODE WITH REDACT;"
         policy_json = Compiler().compile(src).policy_json()
-        assert "zipCodeFilterStrategy" in policy_json["identifiers"]["zipCode"]
+        assert "zipCodeFilterStrategies" in policy_json["identifiers"]["zipCode"]
         out = compile_and_run(src, "ZIP 90210 here.").filtered_text
         assert "90210" not in out
 

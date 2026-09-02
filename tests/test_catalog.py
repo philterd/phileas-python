@@ -38,8 +38,10 @@ class TestCatalogBridge:
     def test_quirky_field_names_come_from_catalog(self):
         """The engine must use the catalog's non-obvious field names."""
         cat = get_catalog()
-        # zip code uses a *singular* strategies field name.
-        assert cat.get_entity("ZIP_CODE").phileas_strategies_field == "zipCodeFilterStrategy"
+        # zip code was renamed from the singular; the old name stays readable as an alias.
+        zip_code = cat.get_entity("ZIP_CODE")
+        assert zip_code.phileas_strategies_field == "zipCodeFilterStrategies"
+        assert "zipCodeFilterStrategy" in zip_code.phileas_strategies_field_aliases
         # bitcoin uses an abbreviated strategies field name.
         assert cat.get_entity("BITCOIN_ADDRESS").phileas_strategies_field == "bitcoinFilterStrategies"
 

@@ -92,10 +92,12 @@ class TestEntities:
     def test_entity_name_matches_lookup(self, name):
         assert get_catalog().get_entity(name).name == name
 
-    def test_zip_code_quirk_singular_strategies_field(self):
-        # ZIP_CODE uses a *singular* strategies field name.
+    def test_zip_code_singular_strategies_field_is_an_alias(self):
+        # ZIP_CODE used a singular strategies field name until schema 1.3.0. The
+        # plural is the name to emit; the singular is still read.
         entity = get_catalog().get_entity("ZIP_CODE")
-        assert entity.phileas_strategies_field == "zipCodeFilterStrategy"
+        assert entity.phileas_strategies_field == "zipCodeFilterStrategies"
+        assert "zipCodeFilterStrategy" in entity.phileas_strategies_field_aliases
 
     def test_bitcoin_quirk_abbreviated_strategies_field(self):
         # BITCOIN_ADDRESS uses an abbreviated strategies field name.
