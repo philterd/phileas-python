@@ -17,10 +17,17 @@
 import pytest
 
 from phileas.filters.ssn_filter import SSNFilter
+from phileas.policy.policy import Policy
+from phileas.services.filter_service import FilterService
 
 
 def _texts(spans):
     return [s.text for s in spans]
+
+
+def run(identifiers, text, context="ctx"):
+    policy = Policy.from_dict({"name": "t", "identifiers": identifiers})
+    return FilterService().filter(policy, context, "doc-1", text)
 
 
 class TestSSNPositive:
@@ -241,37 +248,22 @@ class TestSSNSpaceSeparated:
 
 
 class TestTINForm:
-    """`NN-NNNNNNN`, ported from Java's SsnFilter. See issue #64."""
+    """`NN-NNNNNNN` is an EIN format and not detected by SSNFilter. See issue #84."""
 
     @pytest.mark.parametrize("value", ["12-3456789", "98-7654321", "07-1234567"])
-    def test_tin_detected(self, value):
+    def test_tin_not_detected_by_ssn(self, value):
         spans = SSNFilter().detect(f"Tax ID {value} on file")
-        assert [s.text for s in spans] == [value]
-        assert spans[0].confidence == 0.90
+        assert spans == []
 
     def test_ssn_forms_keep_full_confidence(self):
         for value in ["123-45-6789", "123456789", "123 45 6789"]:
             assert SSNFilter().detect(value)[0].confidence == 1.0
 
-    @pytest.mark.parametrize(
-        "text",
-        [
-            "12-3456789-01",
-            "ID-12-3456789",
-            "2026-12-3456789",
-            "123-45-6789123-45-6789",
-            "12-34567890",
-            "112-3456789",
-            "12 3456789",
-        ],
-    )
-    def test_tin_hyphen_boundaries(self, text):
-        assert [s.text for s in SSNFilter().detect(text) if s.confidence == 0.90] == []
+    def test_policy_with_only_ssn_does_not_redact_tin(self):
+        r = run(
+            {"ssn": {"ssnFilterStrategies": [{"strategy": "REDACT"}]}},
+            "Tax ID 12-3456789.",
+        )
+        assert r.spans == []
+        assert "12-3456789" in r.filtered_text
 
-    def test_tin_does_not_overlap_the_ssn_forms(self):
-        for text in ["123-45-6789", "123456789", "123 45 6789"]:
-            spans = SSNFilter().detect(text)
-            for i, a in enumerate(spans):
-                for b in spans[i + 1:]:
-                    assert not (a.character_start < b.character_end
-                                and b.character_start < a.character_end)

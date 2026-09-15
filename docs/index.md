@@ -40,7 +40,7 @@ print(result.filtered_text)
 | `age` | `age` | Age references, numeric or spelled out |
 | `emailAddress` | `email-address` | Email addresses |
 | `creditCard` | `credit-card` | Credit card numbers |
-| `ssn` | `ssn` | Social Security Numbers and TINs |
+| `ssn` | `ssn` | Social Security Numbers |
 | `phoneNumber` | `phone-number` | Phone numbers, international and US |
 | `ipAddress` | `ip-address` | IPv4 and IPv6 addresses |
 | `url` | `url` | HTTP/HTTPS URLs |
