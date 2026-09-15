@@ -2,6 +2,10 @@
 
 Notable changes to the `phileas-redact` package, most recent first.
 
+## Unreleased
+
+* The `ssn` filter no longer detects the `NN-NNNNNNN` form. That shape is an Employer Identification Number, not a Social Security Number, and is already covered by the `ein` filter. A policy that enables only `ssn` therefore no longer detects values such as `12-3456789`; enable `ein` to detect them. SSN forms (`NNN-NN-NNNN`, `NNN NN NNNN`, and nine digits with no hyphen) are unchanged.
+
 ## Version 1.1.0
 
 * The `url` filter no longer absorbs the punctuation that ends a sentence. The host and path character sets include `.`, `,`, `;`, `!`, and `'`, so `Visit https://example.com/page, then` redacted the comma along with the URL and `Visit (https://example.com/page). Then` redacted the closing parenthesis and period. A trailing run of such characters is now left out of the span, while punctuation inside a path, query, or fragment is kept, as is a percent-encoded delimiter. A match that trims down to nothing but its scheme is dropped.
