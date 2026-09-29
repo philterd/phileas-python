@@ -100,9 +100,9 @@ Detects major credit card number formats (Visa, Mastercard, American Express, Di
 
 ## ssn
 
-Detects US Social Security Numbers in `NNN-NN-NNNN`, `NNN NN NNNN`, and `NNNNNNNNN` formats, and Taxpayer Identification Numbers in `NN-NNNNNNN`.
+Detects US Social Security Numbers in `NNN-NN-NNNN`, `NNN NN NNNN`, and `NNNNNNNNN` formats.
 
-A TIN span carries confidence `0.90`, below the `1.0` of the SSN forms, so the [`ein`](#ein) filter wins that shape wherever both filters are enabled.
+The `NN-NNNNNNN` form is an EIN, not an SSN. Enable the [`ein`](#ein) filter to detect it. A policy that enables only `ssn` does not detect that shape.
 
 ```python
 "identifiers": {

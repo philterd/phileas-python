@@ -240,38 +240,34 @@ class TestSSNSpaceSeparated:
         assert "{{{REDACTED-ssn}}}" in r.filtered_text
 
 
-class TestTINForm:
-    """`NN-NNNNNNN`, ported from Java's SsnFilter. See issue #64."""
+class TestEINFormNotClaimed:
+    """`NN-NNNNNNN` is an EIN. The SSN filter no longer claims it (issue #84)."""
 
     @pytest.mark.parametrize("value", ["12-3456789", "98-7654321", "07-1234567"])
-    def test_tin_detected(self, value):
-        spans = SSNFilter().detect(f"Tax ID {value} on file")
-        assert [s.text for s in spans] == [value]
-        assert spans[0].confidence == 0.90
+    def test_ein_shape_not_detected_as_ssn(self, value):
+        assert SSNFilter().detect(f"Tax ID {value} on file") == []
 
     def test_ssn_forms_keep_full_confidence(self):
         for value in ["123-45-6789", "123456789", "123 45 6789"]:
             assert SSNFilter().detect(value)[0].confidence == 1.0
 
-    @pytest.mark.parametrize(
-        "text",
-        [
-            "12-3456789-01",
-            "ID-12-3456789",
-            "2026-12-3456789",
-            "123-45-6789123-45-6789",
-            "12-34567890",
-            "112-3456789",
-            "12 3456789",
-        ],
-    )
-    def test_tin_hyphen_boundaries(self, text):
-        assert [s.text for s in SSNFilter().detect(text) if s.confidence == 0.90] == []
+    def test_ssn_only_policy_does_not_redact_ein_shape(self):
+        from phileas.policy.policy import Policy
+        from phileas.services.filter_service import FilterService
 
-    def test_tin_does_not_overlap_the_ssn_forms(self):
-        for text in ["123-45-6789", "123456789", "123 45 6789"]:
-            spans = SSNFilter().detect(text)
-            for i, a in enumerate(spans):
-                for b in spans[i + 1:]:
-                    assert not (a.character_start < b.character_end
-                                and b.character_start < a.character_end)
+        policy = Policy.from_dict({"name": "t", "identifiers": {"ssn": {
+            "ssnFilterStrategies": [{"strategy": "REDACT"}]}}})
+        r = FilterService().filter(policy, "c", "d", "Tax ID 12-3456789.")
+        assert r.spans == []
+        assert r.filtered_text == "Tax ID 12-3456789."
+
+    def test_ein_policy_redacts_the_shape(self):
+        from phileas.policy.policy import Policy
+        from phileas.services.filter_service import FilterService
+
+        policy = Policy.from_dict({"name": "t", "identifiers": {"ein": {
+            "einFilterStrategies": [{"strategy": "REDACT"}]}}})
+        r = FilterService().filter(policy, "c", "d", "Tax ID 12-3456789.")
+        assert [(s.filter_type, s.text) for s in r.spans] == [("ein", "12-3456789")]
+        assert "12-3456789" not in r.filtered_text
+        assert "{{{REDACTED-ein}}}" in r.filtered_text

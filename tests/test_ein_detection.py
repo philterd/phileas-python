@@ -94,14 +94,12 @@ class TestEINBoundaries:
 
 
 class TestSSNDistinction:
-    """Both filters claim ``NN-NNNNNNN``; ein outranks ssn on it. See issue #64."""
+    """``NN-NNNNNNN`` is an EIN only. The SSN filter does not claim it (issue #84)."""
 
-    def test_ssn_claims_the_tin_form_at_lower_confidence(self):
-        spans = SSNFilter().detect("12-3456789")
-        assert [s.text for s in spans] == ["12-3456789"]
-        assert spans[0].confidence == 0.90
+    def test_ssn_does_not_claim_the_ein_form(self):
+        assert SSNFilter().detect("12-3456789") == []
 
-    def test_ein_claims_the_same_form_at_full_confidence(self):
+    def test_ein_claims_the_form_at_full_confidence(self):
         spans = EINFilter().detect("12-3456789")
         assert [s.text for s in spans] == ["12-3456789"]
         assert spans[0].confidence == 1.0
@@ -135,11 +133,18 @@ class TestSSNDistinction:
         )
         assert [(s.filter_type, s.text) for s in r.spans] == [("ein", "12-3456789")]
 
-    def test_ssn_alone_still_redacts_the_tin_form(self):
+    def test_ssn_alone_does_not_detect_the_ein_form(self):
         r = run({"ssn": {"ssnFilterStrategies": [{"strategy": "REDACT"}]}},
                 "Tax ID 12-3456789.")
-        assert [(s.filter_type, s.text) for s in r.spans] == [("ssn", "12-3456789")]
+        assert r.spans == []
+        assert r.filtered_text == "Tax ID 12-3456789."
+
+    def test_ein_alone_redacts_the_form(self):
+        r = run({"ein": {"einFilterStrategies": [{"strategy": "REDACT"}]}},
+                "Tax ID 12-3456789.")
+        assert [(s.filter_type, s.text) for s in r.spans] == [("ein", "12-3456789")]
         assert "12-3456789" not in r.filtered_text
+        assert "{{{REDACTED-ein}}}" in r.filtered_text
 
     def test_both_enabled_bare_run_is_ssn(self):
         r = run(
