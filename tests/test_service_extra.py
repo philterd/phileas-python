@@ -325,6 +325,18 @@ class TestStrategySelection:
         assert "123-45-6789" in r.filtered_text
         assert r.spans == []
 
+    def test_all_conditional_none_satisfied_leaves_text_unchanged(self):
+        strategies = [
+            {"strategy": "REDACT", "condition": 'token == "000-00-0000"'},
+            {"strategy": "STATIC_REPLACE", "staticReplacement": "X",
+             "condition": 'context == "other"'},
+            {"strategy": "MASK", "condition": "confidence < 0"},
+        ]
+        text = "SSN 123-45-6789."
+        r = run({"ssn": {"ssnFilterStrategies": strategies}}, text)
+        assert r.filtered_text == text
+        assert r.spans == []
+
     def test_context_condition(self):
         strategies = [{"strategy": "STATIC_REPLACE", "staticReplacement": "MATCHED",
                        "condition": 'context == "ctx"'}]

@@ -93,7 +93,11 @@ policy = Policy.from_dict({
 
 ## Filter strategies
 
-Each enabled filter requires at least one strategy entry in its `*FilterStrategies` array. The first strategy is applied to every match.
+A filter's strategies array (`*FilterStrategies`, or `zipCodeFilterStrategy` for ZIP codes) is evaluated in order for each match. The first strategy that has no `condition`, or whose `condition` is satisfied, is applied. See [Conditions](#conditions).
+
+If every strategy has a `condition` and none is satisfied, the value is left unchanged and no span is reported for it. To transform every detected value, end the array with a strategy that has no `condition`.
+
+A filter with no strategies (an empty or omitted array) applies `REDACT`.
 
 ### Available strategies
 
@@ -227,7 +231,7 @@ generator runs at most once for it.
 
 ## Conditions
 
-A `condition` expression is an optional string attached to a strategy that gates its application. The strategy is only applied when the condition evaluates to `true`. When multiple strategies are listed, the first one whose condition is satisfied is used.
+A `condition` expression is an optional string attached to a strategy that gates its application. The strategy is only applied when the condition evaluates to `true`. When multiple strategies are listed, the first one with no condition or a satisfied condition is used. If none applies, the value is left unchanged and no span is reported; see [Filter strategies](#filter-strategies).
 
 > The key is `condition` (singular), matching the redaction policy schema and the Java and .NET Phileas runtimes. The plural `conditions` is accepted as a deprecated alias for backward compatibility and may be removed in a future release; prefer `condition`.
 
