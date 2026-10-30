@@ -116,6 +116,26 @@ def test_long_street_name_within_word_limit(street_filter):
     assert spans[0].text == addr
 
 
+def test_no_match_across_line_breaks(street_filter):
+    # A ZIP code at the end of a line and "Dear Dr." on the next line are not an address.
+    text = "Address: 214 Juniper Court, Cedar Falls, IA 50613\n\nDear Dr. Rivera,"
+    spans = street_filter.detect(text)
+    assert [s.text for s in spans] == ["214 Juniper Court"]
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        ("214 Juniper Court\nCedar Falls, IA 50613", "214 Juniper Court"),
+        ("123 Main St Apt 4B\r\nSpringfield, IL 62704", "123 Main St"),
+        ("Jane Doe\n1 Martin Luther King Jr Blvd\nAtlanta, GA 30303", "1 Martin Luther King Jr Blvd"),
+    ],
+)
+def test_street_line_of_address_block(street_filter, text, expected):
+    spans = street_filter.detect(text)
+    assert [s.text for s in spans] == [expected]
+
+
 def test_default_context_returns_results(street_filter):
     spans = street_filter.detect("123 Main Street", context="default")
     assert len(spans) == 1
@@ -146,6 +166,9 @@ def test_custom_context_still_detects(street_filter):
         "123 Main Streets",  # trailing 's' breaks the suffix word boundary
         "123 Main Streetss",
         "123456 Main Street",  # number has six digits (exceeds \\d{1,5})
+        "Cedar Falls, IA 50613\nDear Dr. Rivera,",  # parts on different lines
+        "Cedar Falls, IA 50613\r\nDear Dr. Rivera,",
+        "Unit 12\nMain Street",
     ],
 )
 def test_no_detection(street_filter, text):

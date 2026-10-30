@@ -21,9 +21,12 @@ from phileas.models.span import Span
 from .base import BaseFilter, FilterType
 
 
+# The parts are joined by spaces and tabs only, as in the Java filter, so a match does not
+# run from one line into the next (a ZIP code at the end of a line and "Dear Dr." on the
+# next are not an address).
 _PATTERNS = [
     re.compile(
-        r"\b\d{1,5}\s+(?:[A-Za-z0-9#.,\-]+\s+){1,4}"
+        r"\b\d{1,5}[ \t]+(?:[A-Za-z0-9#.,\-]+[ \t]+){1,4}"
         r"(?:Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Lane|Ln|Drive|Dr|Court|Ct|Place|Pl|Way|Circle|Cir|Terrace|Ter|Trail|Trl)\b",
         re.IGNORECASE,
     ),
