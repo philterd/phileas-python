@@ -354,3 +354,46 @@ class TestRegionDeduplication:
 
     def test_order_is_preserved(self):
         assert PhoneNumberFilter({"region": ["GB", "US", "GB"]}).regions == ["GB", "US"]
+
+
+class TestBareCountryCode:
+    """A bare "1" country code before an area code beginning with 1 (issue #107)."""
+
+    @pytest.mark.parametrize(
+        "number",
+        ["1-112-997-5633", "1 112 997 5633", "1.112.997.5633", "1-109-299-5128 x512"],
+    )
+    def test_whole_number_detected(self, number):
+        assert _texts(f"call {number} now") == [number]
+
+    def test_offsets_and_text_come_from_the_input(self):
+        text = "call 1-112-997-5633 now"
+        (span,) = _spans(text)
+        assert text[span.character_start:span.character_end] == span.text == "1-112-997-5633"
+
+    def test_not_rewritten_without_a_country_code_1_region(self):
+        assert _texts("call 1-112-997-5633 now", {"region": "GB"}) == []
+
+    @pytest.mark.parametrize(
+        "text,expected",
+        [
+            ("Item 1 112-997-5633", "112-997-5633"),
+            ("call 1 (112) 997-5633", "(112) 997-5633"),
+        ],
+    )
+    def test_number_found_without_the_rewrite_keeps_its_span(self, text, expected):
+        (span,) = _spans(text)
+        (alone,) = _spans(expected)
+        assert span.text == expected
+        assert span.confidence == alone.confidence
+
+    @pytest.mark.parametrize(
+        "text,found",
+        [
+            ("call +1 112-997-5633 now", ["+1 112-997-5633"]),
+            ("call 1-212-997-5633 now", ["1-212-997-5633"]),
+            ("call 11129975633 now", []),
+        ],
+    )
+    def test_pinned_libphonenumber_behaviour(self, text, found):
+        assert _texts(text) == found
