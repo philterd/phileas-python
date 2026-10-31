@@ -4,6 +4,8 @@ Notable changes to the `phileas-redact` package, most recent first.
 
 ## Unreleased
 
+* The `phoneNumber` filter now finds a number written with a bare `1` country code and an area code beginning with 1, such as `1-112-997-5633`, `1 112 997 5633`, or `1-109-299-5128 x512`, when a configured `region` uses country code 1 (such as `US`, the default). libphonenumber read the `1` as the country code and the area code's `1` as a national prefix, leaving too few digits, so these were missed while `+1 112-997-5633` was found. A number found before keeps its span and confidence, and a number with no separators, such as `11129975633`, is still not found. Same as the Java library (philterd/phileas#458).
+
 * The `ssn` filter no longer detects the `NN-NNNNNNN` form. That shape is an Employer Identification Number, not a Social Security Number, and is already covered by the `ein` filter. A policy that enables only `ssn` therefore no longer detects values such as `12-3456789`; enable `ein` to detect them. SSN forms (`NNN-NN-NNNN`, `NNN NN NNNN`, and nine digits with no hyphen) are unchanged.
 
 ## Version 1.1.0
