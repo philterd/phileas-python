@@ -116,11 +116,11 @@ The set of valid strategies comes from the PhiSQL catalog. The `strategy` value 
 | `TRUNCATE` | `TRUNCATE` | Keep only the first 4 characters | `john***` |
 | `TRUNCATE_TO_YEAR` | `TRUNCATE_TO_YEAR` | Reduce a detected date to just its year | `1990` |
 | `SHIFT` | `SHIFT` | Shift a detected date by a configurable number of years/months/days | `01/20/1995` |
-| `RELATIVE` | `RELATIVE` | Pass the value through unchanged | `123-45-6789` |
+| `RELATIVE` | `RELATIVE` | Express a detected date relative to the current date; future dates are redacted unless `futureDates` is `true` | `3 years 2 months ago` |
 | `ABBREVIATE` | `ABBREVIATE` | Replace with the initials of each word | `J. S.` |
 | `MAP_REPLACE` | `MAP_REPLACE` | Replace from a lookup table, falling back to a generator and then to `fallbackStrategy` | `Joe's Ice Cream Shop` |
 
-`CRYPTO_REPLACE` and `FPE_ENCRYPT_REPLACE` require an externally-configured key and emit a stable marker in this engine. `RELATIVE` passes the value through unchanged.
+`CRYPTO_REPLACE` and `FPE_ENCRYPT_REPLACE` require an externally-configured key and emit a stable marker in this engine. A strategy never leaves the detected value in place: when it cannot be applied (an unrecognized or future date under `RELATIVE`, an unrecognized date under `SHIFT` or `TRUNCATE_TO_YEAR`, a value of 4 characters or fewer under `LAST_4` or `TRUNCATE`, or a filter type with no random generator under `RANDOM_REPLACE`), the value is redacted using the strategy's `redactionFormat`.
 
 ### Strategy options
 
@@ -133,13 +133,15 @@ condition: ""
 shiftYears: 0
 shiftMonths: 0
 shiftDays: 0
+futureDates: false
 color: black
 ```
 
-- **`redactionFormat`** — used by `REDACT`. The placeholder `%t` is replaced with the filter type name (e.g. `email-address`).
+- **`redactionFormat`** — used by `REDACT`, and by any strategy that falls back to redaction. The placeholder `%t` is replaced with the filter type name (e.g. `email-address`).
 - **`staticReplacement`** — used by `STATIC_REPLACE`.
 - **`maskCharacter`** — character used by `MASK` (default: `*`).
 - **`shiftYears` / `shiftMonths` / `shiftDays`** — offsets used by `SHIFT`.
+- **`futureDates`** — used by `RELATIVE`. When `true`, a future date is written as `in 3 months`; otherwise it is redacted (default: `false`).
 - **`condition`** — optional expression that must evaluate to `true` for this strategy to be applied. See [Conditions](#conditions) below.
 - **`mappings` / `mappingFiles` / `caseSensitive` / `generator` / `fallbackStrategy`** — used by `MAP_REPLACE`. See [MAP_REPLACE](#map_replace) below.
 - **`color`** — colour of the bar drawn over a redacted span when a policy is used to render a PDF or image. Accepted and ignored here: phileas-python redacts text, so `color` never changes its output. It is kept so one policy can be shared with the PDF-capable Java engine.

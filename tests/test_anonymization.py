@@ -51,8 +51,8 @@ class TestRandomReplaceAction:
         # A synthetic email took its place.
         assert "@" in result.filtered_text
 
-    def test_random_replace_unknown_type_passthrough(self):
-        # A custom identifier has no anonymization service; RANDOM_REPLACE leaves it.
+    def test_random_replace_unknown_type_redacts(self):
+        # A custom identifier has no anonymization service; RANDOM_REPLACE redacts it.
         policy = Policy.from_dict({
             "name": "p",
             "identifiers": {"identifiers": [{
@@ -61,4 +61,5 @@ class TestRandomReplaceAction:
             }]},
         })
         result = FilterService().filter(policy, "ctx", "doc", "Ref T-100 here.")
-        assert "T-100" in result.filtered_text
+        assert "T-100" not in result.filtered_text
+        assert "{{{REDACTED-" in result.filtered_text

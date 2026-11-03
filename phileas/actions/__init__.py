@@ -25,20 +25,24 @@ resolve argument field names) and ``config`` is the strategy object from the
 policy JSON.
 
 Strategies that require externally-configured key material — ``ENCRYPT``
-(CRYPTO_REPLACE), ``FPE_ENCRYPT`` (FPE_ENCRYPT_REPLACE) — and the time-relative
-``RELATIVE`` strategy are not executed by this reference engine; they emit a
-stable marker (ENCRYPT/FPE) or pass the value through unchanged (RELATIVE).
+(CRYPTO_REPLACE), ``FPE_ENCRYPT`` (FPE_ENCRYPT_REPLACE) — are not executed by
+this reference engine; they emit a stable marker.
+
+A handler never returns the original token: when a strategy cannot be applied
+to a value (an unparseable date, a value too short to reduce, a filter type
+with no anonymization service) the value is redacted instead.
 """
 
 from __future__ import annotations
 
 import hashlib
+from datetime import date
 from typing import Callable, Dict, Optional, Tuple
 
 from phisql.catalog import Strategy
 
 from phileas.catalog import get_catalog
-from .date_ops import shift_date, truncate_to_year
+from .date_ops import relative_date, shift_date, truncate_to_year
 
 DEFAULT_REDACTION_FORMAT = "{{{REDACTED-%t}}}"
 
@@ -59,6 +63,12 @@ def _to_int(value, default: int = 0) -> int:
         return int(value)
     except (TypeError, ValueError):
         return default
+
+
+def _to_bool(value) -> bool:
+    if isinstance(value, str):
+        return value.strip().lower() == "true"
+    return bool(value)
 
 
 def _mask_length(value, default: int) -> int:
@@ -96,7 +106,9 @@ def _random_replace(strategy, config, filter_type, token):
     from phileas.services.anonymization import get_anonymization_service
 
     service = get_anonymization_service(filter_type)
-    return service.anonymize(token) if service is not None else token
+    if service is None:
+        return _redact(strategy, config, filter_type, token)
+    return service.anonymize(token)
 
 
 def _static_replace(strategy, config, filter_type, token):
@@ -119,27 +131,40 @@ def _hash_sha256(strategy, config, filter_type, token):
 
 
 def _last_4(strategy, config, filter_type, token):
-    return "*" * (len(token) - 4) + token[-4:] if len(token) > 4 else token
+    # Four characters or fewer would be revealed whole.
+    if len(token) <= 4:
+        return _redact(strategy, config, filter_type, token)
+    return "*" * (len(token) - 4) + token[-4:]
 
 
 def _truncate(strategy, config, filter_type, token):
-    return token[:4] if len(token) > 4 else token
+    if len(token) <= 4:
+        return _redact(strategy, config, filter_type, token)
+    return token[:4]
 
 
 def _truncate_to_year(strategy, config, filter_type, token):
-    return truncate_to_year(token)
+    year = truncate_to_year(token)
+    return year if year is not None else _redact(strategy, config, filter_type, token)
 
 
 def _shift(strategy, config, filter_type, token):
     years = _to_int(config.get(_field(strategy, "years", "shiftYears")))
     months = _to_int(config.get(_field(strategy, "months", "shiftMonths")))
     days = _to_int(config.get(_field(strategy, "days", "shiftDays")))
-    return shift_date(token, years, months, days)
+    shifted = shift_date(token, years, months, days)
+    return shifted if shifted is not None else _redact(strategy, config, filter_type, token)
+
+
+def _today() -> date:
+    return date.today()
 
 
 def _relative(strategy, config, filter_type, token):
-    # RELATIVE expresses a date relative to "now"; not implemented deterministically.
-    return token
+    # Future dates are redacted unless futureDates is set, as in the Java engine.
+    future_dates = _to_bool(config.get(_field(strategy, "futureDates", "futureDates")))
+    relative = relative_date(token, _today(), future_dates)
+    return relative if relative is not None else _redact(strategy, config, filter_type, token)
 
 
 def _abbreviate(strategy, config, filter_type, token):

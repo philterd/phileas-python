@@ -20,11 +20,12 @@ These exercise every ``phileas_enum`` reachable through
 """
 
 import hashlib
+from datetime import date
 
 import pytest
 
 from phileas import actions
-from phileas.actions.date_ops import shift_date, truncate_to_year
+from phileas.actions.date_ops import _period, relative_date, shift_date, truncate_to_year
 from phileas.policy.strategy import Strategy
 
 
@@ -101,9 +102,10 @@ class TestRandomReplace:
         assert "90210" not in outs
         assert all(len(o) == 5 and o.isdigit() for o in outs)
 
-    def test_unknown_type_passes_through(self):
-        # No service registered for this filter type -> token returned unchanged.
-        assert replace({"strategy": "RANDOM_REPLACE"}, "unknown-filter-type", "KEEPME") == "KEEPME"
+    def test_unknown_type_redacts(self):
+        # No service registered for this filter type -> redacted, never left as-is.
+        out = replace({"strategy": "RANDOM_REPLACE"}, "unknown-filter-type", "KEEPME")
+        assert out == "{{{REDACTED-unknown-filter-type}}}"
 
 
 # --- HASH_SHA256_REPLACE -----------------------------------------------------
@@ -128,12 +130,12 @@ class TestLast4:
     def test_longer_than_4(self):
         assert replace({"strategy": "LAST_4"}, "cc", "4111111111111111") == "************1111"
 
-    def test_shorter_than_4_unchanged(self):
-        assert replace({"strategy": "LAST_4"}, "cc", "12") == "12"
+    def test_shorter_than_4_redacted(self):
+        assert replace({"strategy": "LAST_4"}, "cc", "12") == "{{{REDACTED-cc}}}"
 
-    def test_exactly_4_unchanged(self):
-        # len > 4 is required to mask; exactly 4 is returned as-is.
-        assert replace({"strategy": "LAST_4"}, "cc", "1234") == "1234"
+    def test_exactly_4_redacted(self):
+        # The last four would be the whole value, so it is redacted.
+        assert replace({"strategy": "LAST_4"}, "cc", "1234") == "{{{REDACTED-cc}}}"
 
 
 # --- TRUNCATE ----------------------------------------------------------------
@@ -143,11 +145,11 @@ class TestTruncate:
     def test_longer_than_4(self):
         assert replace({"strategy": "TRUNCATE"}, "x", "abcdefgh") == "abcd"
 
-    def test_short_unchanged(self):
-        assert replace({"strategy": "TRUNCATE"}, "x", "abc") == "abc"
+    def test_short_redacted(self):
+        assert replace({"strategy": "TRUNCATE"}, "x", "abc") == "{{{REDACTED-x}}}"
 
-    def test_exactly_4_unchanged(self):
-        assert replace({"strategy": "TRUNCATE"}, "x", "abcd") == "abcd"
+    def test_exactly_4_redacted(self):
+        assert replace({"strategy": "TRUNCATE"}, "x", "abcd") == "{{{REDACTED-x}}}"
 
 
 # --- ABBREVIATE --------------------------------------------------------------
@@ -180,25 +182,135 @@ class TestShiftStrategy:
     def test_shift_years(self):
         assert replace({"strategy": "SHIFT", "shiftYears": 3}, "date", "01/05/2020") == "01/05/2023"
 
-    def test_unparseable_passthrough(self):
-        assert replace({"strategy": "SHIFT", "shiftDays": 5}, "date", "not-a-date") == "not-a-date"
+    def test_unparseable_redacted(self):
+        assert replace({"strategy": "SHIFT", "shiftDays": 5}, "date", "not-a-date") == "{{{REDACTED-date}}}"
+
+    def test_invalid_calendar_date_redacted(self):
+        assert replace({"strategy": "SHIFT", "shiftDays": 5}, "date", "02/31/2020") == "{{{REDACTED-date}}}"
+
+    def test_unparseable_uses_redaction_format(self):
+        config = {"strategy": "SHIFT", "shiftDays": 5, "redactionFormat": "[%t]"}
+        assert replace(config, "date", "not-a-date") == "[date]"
 
 
-# --- Markers / passthrough strategies ----------------------------------------
+# --- Markers ------------------------------------------------------------------
 
 
-class TestMarkersAndPassthrough:
+class TestMarkers:
     def test_crypto_replace_marker(self):
         assert replace({"strategy": "CRYPTO_REPLACE"}, "ssn", "x") == "{{{ENCRYPTED-ssn}}}"
 
     def test_fpe_encrypt_replace_marker(self):
         assert replace({"strategy": "FPE_ENCRYPT_REPLACE"}, "ssn", "x") == "{{{FPE-ENCRYPTED-ssn}}}"
 
-    def test_relative_passthrough(self):
-        assert replace({"strategy": "RELATIVE"}, "date", "2020-01-05") == "2020-01-05"
-
     def test_truncate_to_year_strategy(self):
         assert replace({"strategy": "TRUNCATE_TO_YEAR"}, "date", "01/05/2020") == "2020"
+
+
+# --- RELATIVE ----------------------------------------------------------------
+
+
+TODAY = date(2026, 11, 3)
+
+
+@pytest.fixture
+def fixed_today(monkeypatch):
+    monkeypatch.setattr(actions, "_today", lambda: TODAY)
+
+
+class TestRelativeStrategy:
+    def test_past_date_months(self, fixed_today):
+        assert replace({"strategy": "RELATIVE"}, "date", "2026-08-01") == "3 months ago"
+
+    def test_past_date_years_and_months(self, fixed_today):
+        assert replace({"strategy": "RELATIVE"}, "date", "01/05/2020") == "6 years 10 months ago"
+
+    def test_other_formats(self, fixed_today):
+        assert replace({"strategy": "RELATIVE"}, "date", "March 3, 2026") == "8 months ago"
+        assert replace({"strategy": "RELATIVE"}, "date", "3 March 2026") == "8 months ago"
+
+    def test_today(self, fixed_today):
+        assert replace({"strategy": "RELATIVE"}, "date", "2026-11-03") == "0 months ago"
+
+    def test_future_date_redacted_by_default(self, fixed_today):
+        assert replace({"strategy": "RELATIVE"}, "date", "2027-02-03") == "{{{REDACTED-date}}}"
+
+    @pytest.mark.parametrize("flag", [True, "true", "TRUE"])
+    def test_future_date_allowed(self, fixed_today, flag):
+        config = {"strategy": "RELATIVE", "futureDates": flag}
+        assert replace(config, "date", "2027-02-03") == "in 3 months"
+
+    def test_future_dates_false(self, fixed_today):
+        config = {"strategy": "RELATIVE", "futureDates": False}
+        assert replace(config, "date", "2027-02-03") == "{{{REDACTED-date}}}"
+
+    def test_unparseable_redacted(self, fixed_today):
+        assert replace({"strategy": "RELATIVE"}, "date", "not-a-date") == "{{{REDACTED-date}}}"
+
+    def test_invalid_calendar_date_redacted(self, fixed_today):
+        assert replace({"strategy": "RELATIVE"}, "date", "02/31/2020") == "{{{REDACTED-date}}}"
+
+    def test_unparseable_uses_redaction_format(self, fixed_today):
+        config = {"strategy": "RELATIVE", "redactionFormat": "[%t]"}
+        assert replace(config, "date", "not-a-date") == "[date]"
+
+    def test_uses_current_date_by_default(self):
+        out = replace({"strategy": "RELATIVE"}, "date", "01/05/2020")
+        assert out.endswith(" ago")
+        assert "2020" not in out
+
+
+class TestRelativeDate:
+    def test_half_month_rounds_up(self):
+        # 2 months 15 days.
+        assert relative_date("2026-08-19", TODAY, False) == "3 months ago"
+
+    def test_under_half_month_rounds_down(self):
+        # 2 months 14 days.
+        assert relative_date("2026-08-20", TODAY, False) == "2 months ago"
+
+    def test_day_borrow_matches_java_period(self):
+        # Period.between(2026-01-31, 2026-03-01) is 1 month 1 day.
+        assert relative_date("2026-01-31", date(2026, 3, 1), False) == "1 months ago"
+
+    def test_future(self):
+        assert relative_date("2028-01-03", TODAY, True) == "in 1 years 2 months"
+
+    def test_future_does_not_round(self):
+        # Java's Period.between(date, now) is negative here, so days never reach 15.
+        assert relative_date("2027-02-20", TODAY, True) == "in 3 months"
+        assert relative_date("2026-12-01", TODAY, True) == "in 0 months"
+
+    def test_period_matches_java_negative_normalization(self):
+        # Period.between(2026-12-01, 2026-11-03) is -28 days.
+        assert _period(date(2026, 12, 1), TODAY) == (0, 0, -28)
+        # Period.between(2028-01-03, 2026-11-03) is -1 years -2 months.
+        assert _period(date(2028, 1, 3), TODAY) == (-1, -2, 0)
+
+    def test_future_not_allowed(self):
+        assert relative_date("2028-01-03", TODAY, False) is None
+
+    def test_unparseable(self):
+        assert relative_date("xyz", TODAY, True) is None
+
+
+# --- No strategy leaves the value in place -----------------------------------
+
+
+class TestNeverReturnsToken:
+    @pytest.mark.parametrize("config,filter_type,token", [
+        ({"strategy": "RANDOM_REPLACE"}, "unknown-filter-type", "KEEPME"),
+        ({"strategy": "LAST_4"}, "cc", "1234"),
+        ({"strategy": "TRUNCATE"}, "x", "abcd"),
+        ({"strategy": "TRUNCATE_TO_YEAR"}, "date", "not-a-date"),
+        ({"strategy": "SHIFT", "shiftDays": 1}, "date", "not-a-date"),
+        ({"strategy": "RELATIVE"}, "date", "not-a-date"),
+        ({"strategy": "RELATIVE"}, "date", "2999-01-01"),
+    ])
+    def test_unappliable_value_is_redacted(self, config, filter_type, token):
+        out = replace(config, filter_type, token)
+        assert out != token
+        assert out == f"{{{{{{REDACTED-{filter_type}}}}}}}"
 
 
 # --- Engine introspection ----------------------------------------------------
@@ -264,8 +376,8 @@ class TestShiftDate:
     def test_day_month_year_format_preserved(self):
         assert shift_date("15 January 1990", 0, 0, 5) == "20 January 1990"
 
-    def test_unparseable_unchanged(self):
-        assert shift_date("xyz", 1, 2, 3) == "xyz"
+    def test_unparseable_none(self):
+        assert shift_date("xyz", 1, 2, 3) is None
 
 
 # --- date_ops.truncate_to_year directly --------------------------------------
@@ -282,5 +394,8 @@ class TestTruncateToYear:
     def test_supported_formats(self, token, expected):
         assert truncate_to_year(token) == expected
 
-    def test_unparseable_passthrough(self):
-        assert truncate_to_year("not a date") == "not a date"
+    def test_unparseable_none(self):
+        assert truncate_to_year("not a date") is None
+
+    def test_invalid_calendar_date_none(self):
+        assert truncate_to_year("02/31/2020") is None

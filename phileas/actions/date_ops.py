@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Date parsing helpers shared by the SHIFT and TRUNCATE_TO_YEAR actions."""
+"""Date parsing helpers shared by the SHIFT, TRUNCATE_TO_YEAR and RELATIVE actions."""
 
 from __future__ import annotations
 
@@ -40,6 +40,14 @@ _RE_DAY_MONTH_YEAR = re.compile(
 
 def _parse(token: str) -> Optional[date]:
     """Parses *token* as a date in any supported format, or returns None."""
+    try:
+        return _parse_strict(token)
+    except ValueError:
+        # Shaped like a date but not a real one, e.g. 02/31/2020.
+        return None
+
+
+def _parse_strict(token: str) -> Optional[date]:
     m = _RE_NUMERIC.fullmatch(token)
     if m:
         return date(int(m.group(4)), int(m.group(1)), int(m.group(3)))
@@ -64,12 +72,19 @@ def _shift_value(dt: date, years: int, months: int, days: int) -> date:
     return shifted + timedelta(days=days)
 
 
-def shift_date(token: str, years: int, months: int, days: int) -> str:
+def shift_date(token: str, years: int, months: int, days: int) -> Optional[str]:
     """Shifts a recognized date by the offsets, preserving its input format.
 
-    Output dates are always zero-padded (e.g. ``01/05/2020``). Unrecognized
-    input is returned unchanged.
+    Output dates are always zero-padded (e.g. ``01/05/2020``). Returns None for
+    unrecognized input.
     """
+    try:
+        return _shift_strict(token, years, months, days)
+    except (ValueError, OverflowError):
+        return None
+
+
+def _shift_strict(token: str, years: int, months: int, days: int) -> Optional[str]:
     m = _RE_NUMERIC.fullmatch(token)
     if m:
         sep = m.group(2)
@@ -95,10 +110,54 @@ def shift_date(token: str, years: int, months: int, days: int) -> str:
         shifted = _shift_value(dt, years, months, days)
         return f"{shifted.day} {_MONTH_NAMES[shifted.month - 1]} {shifted.year}"
 
-    return token
+    return None
 
 
-def truncate_to_year(token: str) -> str:
-    """Returns the four-digit year of a recognized date, else the token."""
+def truncate_to_year(token: str) -> Optional[str]:
+    """Returns the four-digit year of a recognized date, else None."""
     dt = _parse(token)
-    return str(dt.year) if dt is not None else token
+    return str(dt.year) if dt is not None else None
+
+
+def _period(start: date, end: date) -> tuple:
+    """(years, months, days) from *start* to *end*, as java.time.Period.between.
+
+    Every component is negative when *end* is before *start*.
+    """
+    total_months = (end.year * 12 + end.month) - (start.year * 12 + start.month)
+    days = end.day - start.day
+    if total_months > 0 and days < 0:
+        total_months -= 1
+        days = (end - _shift_value(start, 0, total_months, 0)).days
+    elif total_months < 0 and days > 0:
+        total_months += 1
+        days -= calendar.monthrange(end.year, end.month)[1]
+    sign = -1 if total_months < 0 else 1
+    years, months = divmod(abs(total_months), 12)
+    return sign * years, sign * months, days
+
+
+def _readable(years: int, months: int, days: int) -> str:
+    # Half a month or more rounds up. Future periods have days <= 0, so they
+    # never round, as in the Java engine.
+    years, months = abs(years), abs(months)
+    if days >= 15:
+        months += 1
+    return f"{years} years {months} months" if years else f"{months} months"
+
+
+def relative_date(token: str, today: date, future_dates: bool) -> Optional[str]:
+    """Expresses a recognized date relative to *today*, e.g. ``3 months ago``.
+
+    A future date becomes ``in 3 months`` when *future_dates* is set. Returns
+    None for unrecognized input or a future date that is not allowed.
+    """
+    dt = _parse(token)
+    if dt is None:
+        return None
+    period = _period(dt, today)
+    if dt <= today:
+        return f"{_readable(*period)} ago"
+    if future_dates:
+        return f"in {_readable(*period)}"
+    return None

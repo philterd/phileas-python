@@ -57,7 +57,7 @@ class TestActions:
 
     def test_last_4(self):
         assert replace({"strategy": "LAST_4"}, "cc", "4111111111111111") == "************1111"
-        assert replace({"strategy": "LAST_4"}, "cc", "12") == "12"
+        assert replace({"strategy": "LAST_4"}, "cc", "12") == "{{{REDACTED-cc}}}"
 
     def test_truncate(self):
         assert replace({"strategy": "TRUNCATE"}, "x", "abcdefgh") == "abcd"
@@ -96,7 +96,7 @@ class TestDateOps:
         assert truncate_to_year(token) == expected
 
     def test_truncate_to_year_unparseable(self):
-        assert truncate_to_year("not a date") == "not a date"
+        assert truncate_to_year("not a date") is None
 
     def test_shift_preserves_iso_format(self):
         assert shift_date("2020-01-05", 0, 0, 10) == "2020-01-15"
@@ -104,5 +104,5 @@ class TestDateOps:
     def test_shift_month_rollover(self):
         assert shift_date("01/25/2020", 0, 0, 10) == "02/04/2020"
 
-    def test_shift_unparseable_unchanged(self):
-        assert shift_date("xyz", 1, 2, 3) == "xyz"
+    def test_shift_unparseable_none(self):
+        assert shift_date("xyz", 1, 2, 3) is None

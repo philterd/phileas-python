@@ -217,7 +217,7 @@ The valid `strategy` values come from the PhiSQL catalog (the `strategy` value i
 
 `REDACT`, `MASK`, `RANDOM_REPLACE`, `STATIC_REPLACE`, `CRYPTO_REPLACE`, `FPE_ENCRYPT_REPLACE`, `HASH_SHA256_REPLACE`, `LAST_4`, `TRUNCATE`, `TRUNCATE_TO_YEAR`, `SHIFT`, `RELATIVE`, `ABBREVIATE`.
 
-`CRYPTO_REPLACE` and `FPE_ENCRYPT_REPLACE` require an externally-configured key and emit a stable marker in this engine; `RELATIVE` passes the value through unchanged.
+`CRYPTO_REPLACE` and `FPE_ENCRYPT_REPLACE` require an externally-configured key and emit a stable marker in this engine. `RELATIVE` expresses a date relative to the current date. A strategy that cannot be applied to a value redacts it rather than leaving it in place.
 
 ### Constructor
 
