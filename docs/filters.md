@@ -147,6 +147,8 @@ Only the hyphenated form is matched. A bare nine-digit run is left to the `ssn` 
 
 Detects phone numbers with [libphonenumber](https://github.com/daviddrysdale/python-phonenumbers). A `+`-prefixed international number is detected whatever its country (`+44 20 7946 0958`); a number without one is read as US (`(555) 867-5309`, `555-867-5309`, `555.867.5309`).
 
+A number is detected when libphonenumber considers it possible, which is mostly a matter of its length. When a configured region uses country code 1 (such as `US`), a bare `1` country code followed by a separator is also read as `+1`, so `1-112-997-5633`, `1 112 997 5633` and `1.112.997.5633` are found like `+1 112-997-5633`. A number with no separators, such as `11129975633`, is not found.
+
 Span confidence reflects how the number is written: `0.95` for plain NANP formatting, `0.75` for longer forms, `0.60` otherwise. A `confidence` condition sees those values.
 
 ```python
