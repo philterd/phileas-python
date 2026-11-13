@@ -19,10 +19,11 @@ policy JSON, and the JSON field each argument maps to) is owned by the PhiSQL
 catalog and reached through :mod:`phileas.catalog`. This module owns the
 *behavior*: one handler per strategy, keyed by the catalog's ``phileas_enum``.
 
-A handler has the signature ``(strategy, config, filter_type, token) -> str``
-where ``strategy`` is the catalog :class:`phisql.catalog.Strategy` (used to
-resolve argument field names) and ``config`` is the strategy object from the
-policy JSON.
+A handler has the signature
+``(strategy, config, filter_type, token, classification) -> str`` where
+``strategy`` is the catalog :class:`phisql.catalog.Strategy` (used to resolve
+argument field names), ``config`` is the strategy object from the policy JSON,
+and ``classification`` is the span's label (``%l`` in a redaction format).
 
 Strategies that require externally-configured key material — ``ENCRYPT``
 (CRYPTO_REPLACE), ``FPE_ENCRYPT`` (FPE_ENCRYPT_REPLACE) — are not executed by
@@ -46,7 +47,7 @@ from .date_ops import relative_date, shift_date, truncate_to_year
 
 DEFAULT_REDACTION_FORMAT = "{{{REDACTED-%t}}}"
 
-Action = Callable[[Optional[Strategy], dict, str, str], str]
+Action = Callable[[Optional[Strategy], dict, str, str, str], str]
 
 
 def _field(strategy: Optional[Strategy], arg_name: str, default: str) -> str:
@@ -91,90 +92,92 @@ def _mask_length(value, default: int) -> int:
 # --- Action handlers (keyed below by PhiSQL keyword) -------------------------
 
 
-def _redact(strategy, config, filter_type, token):
+def _redact(strategy, config, filter_type, token, classification=""):
+    # Literal substitutions, in the same order as Phileas (Java): %t is the filter
+    # type, %l the classification (empty when there is none), and %v the value.
     fmt = config.get(_field(strategy, "format", "redactionFormat")) or DEFAULT_REDACTION_FORMAT
-    return fmt.replace("%t", filter_type)
+    return fmt.replace("%t", filter_type).replace("%l", classification or "").replace("%v", token)
 
 
-def _mask(strategy, config, filter_type, token):
+def _mask(strategy, config, filter_type, token, classification=""):
     mask_char = config.get(_field(strategy, "mask_char", "maskCharacter")) or "*"
     length = _mask_length(config.get(_field(strategy, "mask_length", "maskLength")), len(token))
     return mask_char * length
 
 
-def _random_replace(strategy, config, filter_type, token):
+def _random_replace(strategy, config, filter_type, token, classification=""):
     from phileas.services.anonymization import get_anonymization_service
 
     service = get_anonymization_service(filter_type)
     if service is None:
-        return _redact(strategy, config, filter_type, token)
+        return _redact(strategy, config, filter_type, token, classification)
     return service.anonymize(token)
 
 
-def _static_replace(strategy, config, filter_type, token):
+def _static_replace(strategy, config, filter_type, token, classification=""):
     return config.get(_field(strategy, "value", "staticReplacement"), "")
 
 
-def _encrypt(strategy, config, filter_type, token):
+def _encrypt(strategy, config, filter_type, token, classification=""):
     # CRYPTO_REPLACE needs a key configured via PhiSQL "CONFIGURE CRYPTO"; this
     # reference engine does not perform encryption and emits a stable marker.
     return "{{{ENCRYPTED-%t}}}".replace("%t", filter_type)
 
 
-def _fpe_encrypt(strategy, config, filter_type, token):
+def _fpe_encrypt(strategy, config, filter_type, token, classification=""):
     # FPE_ENCRYPT_REPLACE needs a key + tweak configured via "CONFIGURE FPE".
     return "{{{FPE-ENCRYPTED-%t}}}".replace("%t", filter_type)
 
 
-def _hash_sha256(strategy, config, filter_type, token):
+def _hash_sha256(strategy, config, filter_type, token, classification=""):
     return hashlib.sha256(token.encode()).hexdigest()
 
 
-def _last_4(strategy, config, filter_type, token):
+def _last_4(strategy, config, filter_type, token, classification=""):
     # Four characters or fewer would be revealed whole.
     if len(token) <= 4:
-        return _redact(strategy, config, filter_type, token)
+        return _redact(strategy, config, filter_type, token, classification)
     return "*" * (len(token) - 4) + token[-4:]
 
 
-def _truncate(strategy, config, filter_type, token):
+def _truncate(strategy, config, filter_type, token, classification=""):
     if len(token) <= 4:
-        return _redact(strategy, config, filter_type, token)
+        return _redact(strategy, config, filter_type, token, classification)
     return token[:4]
 
 
-def _truncate_to_year(strategy, config, filter_type, token):
+def _truncate_to_year(strategy, config, filter_type, token, classification=""):
     year = truncate_to_year(token)
-    return year if year is not None else _redact(strategy, config, filter_type, token)
+    return year if year is not None else _redact(strategy, config, filter_type, token, classification)
 
 
-def _shift(strategy, config, filter_type, token):
+def _shift(strategy, config, filter_type, token, classification=""):
     years = _to_int(config.get(_field(strategy, "years", "shiftYears")))
     months = _to_int(config.get(_field(strategy, "months", "shiftMonths")))
     days = _to_int(config.get(_field(strategy, "days", "shiftDays")))
     shifted = shift_date(token, years, months, days)
-    return shifted if shifted is not None else _redact(strategy, config, filter_type, token)
+    return shifted if shifted is not None else _redact(strategy, config, filter_type, token, classification)
 
 
 def _today() -> date:
     return date.today()
 
 
-def _relative(strategy, config, filter_type, token):
+def _relative(strategy, config, filter_type, token, classification=""):
     # Future dates are redacted unless futureDates is set, as in the Java engine.
     future_dates = _to_bool(config.get(_field(strategy, "futureDates", "futureDates")))
     relative = relative_date(token, _today(), future_dates)
-    return relative if relative is not None else _redact(strategy, config, filter_type, token)
+    return relative if relative is not None else _redact(strategy, config, filter_type, token, classification)
 
 
-def _abbreviate(strategy, config, filter_type, token):
+def _abbreviate(strategy, config, filter_type, token, classification=""):
     return "".join(word[0].upper() for word in token.split() if word)
 
 
 # PhiSQL keyword -> handler. Keys are catalog keywords; the registry below is
 # re-keyed by the catalog's phileas_enum so policy JSON (which uses the enum)
 # dispatches correctly.
-def _map_replace(strategy, config, filter_type, token):
+def _map_replace(strategy, config, filter_type, token, classification=""):
     """The inline table, then the fallback.
 
     Reached by a direct call; FilterService resolves through Strategy, which can
@@ -186,7 +189,7 @@ def _map_replace(strategy, config, filter_type, token):
     replacement = resolver.resolve(token, filter_type)
     if replacement is not None:
         return replacement
-    return get_replacement(resolver.fallback, config, filter_type, token)
+    return get_replacement(resolver.fallback, config, filter_type, token, classification)
 
 
 _HANDLERS: Dict[str, Action] = {
@@ -227,8 +230,12 @@ def is_known(phileas_enum: str) -> bool:
     return phileas_enum in _get_registry()
 
 
-def get_replacement(phileas_enum: str, config: dict, filter_type: str, token: str) -> str:
+def get_replacement(
+    phileas_enum: str, config: dict, filter_type: str, token: str, classification: str = ""
+) -> str:
     """Computes the replacement for *token* under the strategy *phileas_enum*.
+
+    *classification* is the span's label, used for ``%l`` in a redaction format.
 
     Raises ValueError if the enum is not a catalog strategy this engine
     implements.
@@ -237,4 +244,4 @@ def get_replacement(phileas_enum: str, config: dict, filter_type: str, token: st
     if entry is None:
         raise ValueError(f"Unsupported or unknown redaction strategy: {phileas_enum!r}")
     strategy, handler = entry
-    return handler(strategy, config, filter_type, token)
+    return handler(strategy, config, filter_type, token, classification)
