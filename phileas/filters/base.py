@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Tuple, Union
 
 from phileas.models.span import Span
 
@@ -73,14 +73,19 @@ class BaseFilter(ABC):
 
     def _detect_patterns(
         self,
-        patterns: List[re.Pattern],
+        patterns: List[Union[re.Pattern, Tuple[re.Pattern, str]]],
         text: str,
         context: str,
         confidence: float = 1.0,
     ) -> List[Span]:
-        """Return a span for every match of every pattern (no replacement set)."""
+        """Return a span for every match of every pattern (no replacement set).
+
+        A pattern can be given as ``(pattern, classification)``; its spans then carry
+        that classification, which a redaction format uses for ``%l``.
+        """
         spans: List[Span] = []
-        for pattern in patterns:
+        for entry in patterns:
+            pattern, classification = entry if isinstance(entry, tuple) else (entry, "")
             for match in pattern.finditer(text):
                 spans.append(
                     Span(
@@ -92,6 +97,7 @@ class BaseFilter(ABC):
                         text=match.group(0),
                         replacement="",
                         ignored=False,
+                        classification=classification,
                     )
                 )
         return spans

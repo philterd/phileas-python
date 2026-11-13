@@ -76,7 +76,15 @@ print(result.filtered_text)
 
 ## Use a custom redaction format
 
-The `%t` placeholder in `redactionFormat` is replaced with the filter type name.
+A `redactionFormat` can use three placeholders:
+
+| Placeholder | Replaced with |
+| --- | --- |
+| `%t` | The filter type, such as `ssn` or `tracking-number`. |
+| `%l` | The label: a custom identifier's or dictionary's `classification`, a tracking number's carrier (`ups`, `fedex`, `usps`), a passport number's country (`US`), or a PhEye label. It is empty for a filter without one, such as `ssn`, and for the driver's license filter, where states share number formats. |
+| `%v` | The detected value. The value is then in the output, so use `%v` only where that is acceptable. |
+
+With `"redactionFormat": "[%t|%l|%v]"`, `Ship 1Z999AA10123456784 now` becomes `Ship [tracking-number|ups|1Z999AA10123456784] now`.
 
 ```python
 policy = Policy.from_dict({

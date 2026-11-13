@@ -21,11 +21,13 @@ from phileas.models.span import Span
 from .base import BaseFilter, FilterType
 
 
+# Each pattern carries the issuing country as its classification, which a
+# redaction format gets as %l.
 _PATTERNS = [
     # US Passport: letter followed by 8 digits
-    re.compile(r"\b[A-Z]\d{8}\b"),
+    (re.compile(r"\b[A-Z]\d{8}\b"), "US"),
     # Some US passports: 9 digits
-    re.compile(r"\b\d{9}\b"),
+    (re.compile(r"\b\d{9}\b"), "US"),
 ]
 
 
