@@ -62,7 +62,7 @@ def test_address_detected_standalone(street_filter, addr):
     assert span.character_start == 0
     assert span.character_end == len(addr)
     assert span.filter_type == "street-address"
-    assert span.confidence == 1.0
+    assert span.confidence == 0.85
     assert span.replacement == ""
 
 
@@ -106,7 +106,7 @@ def test_multi_word_street_name(street_filter):
     text = "Visit 1 Martin Luther King Jr Blvd, Suite 200"
     spans = street_filter.detect(text)
     assert len(spans) == 1
-    assert spans[0].text == "1 Martin Luther King Jr Blvd"
+    assert spans[0].text == "1 Martin Luther King Jr Blvd, Suite 200"
 
 
 def test_long_street_name_within_word_limit(street_filter):
@@ -127,7 +127,7 @@ def test_no_match_across_line_breaks(street_filter):
     "text,expected",
     [
         ("214 Juniper Court\nCedar Falls, IA 50613", "214 Juniper Court"),
-        ("123 Main St Apt 4B\r\nSpringfield, IL 62704", "123 Main St"),
+        ("123 Main St Apt 4B\r\nSpringfield, IL 62704", "123 Main St Apt 4B"),
         ("Jane Doe\n1 Martin Luther King Jr Blvd\nAtlanta, GA 30303", "1 Martin Luther King Jr Blvd"),
     ],
 )
@@ -160,19 +160,114 @@ def test_custom_context_still_detects(street_filter):
         "street",
         "Main Street",  # no leading number
         "123 Street",  # no street-name word between number and suffix
-        "PO Box 123",
-        "P.O. Box 456",
         "phone 555-123-4567 not an address",
         "123 Main Streets",  # trailing 's' breaks the suffix word boundary
         "123 Main Streetss",
-        "123456 Main Street",  # number has six digits (exceeds \\d{1,5})
+        "1234567 Main Street",  # number has seven digits (exceeds \\d{1,6})
         "Cedar Falls, IA 50613\nDear Dr. Rivera,",  # parts on different lines
         "Cedar Falls, IA 50613\r\nDear Dr. Rivera,",
         "Unit 12\nMain Street",
+        "Chapter 4 summary",
+        "Meeting at 3 PM today",
+        "Section 5 covers everything",
+        "PO Box without a number",
+        "P.O. Box\n12",
+        "Post Office\nBox 789",
     ],
 )
 def test_no_detection(street_filter, text):
     assert street_filter.detect(text) == []
+
+
+# --- Ported from the Phileas (Java) StreetAddressFilterTest -----------------
+
+
+@pytest.mark.parametrize(
+    "text,start,end",
+    [
+        ("lived at 100 Main St", 9, 20),
+        ("lived at 100 S Main St", 9, 22),
+        ("lived at 100 South Main St", 9, 26),
+        ("lived at 1000 Main Street", 9, 25),
+        ("North 2800 Clay Edwards Drive", 6, 29),
+        ("14 Southampton St.", 0, 18),
+        ("22 Newport Drive", 0, 16),
+        ("78 Glendale Street", 0, 18),
+        ("6 Berkshire Court", 0, 17),
+        ("291 North Pawnee Ave.", 0, 21),
+        ("468 William Street", 0, 18),
+        ("291 6th Dr.", 0, 11),
+        ("9444 Heritage St.", 0, 17),
+        ("70 Birchpond Street", 0, 19),
+        ("656 S. Inverness St.", 0, 20),
+        ("9142 Arlington Court", 0, 20),
+        ("4 Devonshire Ct.", 0, 16),
+        ("4 Devonshire Ct", 0, 15),
+        ("4 Devonshire Ct ste 2", 0, 21),
+        ("4 Devonshire Ct apartment 222", 0, 29),
+        ("4 Devonshire Ct apt 222", 0, 23),
+        ("4 Devonshire Ct apt 222 anywhere", 0, 23),
+        ("address is 9444 Heritage St. over there", 11, 28),
+        ("address is 9444 Heritage St. apt 2 over there", 11, 34),
+        ("445 Minnesota Street, Suite 175", 0, 31),
+    ],
+)
+def test_java_span_offsets(street_filter, text, start, end):
+    spans = street_filter.detect(text)
+    assert len(spans) == 1
+    assert (spans[0].character_start, spans[0].character_end) == (start, end)
+    assert spans[0].confidence == 0.85
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        # Directionals
+        "123 N Main St",
+        "123 North Main Street",
+        "123 Main St NW",
+        # Ordinals
+        "123 5th Avenue",
+        "42 42nd Street",
+        # Street types added from Java
+        "10 Sunset Loop",
+        "5 Kings Crossing",
+        "12 Harbor Plaza",
+        "34 Oak Point",
+        "77 Rectory Mews",
+        "900 Coastal Highway",
+        "1 Elm Parkway",
+        # House number ranges and letters
+        "123-125 Main St",
+        "100-102 Main St",
+        "123A Main Street",
+        # Saint and apostrophe names
+        "100 St. Charles Avenue",
+        "12 O'Connor Way",
+        # Units
+        "123 Main St Apt 4B",
+        "12 Pine Rd #5",
+        "100 Main St NW",
+        # PO boxes
+        "PO Box 1234",
+        "P.O. Box 56",
+        "Post Office Box 789",
+    ],
+)
+def test_java_address_forms_detected_in_full(street_filter, text):
+    assert [s.text for s in street_filter.detect(text)] == [text]
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        ("123-125 Oak Ave, Apt 4B\r\nCedar Falls, IA 50613", "123-125 Oak Ave, Apt 4B"),
+        ("123 N Main St NW\nSpringfield, IL 62704", "123 N Main St NW"),
+        ("12 Pine Rd\nRoom 5 is booked", "12 Pine Rd"),
+    ],
+)
+def test_java_address_blocks(street_filter, text, expected):
+    assert [s.text for s in street_filter.detect(text)] == [expected]
 
 
 def test_filter_constructs_with_none_config():
