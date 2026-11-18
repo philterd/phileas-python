@@ -21,6 +21,14 @@ from phileas.models.span import Span
 from .base import BaseFilter, FilterType
 
 
+# A month name, spelled out or abbreviated to three letters (Sept for September too), with an
+# optional period after it. Whitespace must follow, so a word that only starts with a month, such
+# as Marble or Septic, is not read as one.
+_MONTH = (
+    r"(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?"
+    r"|aug(?:ust)?|sep(?:tember|t)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\.?"
+)
+
 _PATTERNS = [
     # MM/DD/YYYY or MM-DD-YYYY
     re.compile(r"\b(?:0?[1-9]|1[0-2])[\/\-](?:0?[1-9]|[12]\d|3[01])[\/\-](?:19|20)\d{2}\b"),
@@ -28,15 +36,12 @@ _PATTERNS = [
     re.compile(r"\b(?:19|20)\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])\b"),
     # Month DD, YYYY
     re.compile(
-        r"\b(?:January|February|March|April|May|June|July|August|September|October|November|December)"
-        r"\s+(?:0?[1-9]|[12]\d|3[01]),?\s+(?:19|20)\d{2}\b",
+        rf"\b{_MONTH}\s+(?:0?[1-9]|[12]\d|3[01]),?\s+(?:19|20)\d{{2}}\b",
         re.IGNORECASE,
     ),
     # DD Month YYYY
     re.compile(
-        r"\b(?:0?[1-9]|[12]\d|3[01])\s+"
-        r"(?:January|February|March|April|May|June|July|August|September|October|November|December)"
-        r"\s+(?:19|20)\d{2}\b",
+        rf"\b(?:0?[1-9]|[12]\d|3[01])\s+{_MONTH}\s+(?:19|20)\d{{2}}\b",
         re.IGNORECASE,
     ),
 ]

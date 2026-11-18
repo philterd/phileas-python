@@ -139,9 +139,6 @@ class TestNegativeDetections:
             "1990/01/15",
             # Two-digit year not supported
             "01/15/90",
-            # Abbreviated month names not supported
-            "Jan 15, 1990",
-            "3 jan 2000",
             # Years outside 19xx/20xx
             "1899-01-01",
             "1800-01-01",
@@ -155,6 +152,61 @@ class TestNegativeDetections:
     )
     def test_no_detection(self, date_filter, text):
         assert date_filter.detect(text) == []
+
+
+_ABBREVIATIONS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Sept", "Oct", "Nov", "Dec"]
+
+_ABBREVIATED_FORMS = [
+    "{m} {d}, {y}",
+    "{m} {d} {y}",
+    "{m}. {d}, {y}",
+    "{m}. {d} {y}",
+    "{d} {m} {y}",
+    "{d} {m}. {y}",
+]
+
+
+class TestAbbreviatedMonths:
+    """Months abbreviated to three letters, or Sept, in each form a spelled-out month is detected in."""
+
+    @pytest.mark.parametrize("month", _ABBREVIATIONS)
+    @pytest.mark.parametrize("form", _ABBREVIATED_FORMS)
+    @pytest.mark.parametrize("day,year", [("5", "1950"), ("27", "2020"), ("09", "1969"), ("31", "1971")])
+    def test_detected_whole(self, date_filter, month, form, day, year):
+        date = form.format(m=month, d=day, y=year)
+        assert _texts(date_filter.detect(f"It was on {date} at the office.")) == [date]
+
+    @pytest.mark.parametrize("month", _ABBREVIATIONS)
+    @pytest.mark.parametrize("case", [str.upper, str.lower])
+    def test_any_case(self, date_filter, month, case):
+        for date in (f"{case(month)} 5, 2020", f"5 {case(month)} 2020", f"{case(month)}. 5, 2020"):
+            assert _texts(date_filter.detect(f"On {date} we met.")) == [date]
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "Marble 10, 2020",
+            "Junior 5 1990",
+            "Decimal 3, 2000",
+            "Septic 10, 2020",
+            "Septuagint 3 2020",
+            "Mayor 5, 2020",
+            "Decal 3 2000",
+            "10 Marble 2020",
+            "10 Septic 2020",
+        ],
+    )
+    def test_word_starting_with_an_abbreviation_is_not_a_month(self, date_filter, text):
+        assert date_filter.detect(text) == []
+
+    @pytest.mark.parametrize("text", ["Sep 2020", "September 2020", "Mar. 1965"])
+    def test_month_and_year_without_a_day_is_not_detected(self, date_filter, text):
+        # Left for #110, which covers month-and-year dates for full and abbreviated months.
+        assert date_filter.detect(text) == []
+
+    def test_spelled_out_months_still_detected(self, date_filter):
+        for date in ("September 10, 1950", "10 September 1950", "May 5, 2020", "June 1 1999", "July 4, 1976"):
+            assert _texts(date_filter.detect(f"It was on {date}.")) == [date]
 
 
 class TestRegexDoesNotValidateCalendar:
