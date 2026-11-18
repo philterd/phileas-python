@@ -21,7 +21,7 @@ The table below lists every supported filter, the policy key used to enable it, 
 | `date` | `date` | `01/15/1990`, `January 15, 1990`, `1990-01-15` |
 | `macAddress` | `mac-address` | `00:1A:2B:3C:4D:5E`, `00-1A-2B-3C-4D-5E` |
 | `currency` | `currency` | `$1,234.56`, `$99.99` |
-| `streetAddress` | `street-address` | `123 Main St`, `456 Elm Avenue` |
+| `streetAddress` | `street-address` | `123 Main St Apt 4B`, `456 Elm Avenue`, `PO Box 1234` |
 | `trackingNumber` | `tracking-number` | UPS, FedEx, and USPS tracking numbers |
 | `driversLicense` | `drivers-license` | US state driver's license numbers |
 | `ibanCode` | `iban-code` | `GB82 WEST 1234 5698 7654 32` |
@@ -336,7 +336,16 @@ Detects US dollar amounts such as `$1,234.56` and `$99.99`.
 
 ## streetAddress
 
-Detects US street address patterns such as `123 Main St` or `456 Elm Avenue`.
+Detects US street addresses and PO boxes, with the same patterns as Phileas (Java):
+
+- a house number of 1 to 6 digits, optionally a range (`100-102`) or with a trailing letter (`123A`)
+- an optional leading or trailing directional (`123 N Main St`, `123 Main St NW`)
+- one to five street name words, which may contain apostrophes and periods (`12 O'Connor Way`, `100 St. Charles Avenue`)
+- a street type, from `Street`/`St` and `Avenue`/`Ave` to `Highway`/`Hwy`, `Parkway`/`Pkwy`, `Plaza`/`Plz`, `Loop`, and `Mews`, with a following period included (`St.`)
+- an optional unit, which is part of the span (`123 Main St Apt 4B`, `445 Minnesota Street, Suite 175`, `12 Pine Rd #5`)
+- PO boxes: `PO Box 1234`, `P.O. Box 56`, and `Post Office Box 789`
+
+A match stays on one line, so the street line of a multi-line address block is found on its own. Spans have a confidence of 0.85.
 
 ```python
 "identifiers": {
