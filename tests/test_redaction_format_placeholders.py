@@ -105,3 +105,40 @@ def test_value_with_regex_replacement_characters_is_inserted_literally():
 def test_format_without_placeholders_is_unchanged():
     config = {"strategy": "REDACT", "redactionFormat": "{{{REDACTED-%t}}}"}
     assert actions.get_replacement("REDACT", config, "ssn", "123-45-6789") == "{{{REDACTED-ssn}}}"
+
+
+def identifier(**fields):
+    node = {"pattern": r"MRN \d{8}", **fields}
+    node["identifierFilterStrategies"] = [{"strategy": "REDACT", "redactionFormat": FORMAT}]
+    return {"identifiers": [node]}
+
+
+def dictionary(**fields):
+    node = {"terms": ["zebra"], **fields}
+    node["customFilterStrategies"] = [{"strategy": "REDACT", "redactionFormat": FORMAT}]
+    return {"dictionaries": [node]}
+
+
+def test_identifier_without_classification_is_labeled_custom_identifier():
+    filtered = run(identifier(), "Record MRN 00482913 ok")
+    assert filtered == "Record [pattern|custom-identifier|MRN 00482913] ok"
+
+
+def test_identifier_with_an_empty_classification_has_an_empty_label():
+    filtered = run(identifier(classification=""), "Record MRN 00482913 ok")
+    assert filtered == "Record [pattern||MRN 00482913] ok"
+
+
+def test_identifier_label_key_is_not_its_classification():
+    # "label" names the filter type in this port; Java has no such field, so %l keeps its default.
+    filtered = run(identifier(label="mrn"), "Record MRN 00482913 ok")
+    assert filtered == "Record [mrn|custom-identifier|MRN 00482913] ok"
+
+
+def test_dictionary_without_classification_has_an_empty_label():
+    assert run(dictionary(), "A zebra x") == "A [dictionary||zebra] x"
+
+
+def test_placeholders_in_the_value_are_not_expanded():
+    config = {"strategy": "REDACT", "redactionFormat": FORMAT}
+    assert actions.get_replacement("REDACT", config, "pattern", "a%l%t%v", "x") == "[pattern|x|a%l%t%v]"

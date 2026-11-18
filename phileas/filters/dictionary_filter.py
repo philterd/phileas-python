@@ -74,6 +74,8 @@ class DictionaryFilter(BaseFilter):
         config = config or {}
         filter_type = config.get("classification") or FilterType.DICTIONARY
         super().__init__(filter_type, config)
+        # The label (%l) is the classification, empty when there is none, as in Phileas (Java).
+        self._classification = config.get("classification") or ""
 
         terms: List[str] = list(config.get("terms", []) or [])
         self._terms_set = {t.lower() for t in terms}
@@ -109,8 +111,7 @@ class DictionaryFilter(BaseFilter):
                     text=token,
                     replacement="",
                     ignored=False,
-                    # The dictionary's classification is its label (%l), as in Phileas (Java).
-                    classification=self.filter_type,
+                    classification=self._classification,
                 )
             )
         return spans
