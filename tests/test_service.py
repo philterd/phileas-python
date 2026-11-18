@@ -163,3 +163,22 @@ class TestOverlaps:
                 "Number 123-45-6789 here.")
         # Exactly one replacement region, no leftover digits from the SSN.
         assert "123-45-6789" not in r.filtered_text
+
+
+class TestAbbreviatedMonthDates:
+    """#114: a date with an abbreviated month goes through the date strategies like a spelled-out one."""
+
+    def test_redacted_whole(self):
+        for date in ("Mar 5, 2020", "Mar. 5, 2020", "MAR 5, 2020", "5 Mar 2020", "Sept 3, 2020"):
+            r = run({"date": {"dateFilterStrategies": [{"strategy": "REDACT"}]}}, f"On {date} we met.")
+            assert r.filtered_text == "On {{{REDACTED-date}}} we met.", date
+
+    def test_shift_keeps_the_abbreviation(self):
+        r = run({"date": {"dateFilterStrategies": [{"strategy": "SHIFT", "shiftMonths": 1}]}},
+                "On Sep. 30, 2020 we met.")
+        assert r.filtered_text == "On Oct. 30, 2020 we met."
+
+    def test_truncate_to_year(self):
+        r = run({"date": {"dateFilterStrategies": [{"strategy": "TRUNCATE_TO_YEAR"}]}},
+                "On 5 Sept 2020 we met.")
+        assert r.filtered_text == "On 2020 we met."
