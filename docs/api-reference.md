@@ -188,6 +188,7 @@ from phileas.models.span import Span
 | `context` | `str` | The `context` value from the `filter()` call |
 | `applied` | `bool` | `True` when a strategy produced this span's replacement. Defaults to `True` |
 | `salt` | `str` | Salt used by a strategy that needs one. Empty by default |
+| `classification` | `str` | The label of the pattern that matched, or of the filter, used for `%l` in a redaction format. Empty when there is none |
 
 ### Methods
 
@@ -250,9 +251,9 @@ Return a default `Strategy` (the `REDACT` strategy).
 
 Return `True` if this strategy's `condition` expression is satisfied for the given `token`, `context`, and `confidence` (a strategy with no condition always returns `True`).
 
-#### `get_replacement(filter_type, token, context="") -> str`
+#### `get_replacement(filter_type, token, context="", classification="") -> str`
 
-Return the replacement string for `token` based on the configured strategy.
+Return the replacement string for `token` based on the configured strategy. `classification` is the span's label, used for `%l` in a redaction format.
 
 ---
 

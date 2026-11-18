@@ -30,6 +30,9 @@ class Span:
     ignored: bool = False
     applied: bool = True
     salt: str = ""
+    # The label a redaction format gets for %l: the classification of the pattern that
+    # matched, or of the filter. Empty when there is none.
+    classification: str = ""
 
     def overlaps(self, other: "Span") -> bool:
         """Return True if this span overlaps with another span."""

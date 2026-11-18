@@ -36,6 +36,8 @@ class PatternFilter(BaseFilter):
         config = config or {}
         filter_type = config.get("classification") or config.get("label") or FilterType.PATTERN
         super().__init__(filter_type, config)
+        # The label (%l) is the classification, defaulting to "custom-identifier" as in Phileas (Java).
+        self._classification = config.get("classification", "custom-identifier") or ""
 
         pattern_str = config.get("pattern", "")
         flags = 0 if config.get("caseSensitive", True) else re.IGNORECASE
@@ -71,6 +73,7 @@ class PatternFilter(BaseFilter):
                     text=token,
                     replacement="",
                     ignored=False,
+                    classification=self._classification,
                 )
             )
         return spans
