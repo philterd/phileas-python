@@ -72,16 +72,21 @@ class Strategy:
         """Returns True if this strategy's condition is satisfied."""
         return evaluate(self.condition, token, context, confidence)
 
-    def get_replacement(self, filter_type: str, token: str, context: str = "") -> str:
-        """Returns the replacement value for *token* under this strategy."""
+    def get_replacement(
+        self, filter_type: str, token: str, context: str = "", classification: str = ""
+    ) -> str:
+        """Returns the replacement value for *token* under this strategy.
+
+        *classification* is the span's label, used for ``%l`` in a redaction format.
+        """
         if self.map_replace is not None:
             replacement = self.map_replace.resolve(token, filter_type, context)
             if replacement is not None:
                 return replacement
             return get_replacement(
-                self.map_replace.fallback, self.config, filter_type, token
+                self.map_replace.fallback, self.config, filter_type, token, classification
             )
-        return get_replacement(self.strategy, self.config, filter_type, token)
+        return get_replacement(self.strategy, self.config, filter_type, token, classification)
 
     def to_dict(self) -> dict:
         return dict(self.config)

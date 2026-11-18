@@ -71,6 +71,8 @@ class PatternFilter(BaseFilter):
                     text=token,
                     replacement="",
                     ignored=False,
+                    # The identifier's classification is its label (%l), as in Phileas (Java).
+                    classification=self.filter_type,
                 )
             )
         return spans

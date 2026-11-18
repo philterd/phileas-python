@@ -164,6 +164,8 @@ class PhEyeFilter(BaseFilter):
                     text=span_text,
                     replacement="",
                     ignored=False,
+                    # The model's label is the span's label (%l), as in Phileas (Java).
+                    classification=label,
                 )
             )
         return spans
