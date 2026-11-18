@@ -141,9 +141,24 @@ def _last_4(strategy, config, filter_type, token, classification=""):
 
 
 def _truncate(strategy, config, filter_type, token, classification=""):
-    if len(token) <= 4:
-        return _redact(strategy, config, filter_type, token, classification)
-    return token[:4]
+    # Same as Phileas (Java): keep truncateLeaveCharacters (default 4, at least 1) at the
+    # truncateDirection end (default LEADING) and put truncateCharacter (default *) in place of
+    # each removed character. At most length - 1 characters are kept, so abcd becomes abc*.
+    leave = max(_to_int(config.get("truncateLeaveCharacters"), 4), 1)
+    character = config.get("truncateCharacter")
+    if character is None:
+        character = "*"
+    leading = str(config.get("truncateDirection") or "LEADING").upper() == "LEADING"
+    if filter_type == "zip-code":
+        # A ZIP code is truncated to its five digits, keeping 1 to 4 of them: 90210-0110 with
+        # 2 becomes 90***.
+        token = token[:5]
+        leave = min(leave, 4)
+    leave = min(leave, max(len(token) - 1, 0))
+    removed = character * (len(token) - leave)
+    if leading:
+        return token[:leave] + removed
+    return removed + token[len(token) - leave:]
 
 
 def _truncate_to_year(strategy, config, filter_type, token, classification=""):

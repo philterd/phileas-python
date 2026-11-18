@@ -60,7 +60,7 @@ class TestActions:
         assert replace({"strategy": "LAST_4"}, "cc", "12") == "{{{REDACTED-cc}}}"
 
     def test_truncate(self):
-        assert replace({"strategy": "TRUNCATE"}, "x", "abcdefgh") == "abcd"
+        assert replace({"strategy": "TRUNCATE"}, "x", "abcdefgh") == "abcd****"
 
     def test_abbreviate(self):
         assert replace({"strategy": "ABBREVIATE"}, "name", "John Quincy Adams") == "JQA"
