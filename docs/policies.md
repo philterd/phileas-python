@@ -113,14 +113,14 @@ The set of valid strategies comes from the PhiSQL catalog. The `strategy` value 
 | `FPE_ENCRYPT_REPLACE` | `FPE_ENCRYPT` | Format-preserving encryption (requires an externally-configured key); emits a stable marker in this engine | `{{{ENCRYPTED-ssn}}}` |
 | `HASH_SHA256_REPLACE` | `HASH_SHA256` | Replace with the SHA-256 hex digest of the matched value | `a665a4592...` |
 | `LAST_4` | `LAST_4` | Mask all but the last 4 characters | `****6789` |
-| `TRUNCATE` | `TRUNCATE` | Keep only the first 4 characters | `john***` |
+| `TRUNCATE` | `TRUNCATE` | Keep `truncateLeaveCharacters` characters (default 4) at one end and replace the rest with `truncateCharacter` | `john****` |
 | `TRUNCATE_TO_YEAR` | `TRUNCATE_TO_YEAR` | Reduce a detected date to just its year | `1990` |
 | `SHIFT` | `SHIFT` | Shift a detected date by a configurable number of years/months/days | `01/20/1995` |
 | `RELATIVE` | `RELATIVE` | Express a detected date relative to the current date; future dates are redacted unless `futureDates` is `true` | `3 years 2 months ago` |
 | `ABBREVIATE` | `ABBREVIATE` | Replace with the initials of each word | `J. S.` |
 | `MAP_REPLACE` | `MAP_REPLACE` | Replace from a lookup table, falling back to a generator and then to `fallbackStrategy` | `Joe's Ice Cream Shop` |
 
-`CRYPTO_REPLACE` and `FPE_ENCRYPT_REPLACE` require an externally-configured key and emit a stable marker in this engine. A strategy never leaves the detected value in place: when it cannot be applied (an unrecognized or future date under `RELATIVE`, an unrecognized date under `SHIFT` or `TRUNCATE_TO_YEAR`, a value of 4 characters or fewer under `LAST_4` or `TRUNCATE`, or a filter type with no random generator under `RANDOM_REPLACE`), the value is redacted using the strategy's `redactionFormat`.
+`CRYPTO_REPLACE` and `FPE_ENCRYPT_REPLACE` require an externally-configured key and emit a stable marker in this engine. A strategy never leaves the detected value in place: when it cannot be applied (an unrecognized or future date under `RELATIVE`, an unrecognized date under `SHIFT` or `TRUNCATE_TO_YEAR`, a value of 4 characters or fewer under `LAST_4`, or a filter type with no random generator under `RANDOM_REPLACE`), the value is redacted using the strategy's `redactionFormat`.
 
 ### Strategy options
 
@@ -129,6 +129,9 @@ strategy: REDACT
 redactionFormat: "{{{REDACTED-%t}}}"
 staticReplacement: "[REMOVED]"
 maskCharacter: "*"
+truncateLeaveCharacters: 4
+truncateDirection: LEADING
+truncateCharacter: "*"
 condition: ""
 shiftYears: 0
 shiftMonths: 0
@@ -140,6 +143,7 @@ color: black
 - **`redactionFormat`** — used by `REDACT`, and by any strategy that falls back to redaction. The placeholder `%t` is replaced with the filter type name (e.g. `email-address`).
 - **`staticReplacement`** — used by `STATIC_REPLACE`.
 - **`maskCharacter`** — character used by `MASK` (default: `*`).
+- **`truncateLeaveCharacters` / `truncateDirection` / `truncateCharacter`** — used by `TRUNCATE`. It keeps `truncateLeaveCharacters` characters (default: `4`; below `1` counts as `1`) at the start of the value for `LEADING` (the default) or at the end for `TRAILING`, and puts `truncateCharacter` (default: `*`) in place of each other character, so `abcdefgh` becomes `abcd****`. At most all but one character is kept, so a value is never left whole: `abcd` becomes `abc*`. A ZIP code is truncated to its five digits and keeps 1 to 4 of them, so `90210-0110` with `truncateLeaveCharacters` of `2` becomes `90***`.
 - **`shiftYears` / `shiftMonths` / `shiftDays`** — offsets used by `SHIFT`.
 - **`futureDates`** — used by `RELATIVE`. When `true`, a future date is written as `in 3 months`; otherwise it is redacted (default: `false`).
 - **`condition`** — optional expression that must evaluate to `true` for this strategy to be applied. See [Conditions](#conditions) below.
