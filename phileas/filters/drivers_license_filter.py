@@ -21,6 +21,9 @@ from phileas.models.span import Span
 from .base import BaseFilter, FilterType
 
 
+# The span confidence, as in Phileas (Java) and phileas-dotnet (philterd/phileas-conformance#7).
+_CONFIDENCE = 0.5
+
 _PATTERNS = [
     # Generic US driver's license: letter(s) followed by digits
     re.compile(r"\b[A-Z]{1,2}\d{5,9}\b"),
@@ -34,4 +37,4 @@ class DriversLicenseFilter(BaseFilter):
         super().__init__(FilterType.DRIVERS_LICENSE, config)
 
     def detect(self, text: str, context: str = "default") -> List[Span]:
-        return self._detect_patterns(_PATTERNS, text, context)
+        return self._detect_patterns(_PATTERNS, text, context, confidence=_CONFIDENCE)

@@ -60,7 +60,7 @@ def test_span_attributes(filt, number):
     assert span.character_start == 0
     assert span.character_end == 9
     assert span.character_end == len(number)
-    assert span.confidence == 1.0
+    assert span.confidence == 0.95
     # detect() never sets a replacement
     assert span.replacement == ""
 

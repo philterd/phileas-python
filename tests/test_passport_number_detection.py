@@ -52,7 +52,7 @@ def test_valid_passport_detected_standalone(passport_filter, value):
     assert span.character_start == 0
     assert span.character_end == len(value)
     assert span.filter_type == "passport-number"
-    assert span.confidence == 1.0
+    assert span.confidence == (0.55 if value.isdigit() else 0.75)
     assert span.replacement == ""
 
 

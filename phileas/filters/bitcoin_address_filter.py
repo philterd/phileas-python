@@ -21,6 +21,9 @@ from phileas.models.span import Span
 from .base import BaseFilter, FilterType
 
 
+# The span confidence, as in Phileas (Java) and phileas-dotnet (philterd/phileas-conformance#7).
+_CONFIDENCE = 0.9
+
 _PATTERNS = [
     # Legacy P2PKH addresses (1...)
     re.compile(r"\b1[a-km-zA-HJ-NP-Z1-9]{25,34}\b"),
@@ -36,4 +39,4 @@ class BitcoinAddressFilter(BaseFilter):
         super().__init__(FilterType.BITCOIN_ADDRESS, config)
 
     def detect(self, text: str, context: str = "default") -> List[Span]:
-        return self._detect_patterns(_PATTERNS, text, context)
+        return self._detect_patterns(_PATTERNS, text, context, confidence=_CONFIDENCE)

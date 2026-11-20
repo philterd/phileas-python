@@ -85,14 +85,28 @@ class TestOverlapResolution:
         kept = Span.drop_overlapping_spans([left, mid, right])
         assert [s.filter_type for s in kept] == ["mid"]
 
-    def test_equal_confidence_overlap_keeps_earliest_start(self):
-        # Deterministic tie-break: sort by (start, -confidence) then first wins.
+    def test_equal_confidence_overlap_keeps_the_longer_span(self):
+        # As in Phileas (Java), the longer span wins, wherever it starts.
         a = _mk_span(0, 5, 0.8, "A")
         b = _mk_span(2, 8, 0.8, "B")
         kept = Span.drop_overlapping_spans([b, a])
         assert len(kept) == 1
-        assert kept[0].filter_type == "A"
-        assert kept[0].character_start == 0
+        assert kept[0].filter_type == "B"
+        assert kept[0].character_start == 2
+
+    def test_equal_length_and_confidence_overlap_keeps_earliest_start(self):
+        a = _mk_span(0, 6, 0.8, "A")
+        b = _mk_span(2, 8, 0.8, "B")
+        kept = Span.drop_overlapping_spans([b, a])
+        assert [s.filter_type for s in kept] == ["A"]
+
+    def test_longer_span_wins_over_a_shorter_higher_confidence_span(self):
+        # A driver's license (0.5) is not cut short by the phone number (0.6)
+        # found in its digits, which would leave its letter in the output.
+        license_span = _mk_span(8, 16, 0.5, "drivers-license")
+        phone = _mk_span(9, 16, 0.6, "phone-number")
+        kept = Span.drop_overlapping_spans([phone, license_span])
+        assert [s.filter_type for s in kept] == ["drivers-license"]
 
     def test_adjacent_non_overlapping_both_kept(self):
         a = _mk_span(0, 5, 0.8, "A")

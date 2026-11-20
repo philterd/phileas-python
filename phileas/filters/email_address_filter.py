@@ -21,6 +21,9 @@ from phileas.models.span import Span
 from .base import BaseFilter, FilterType
 
 
+# The span confidence, as in Phileas (Java) and phileas-dotnet (philterd/phileas-conformance#7).
+_CONFIDENCE = 0.9
+
 _PATTERNS = [
     re.compile(r"\b[\w.\-]+?@(?:[a-zA-Z\d\-]+?\.)+(?:[a-zA-Z\d]{2,4})+\b"),
 ]
@@ -31,4 +34,4 @@ class EmailAddressFilter(BaseFilter):
         super().__init__(FilterType.EMAIL_ADDRESS, config)
 
     def detect(self, text: str, context: str = "default") -> List[Span]:
-        return self._detect_patterns(_PATTERNS, text, context)
+        return self._detect_patterns(_PATTERNS, text, context, confidence=_CONFIDENCE)

@@ -28,6 +28,9 @@ from phileas.models.span import Span
 from .base import BaseFilter, FilterType
 
 
+# The span confidence, as in Phileas (Java) and phileas-dotnet (philterd/phileas-conformance#7).
+_CONFIDENCE = 0.95
+
 _PATTERNS = [
     # Canonical EIN: NN-NNNNNNN. A neighbouring hyphen makes it part of a longer
     # identifier, not an EIN (philterd/phileas#343).
@@ -58,7 +61,7 @@ class EINFilter(BaseFilter):
         super().__init__(FilterType.EIN, config)
 
     def detect(self, text: str, context: str = "default") -> List[Span]:
-        spans = self._detect_patterns(_PATTERNS, text, context)
+        spans = self._detect_patterns(_PATTERNS, text, context, confidence=_CONFIDENCE)
         # A per-filter option on the policy node.
         if not self.config.get("onlyValidPrefixes", False):
             return spans

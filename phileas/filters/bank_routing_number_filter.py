@@ -21,6 +21,9 @@ from phileas.models.span import Span
 from .base import BaseFilter, FilterType
 
 
+# The span confidence, as in Phileas (Java) and phileas-dotnet (philterd/phileas-conformance#7).
+_CONFIDENCE = 0.95
+
 _PATTERNS = [
     # ABA routing number: 9 digits where first two digits are 01-12 or 21-32
     re.compile(r"\b(?:0[1-9]|1[0-2]|2[1-9]|3[0-2])\d{7}\b"),
@@ -32,4 +35,4 @@ class BankRoutingNumberFilter(BaseFilter):
         super().__init__(FilterType.BANK_ROUTING_NUMBER, config)
 
     def detect(self, text: str, context: str = "default") -> List[Span]:
-        return self._detect_patterns(_PATTERNS, text, context)
+        return self._detect_patterns(_PATTERNS, text, context, confidence=_CONFIDENCE)

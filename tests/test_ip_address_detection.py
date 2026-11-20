@@ -48,7 +48,7 @@ def test_ipv4_valid_detected_whole(filt, text):
     assert span.character_start == 0
     assert span.character_end == len(text)
     assert span.filter_type == "ip-address"
-    assert span.confidence == 1.0
+    assert span.confidence == 0.9
     assert span.replacement == ""
 
 
@@ -89,7 +89,7 @@ def test_ipv6_full_eight_groups(filt):
     assert span.character_start == 0
     assert span.character_end == len(text)
     assert span.filter_type == "ip-address"
-    assert span.confidence == 1.0
+    assert span.confidence == 0.9
 
 
 def test_ipv6_full_with_letters_lowercase(filt):
@@ -131,7 +131,7 @@ def test_ipv6_forms_detected_whole(filt, text, expected):
     span = spans[0]
     assert span.text == expected
     assert span.filter_type == "ip-address"
-    assert span.confidence == 1.0
+    assert span.confidence == 0.9
     assert text[span.character_start:span.character_end] == expected
 
 

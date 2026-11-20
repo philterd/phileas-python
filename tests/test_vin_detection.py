@@ -45,7 +45,7 @@ def test_valid_vin_detected_standalone(vin_filter, vin):
     assert span.character_start == 0
     assert span.character_end == 17
     assert span.filter_type == "vin"
-    assert span.confidence == 1.0
+    assert span.confidence == 0.9
     assert span.replacement == ""
 
 

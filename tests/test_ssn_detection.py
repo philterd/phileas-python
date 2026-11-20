@@ -30,7 +30,7 @@ class TestSSNPositive:
         span = spans[0]
         assert span.text == "123-45-6789"
         assert span.filter_type == "ssn"
-        assert span.confidence == 1.0
+        assert span.confidence == 0.9
         assert span.replacement == ""
         assert span.character_start == 4
         assert span.character_end == 15
@@ -179,7 +179,7 @@ class TestSSNSpaceSeparated:
         span = spans[0]
         assert span.text == "123 45 6789"
         assert span.filter_type == "ssn"
-        assert span.confidence == 1.0
+        assert span.confidence == 0.9
         assert span.character_start == 4
         assert span.character_end == 15
 
@@ -247,9 +247,9 @@ class TestEINFormNotClaimed:
     def test_ein_shape_not_detected_as_ssn(self, value):
         assert SSNFilter().detect(f"Tax ID {value} on file") == []
 
-    def test_ssn_forms_keep_full_confidence(self):
+    def test_ssn_forms_keep_the_same_confidence(self):
         for value in ["123-45-6789", "123456789", "123 45 6789"]:
-            assert SSNFilter().detect(value)[0].confidence == 1.0
+            assert SSNFilter().detect(value)[0].confidence == 0.9
 
     def test_ssn_only_policy_does_not_redact_ein_shape(self):
         from phileas.policy.policy import Policy

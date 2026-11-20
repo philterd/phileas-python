@@ -137,7 +137,7 @@ Stderr:
     "filterType": "email-address",
     "text": "john@example.com",
     "replacement": "{{{REDACTED-email-address}}}",
-    "confidence": 1.0,
+    "confidence": 0.9,
     "ignored": false,
     "context": "my-context"
   }

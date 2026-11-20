@@ -30,6 +30,9 @@ _PORT = r"(?::\d{1,5})?"
 _TRAILING_PUNCTUATION = ".,;:!?\"')]}>"
 
 
+# The span confidence, as in Phileas (Java) and phileas-dotnet (philterd/phileas-conformance#7).
+_CONFIDENCE = 0.8
+
 _PATTERNS = [
     re.compile(
         r"https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+"
@@ -47,7 +50,7 @@ class URLFilter(BaseFilter):
     def detect(self, text: str, context: str = "default") -> List[Span]:
         spans: List[Span] = []
 
-        for span in self._detect_patterns(_PATTERNS, text, context):
+        for span in self._detect_patterns(_PATTERNS, text, context, confidence=_CONFIDENCE):
             trimmed = span.text.rstrip(_TRAILING_PUNCTUATION)
 
             # "http://..." in prose is not a URL.

@@ -21,6 +21,9 @@ from phileas.models.span import Span
 from .base import BaseFilter, FilterType
 
 
+# The span confidence, as in Phileas (Java) and phileas-dotnet (philterd/phileas-conformance#7).
+_CONFIDENCE = 0.9
+
 _PATTERNS = [
     re.compile(r"\b[A-Z]{2}[0-9]{2}[A-Z0-9]{4}[0-9]{7}([A-Z0-9]?){0,16}\b"),
 ]
@@ -61,7 +64,7 @@ class IBANCodeFilter(BaseFilter):
 
     def detect(self, text: str, context: str = "default") -> List[Span]:
         if not self.allow_spaces:
-            return self._detect_patterns(_PATTERNS, text, context)
+            return self._detect_patterns(_PATTERNS, text, context, confidence=_CONFIDENCE)
 
         spans: List[Span] = []
         for start, end in _candidates(text):
@@ -71,7 +74,7 @@ class IBANCodeFilter(BaseFilter):
                     character_end=end,
                     filter_type=self.filter_type,
                     context=context,
-                    confidence=1.0,
+                    confidence=_CONFIDENCE,
                     text=text[start:end],
                     replacement="",
                     ignored=False,

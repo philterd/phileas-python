@@ -64,7 +64,7 @@ def test_detects_exact(filt, text):
 def test_span_attributes(filt, text):
     span = filt.detect(text)[0]
     assert span.filter_type == FILTER_TYPE
-    assert span.confidence == 1.0
+    assert span.confidence == 0.8
     # detect() never sets a replacement.
     assert span.replacement == ""
     # The reported offsets map back onto the matched text.

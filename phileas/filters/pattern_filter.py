@@ -22,6 +22,11 @@ from .base import BaseFilter, FilterType
 from .validators import resolve_validator
 
 
+# The span confidence of a custom identifier, as in Phileas (Java) and phileas-dotnet
+# (philterd/phileas-conformance#7).
+_CONFIDENCE = 0.9
+
+
 class PatternFilter(BaseFilter):
     """Detects PII using a user-supplied regular expression (custom identifier).
 
@@ -69,7 +74,7 @@ class PatternFilter(BaseFilter):
                     character_end=match.end(group),
                     filter_type=self.filter_type,
                     context=context,
-                    confidence=1.0,
+                    confidence=_CONFIDENCE,
                     text=token,
                     replacement="",
                     ignored=False,

@@ -60,7 +60,7 @@ def test_positive_detects_url(url_filter, text, expected):
 def test_positive_span_metadata(url_filter, text, expected):
     span = url_filter.detect(text)[0]
     assert span.filter_type == "url"
-    assert span.confidence == 1.0
+    assert span.confidence == 0.8
     # detect() always returns an empty replacement.
     assert span.replacement == ""
 

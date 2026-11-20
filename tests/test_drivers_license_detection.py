@@ -60,7 +60,7 @@ def test_positive_detected_standalone(dl_filter, value):
     assert span.character_start == 0
     assert span.character_end == len(value)
     assert span.filter_type == "drivers-license"
-    assert span.confidence == 1.0
+    assert span.confidence == 0.5
     assert span.replacement == ""
 
 
