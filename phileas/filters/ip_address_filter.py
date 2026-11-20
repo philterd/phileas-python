@@ -53,6 +53,9 @@ _IPV6_LEADING_BOUNDARY = r"(?<!\w)"
 _IPV6_TRAILING_BOUNDARY = r"(?!\w)(?!:[\da-f])(?!\.\d)"
 
 
+# The span confidence, as in Phileas (Java) and phileas-dotnet (philterd/phileas-conformance#7).
+_CONFIDENCE = 0.9
+
 _PATTERNS = [
     # IPv4
     re.compile(
@@ -72,4 +75,4 @@ class IPAddressFilter(BaseFilter):
 
     def detect(self, text: str, context: str = "default") -> List[Span]:
         # The IPv4 pattern also matches the dotted quad inside an IPv4-mapped address.
-        return Span.drop_overlapping_spans(self._detect_patterns(_PATTERNS, text, context))
+        return Span.drop_overlapping_spans(self._detect_patterns(_PATTERNS, text, context, confidence=_CONFIDENCE))

@@ -65,7 +65,7 @@ def test_span_attributes(filt, value):
     assert span.filter_type == FILTER_TYPE
     assert span.character_start == 0
     assert span.character_end == len(value)
-    assert span.confidence == 1.0
+    assert span.confidence == (0.75 if value.isdigit() and len(value) in (12, 15) else 0.9)
     # detect() never sets a replacement.
     assert span.replacement == ""
 

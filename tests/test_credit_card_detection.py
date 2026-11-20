@@ -55,7 +55,7 @@ class TestPositiveBrands:
     @pytest.mark.parametrize("label,number", POSITIVE_NUMBERS)
     def test_brand_confidence_and_replacement(self, label, number):
         span = CreditCardFilter().detect(number)[0]
-        assert span.confidence == 1.0
+        assert span.confidence == 0.9
         assert span.replacement == ""
 
     @pytest.mark.parametrize("label,number", POSITIVE_NUMBERS)

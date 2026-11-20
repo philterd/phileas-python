@@ -22,12 +22,13 @@ from .base import BaseFilter, FilterType
 
 
 # Each pattern carries the issuing country as its classification, which a
-# redaction format gets as %l.
+# redaction format gets as %l, and its span confidence, as in phileas-dotnet,
+# which has the same two patterns (philterd/phileas-conformance#7).
 _PATTERNS = [
     # US Passport: letter followed by 8 digits
-    (re.compile(r"\b[A-Z]\d{8}\b"), "US"),
+    (re.compile(r"\b[A-Z]\d{8}\b"), "US", 0.75),
     # Some US passports: 9 digits
-    (re.compile(r"\b\d{9}\b"), "US"),
+    (re.compile(r"\b\d{9}\b"), "US", 0.55),
 ]
 
 

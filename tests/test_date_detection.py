@@ -91,10 +91,10 @@ class TestSpanAttributes:
         assert spans
         assert all(s.filter_type == "date" for s in spans)
 
-    def test_confidence_is_one(self, date_filter):
+    def test_confidence(self, date_filter):
         spans = date_filter.detect("1990-01-15")
         assert spans
-        assert all(s.confidence == 1.0 for s in spans)
+        assert all(s.confidence == 0.75 for s in spans)
 
     def test_replacement_always_empty(self, date_filter):
         spans = date_filter.detect("January 15, 1990")

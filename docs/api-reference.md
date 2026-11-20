@@ -198,7 +198,7 @@ Return `True` if this span overlaps with `other`.
 
 #### `Span.drop_overlapping_spans(spans)` *(static)*
 
-Given a list of spans, remove overlapping ones, keeping the span with the highest confidence score. Returns a new list sorted by `character_start`.
+Given a list of spans, remove overlapping ones, as Phileas (Java) does: the longest span is kept, then the one with the highest confidence, then the one that starts first. Returns a new list sorted by `character_start`.
 
 ---
 

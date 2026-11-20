@@ -32,6 +32,21 @@ The table below lists every supported filter, the policy key used to enable it, 
 !!! note "Catalog-derived field names"
     Policy field names come from the PhiSQL catalog, so a few are non-obvious. ZIP codes use the **singular** `zipCodeFilterStrategy`, and Bitcoin addresses use `bitcoinFilterStrategies`. Policies emitted by the PhiSQL compiler already use the correct names.
 
+Each span carries a confidence, which a strategy `condition` can test (`confidence >= 0.9`). The rules-based filters use the same values as Phileas (Java) and phileas-dotnet ([philterd/phileas-conformance#7](https://github.com/philterd/phileas-conformance/issues/7)):
+
+| Confidence | Filters |
+|---|---|
+| `1.0` | `dictionaries` |
+| `0.95` | `bankRoutingNumber`, `ein` |
+| `0.9` | `age`, `bitcoinAddress`, `creditCard`, `emailAddress`, `ibanCode`, custom `identifiers`, `ipAddress`, `macAddress`, `ssn`, `vin`, and UPS and USPS `trackingNumber` |
+| `0.85` | `streetAddress` |
+| `0.8` | `currency`, `url` |
+| `0.75` | `date`, FedEx `trackingNumber`, and a `passportNumber` of a letter and 8 digits |
+| `0.55` | a `passportNumber` of 9 digits |
+| `0.5` | `driversLicense`, `zipCode` |
+
+A credit card number with a hyphen right before or after it gets `0.6`, and `0.5` with one on both sides, since the hyphen suggests the digits belong to a longer reference. `phoneNumber` confidences are described under [phoneNumber](#phonenumber), and `phEye` spans carry the model's score.
+
 ---
 
 ## age

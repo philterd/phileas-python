@@ -22,15 +22,16 @@ from .base import BaseFilter, FilterType
 
 
 # Each pattern carries its carrier as its classification, which a redaction
-# format gets as %l.
+# format gets as %l, and the span confidence of the same format in Phileas
+# (Java) and phileas-dotnet (philterd/phileas-conformance#7).
 _PATTERNS = [
     # UPS: 1Z followed by 16 alphanumeric characters
-    (re.compile(r"\b1Z[A-Z0-9]{16}\b", re.IGNORECASE), "ups"),
+    (re.compile(r"\b1Z[A-Z0-9]{16}\b", re.IGNORECASE), "ups", 0.9),
     # FedEx: 12 or 15 digit numbers
-    (re.compile(r"\b(?:\d{12}|\d{15})\b"), "fedex"),
+    (re.compile(r"\b(?:\d{12}|\d{15})\b"), "fedex", 0.75),
     # USPS: 20 or 22 digit numbers, or various formats
-    (re.compile(r"\b(?:92|93|94|95)\d{20}\b"), "usps"),
-    (re.compile(r"\b[A-Z]{2}\d{9}US\b"), "usps"),
+    (re.compile(r"\b(?:92|93|94|95)\d{20}\b"), "usps", 0.9),
+    (re.compile(r"\b[A-Z]{2}\d{9}US\b"), "usps", 0.9),
 ]
 
 

@@ -212,9 +212,9 @@ class TestSpanAttributes:
         assert spans
         assert all(s.filter_type == "age" for s in spans)
 
-    def test_confidence_is_one(self, age_filter):
+    def test_confidence(self, age_filter):
         spans = age_filter.detect("aged 25")
-        assert all(s.confidence == 1.0 for s in spans)
+        assert all(s.confidence == 0.9 for s in spans)
 
     def test_replacement_always_empty(self, age_filter):
         spans = age_filter.detect("65 y/o")

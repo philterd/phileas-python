@@ -69,7 +69,7 @@ def test_five_digit_zip_detected(zip_filter, zip_text):
     assert span.filter_type == FILTER_TYPE
     assert span.character_start == 0
     assert span.character_end == 5
-    assert span.confidence == 1.0
+    assert span.confidence == 0.5
     assert span.replacement == ""
 
 
@@ -116,7 +116,7 @@ def test_zip_plus_four_full_span(zip_filter):
     assert full.character_start == 0
     assert full.character_end == 10
     assert full.filter_type == FILTER_TYPE
-    assert full.confidence == 1.0
+    assert full.confidence == 0.5
     assert full.replacement == ""
 
 
