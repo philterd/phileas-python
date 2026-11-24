@@ -93,6 +93,8 @@ class Policy:
         self.generators: dict = generators if generators is not None else {}
         #: Raw ``config`` object, kept whole so nothing in it is dropped.
         self.config: dict = config if config is not None else {}
+        # Refuse an invalid config.review.samplingRate when the policy is loaded.
+        self.review_sampling_rate  # noqa: B018
 
     @classmethod
     def from_dict(cls, data: dict) -> "Policy":
@@ -114,6 +116,32 @@ class Policy:
             return True
         value = analysis.get(name, True)
         return value if isinstance(value, bool) else True
+
+    @property
+    def review_sampling_rate(self) -> float:
+        """``config.review.samplingRate``: the probability, from 0.0 to 1.0, that a
+        filter request is selected for human spot review. Defaults to 0.0.
+
+        Raises ``ValueError`` if the value is not a number from 0.0 to 1.0.
+        """
+        config = self.config if isinstance(self.config, dict) else {}
+        review = config.get("review")
+        if review is None:
+            return 0.0
+        if not isinstance(review, dict):
+            raise ValueError("The policy's config.review must be an object.")
+        rate = review.get("samplingRate", 0.0)
+        # bool is an int subclass, and NaN fails the range check as written.
+        if (
+            isinstance(rate, bool)
+            or not isinstance(rate, (int, float))
+            or not (0.0 <= rate <= 1.0)
+        ):
+            raise ValueError(
+                f"The review samplingRate {rate!r} is not valid: "
+                "it must be a number from 0.0 to 1.0."
+            )
+        return float(rate)
 
     @property
     def span_disambiguation(self) -> bool:
