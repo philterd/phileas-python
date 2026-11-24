@@ -24,6 +24,8 @@ A handler has the signature
 ``strategy`` is the catalog :class:`phisql.catalog.Strategy` (used to resolve
 argument field names), ``config`` is the strategy object from the policy JSON,
 and ``classification`` is the span's label (``%l`` in a redaction format).
+The ``SHIFT`` handler also takes the filter context and the context service, where
+it keeps a context's random date shift.
 
 Strategies that require externally-configured key material — ``ENCRYPT``
 (CRYPTO_REPLACE), ``FPE_ENCRYPT`` (FPE_ENCRYPT_REPLACE) — are not executed by
@@ -43,7 +45,7 @@ from typing import Callable, Dict, Optional, Tuple
 from phisql.catalog import Strategy
 
 from phileas.catalog import get_catalog
-from .date_ops import relative_date, shift_date, truncate_to_year
+from .date_ops import parse_date, random_shift_days, relative_date, shift_date, truncate_to_year
 
 DEFAULT_REDACTION_FORMAT = "{{{REDACTED-%t}}}"
 
@@ -151,12 +153,44 @@ def _truncate_to_year(strategy, config, filter_type, token, classification=""):
     return year if year is not None else _redact(strategy, config, filter_type, token, classification)
 
 
-def _shift(strategy, config, filter_type, token, classification=""):
-    years = _to_int(config.get(_field(strategy, "years", "shiftYears")))
-    months = _to_int(config.get(_field(strategy, "months", "shiftMonths")))
-    days = _to_int(config.get(_field(strategy, "days", "shiftDays")))
-    shifted = shift_date(token, years, months, days)
+# The context value that holds a context's random date shift, in days. A detected
+# token cannot contain a NUL character, so the key cannot collide with a token.
+CONTEXT_SHIFT_KEY = "\0date-shift"
+
+
+def _shift(strategy, config, filter_type, token, classification="", context="", context_service=None):
+    if _to_bool(config.get(_field(strategy, "random", "shiftRandom"))):
+        shifted = _random_shift(strategy, config, token, context, context_service)
+    else:
+        years = _to_int(config.get(_field(strategy, "years", "shiftYears")))
+        months = _to_int(config.get(_field(strategy, "months", "shiftMonths")))
+        days = _to_int(config.get(_field(strategy, "days", "shiftDays")))
+        shifted = shift_date(token, years, months, days)
     return shifted if shifted is not None else _redact(strategy, config, filter_type, token, classification)
+
+
+def _random_shift(strategy, config, token, context, context_service) -> Optional[str]:
+    """Shifts a date by a random amount; shiftDays, shiftMonths and shiftYears are ignored.
+
+    With the DOCUMENT scope (the default) each date gets its own shift. With the
+    CONTEXT scope the shift is drawn for the first date the context sees and kept in
+    the context as a number of days, so every date in the context moves by the same
+    number of days and keeps its order and the days between it and the others. Days
+    rather than months and years: adding a month moves January 30 and January 31
+    both to the end of February. Without a context service, each date gets its own
+    shift.
+    """
+    dt = parse_date(token)
+    if dt is None:
+        return None
+    scope = str(config.get(_field(strategy, "scope", "replacementScope")) or "").upper()
+    if scope == "CONTEXT" and context_service is not None:
+        days = int(context_service.compute_value_if_absent(
+            context, CONTEXT_SHIFT_KEY, lambda: str(random_shift_days(dt))
+        ))
+    else:
+        days = random_shift_days(dt)
+    return shift_date(token, 0, 0, days)
 
 
 def _today() -> date:
@@ -231,11 +265,19 @@ def is_known(phileas_enum: str) -> bool:
 
 
 def get_replacement(
-    phileas_enum: str, config: dict, filter_type: str, token: str, classification: str = ""
+    phileas_enum: str,
+    config: dict,
+    filter_type: str,
+    token: str,
+    classification: str = "",
+    context: str = "",
+    context_service=None,
 ) -> str:
     """Computes the replacement for *token* under the strategy *phileas_enum*.
 
     *classification* is the span's label, used for ``%l`` in a redaction format.
+    *context* and *context_service* are passed to the strategies that keep a value
+    per context: ``SHIFT`` keeps a context's random date shift there.
 
     Raises ValueError if the enum is not a catalog strategy this engine
     implements.
@@ -244,4 +286,6 @@ def get_replacement(
     if entry is None:
         raise ValueError(f"Unsupported or unknown redaction strategy: {phileas_enum!r}")
     strategy, handler = entry
+    if handler is _shift:
+        return _shift(strategy, config, filter_type, token, classification, context, context_service)
     return handler(strategy, config, filter_type, token, classification)

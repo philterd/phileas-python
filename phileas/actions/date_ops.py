@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import calendar
+import random
 import re
 from datetime import date, timedelta
 from typing import Optional
@@ -38,7 +39,7 @@ _RE_DAY_MONTH_YEAR = re.compile(
 )
 
 
-def _parse(token: str) -> Optional[date]:
+def parse_date(token: str) -> Optional[date]:
     """Parses *token* as a date in any supported format, or returns None."""
     try:
         return _parse_strict(token)
@@ -113,9 +114,33 @@ def _shift_strict(token: str, years: int, months: int, days: int) -> Optional[st
     return None
 
 
+# The fewest days a random shift moves a date.
+MIN_RANDOM_SHIFT_DAYS = 30
+
+_RANDOM = random.SystemRandom()
+
+
+def random_shift_days(dt: date) -> int:
+    """Draws a random shift for *dt*, in days.
+
+    As in Phileas (Java), the date is moved forward by 1 to 29 days and 1 to 11
+    months and back by 1 or 2 years, in that order. A draw that moves it by fewer
+    than ``MIN_RANDOM_SHIFT_DAYS`` days is drawn again: the amounts can nearly
+    cancel, and 29 days and 11 months forward and a year back leave 2021-02-28
+    unchanged.
+    """
+    while True:
+        shifted = dt + timedelta(days=_RANDOM.randint(1, 29))
+        shifted = _shift_value(shifted, 0, _RANDOM.randint(1, 11), 0)
+        shifted = _shift_value(shifted, -_RANDOM.randint(1, 2), 0, 0)
+        days = (shifted - dt).days
+        if abs(days) >= MIN_RANDOM_SHIFT_DAYS:
+            return days
+
+
 def truncate_to_year(token: str) -> Optional[str]:
     """Returns the four-digit year of a recognized date, else None."""
-    dt = _parse(token)
+    dt = parse_date(token)
     return str(dt.year) if dt is not None else None
 
 
@@ -152,7 +177,7 @@ def relative_date(token: str, today: date, future_dates: bool) -> Optional[str]:
     A future date becomes ``in 3 months`` when *future_dates* is set. Returns
     None for unrecognized input or a future date that is not allowed.
     """
-    dt = _parse(token)
+    dt = parse_date(token)
     if dt is None:
         return None
     period = _period(dt, today)

@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import Callable
 
 
 class AbstractContextService(ABC):
@@ -34,3 +35,20 @@ class AbstractContextService(ABC):
     def contains(self, context: str, token: str) -> bool:
         """Return True if a replacement exists for the token under the given context."""
         ...
+
+    def compute_value_if_absent(self, context: str, key: str, supplier: Callable[[], str]) -> str:
+        """Return the context's value for *key*, storing ``supplier()`` first if it has none.
+
+        The date filter keeps a context's random date shift this way. The value is
+        stored as a token entry, so use a key no detected token can be, such as one
+        containing a NUL character.
+
+        This default calls :meth:`get` and then :meth:`put`, so two calls for the same
+        new key at the same time can each store a value. Override it to make the
+        check and the store one atomic step.
+        """
+        value = self.get(context, key)
+        if value is None:
+            value = supplier()
+            self.put(context, key, value)
+        return value

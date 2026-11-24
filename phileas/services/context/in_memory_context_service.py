@@ -14,6 +14,9 @@
 
 from __future__ import annotations
 
+import threading
+from typing import Callable
+
 from .base import AbstractContextService
 
 
@@ -25,6 +28,7 @@ class InMemoryContextService(AbstractContextService):
 
     def __init__(self) -> None:
         self._store: dict[str, dict[str, str]] = {}
+        self._lock = threading.Lock()
 
     def put(self, context: str, token: str, replacement: str) -> None:
         """Store a replacement value for a token under the given context."""
@@ -39,3 +43,15 @@ class InMemoryContextService(AbstractContextService):
     def contains(self, context: str, token: str) -> bool:
         """Return True if a replacement exists for the token under the given context."""
         return token in self._store.get(context, {})
+
+    def compute_value_if_absent(self, context: str, key: str, supplier: Callable[[], str]) -> str:
+        """Return the context's value for *key*, storing ``supplier()`` first if it has none.
+
+        The check and the store are one step, so ``supplier`` runs at most once per key
+        and every caller gets the same value.
+        """
+        with self._lock:
+            values = self._store.setdefault(context, {})
+            if key not in values:
+                values[key] = supplier()
+            return values[key]
