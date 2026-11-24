@@ -257,7 +257,7 @@ class FilterService:
                 cached
                 if cached is not None
                 else matched.get_replacement(
-                    span.filter_type, token, context, span.classification
+                    span.filter_type, token, context, span.classification, self._context_service
                 )
             )
             result.append(span)

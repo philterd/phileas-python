@@ -73,11 +73,18 @@ class Strategy:
         return evaluate(self.condition, token, context, confidence)
 
     def get_replacement(
-        self, filter_type: str, token: str, context: str = "", classification: str = ""
+        self,
+        filter_type: str,
+        token: str,
+        context: str = "",
+        classification: str = "",
+        context_service=None,
     ) -> str:
         """Returns the replacement value for *token* under this strategy.
 
         *classification* is the span's label, used for ``%l`` in a redaction format.
+        *context_service* holds values kept per context, such as a random date shift
+        with the ``CONTEXT`` scope.
         """
         if self.map_replace is not None:
             replacement = self.map_replace.resolve(token, filter_type, context)
@@ -86,7 +93,9 @@ class Strategy:
             return get_replacement(
                 self.map_replace.fallback, self.config, filter_type, token, classification
             )
-        return get_replacement(self.strategy, self.config, filter_type, token, classification)
+        return get_replacement(
+            self.strategy, self.config, filter_type, token, classification, context, context_service
+        )
 
     def to_dict(self) -> dict:
         return dict(self.config)

@@ -139,7 +139,7 @@ The set of valid strategies comes from the PhiSQL catalog. The `strategy` value 
 | `LAST_4` | `LAST_4` | Mask all but the last 4 characters | `****6789` |
 | `TRUNCATE` | `TRUNCATE` | Keep only the first 4 characters | `john***` |
 | `TRUNCATE_TO_YEAR` | `TRUNCATE_TO_YEAR` | Reduce a detected date to just its year | `1990` |
-| `SHIFT` | `SHIFT` | Shift a detected date by a configurable number of years/months/days | `01/20/1995` |
+| `SHIFT` | `SHIFT` | Shift a detected date by a configurable number of years/months/days, or by a random amount with `shiftRandom` | `01/20/1995` |
 | `RELATIVE` | `RELATIVE` | Express a detected date relative to the current date; future dates are redacted unless `futureDates` is `true` | `3 years 2 months ago` |
 | `ABBREVIATE` | `ABBREVIATE` | Replace with the initials of each word | `J. S.` |
 | `MAP_REPLACE` | `MAP_REPLACE` | Replace from a lookup table, falling back to a generator and then to `fallbackStrategy` | `Joe's Ice Cream Shop` |
@@ -157,6 +157,8 @@ condition: ""
 shiftYears: 0
 shiftMonths: 0
 shiftDays: 0
+shiftRandom: false
+replacementScope: DOCUMENT
 futureDates: false
 color: black
 ```
@@ -165,6 +167,8 @@ color: black
 - **`staticReplacement`** — used by `STATIC_REPLACE`.
 - **`maskCharacter`** — character used by `MASK` (default: `*`).
 - **`shiftYears` / `shiftMonths` / `shiftDays`** — offsets used by `SHIFT`.
+- **`shiftRandom`** — used by `SHIFT`. When `true`, `shiftYears`, `shiftMonths`, and `shiftDays` are ignored and a date is moved forward by 1 to 29 days and 1 to 11 months and back by 1 or 2 years, each amount chosen at random, as in Phileas (Java). A draw that would move the date by fewer than 30 days is drawn again, so a date is never left unchanged (default: `false`).
+- **`replacementScope`** — used by `SHIFT` with `shiftRandom`. With `DOCUMENT` (the default), each date gets its own random shift. With `CONTEXT`, the shift is drawn for the first date the context sees and kept in the context service as a number of days, so every date in the context, in one document or across documents, moves by the same number of days and keeps its order and the days between it and the others. This engine reads `replacementScope` only for this.
 - **`futureDates`** — used by `RELATIVE`. When `true`, a future date is written as `in 3 months`; otherwise it is redacted (default: `false`).
 - **`condition`** — optional expression that must evaluate to `true` for this strategy to be applied. See [Conditions](#conditions) below.
 - **`mappings` / `mappingFiles` / `caseSensitive` / `generator` / `fallbackStrategy`** — used by `MAP_REPLACE`. See [MAP_REPLACE](#map_replace) below.
@@ -253,6 +257,9 @@ generator runs at most once for it.
 
 # Shift a date forward by 2 years and 3 days
 {"strategy": "SHIFT", "shiftYears": 2, "shiftDays": 3}
+
+# Shift every date in a context by the same random number of days
+{"strategy": "SHIFT", "shiftRandom": True, "replacementScope": "CONTEXT"}
 ```
 
 ## Conditions

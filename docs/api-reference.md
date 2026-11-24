@@ -253,9 +253,9 @@ Return a default `Strategy` (the `REDACT` strategy).
 
 Return `True` if this strategy's `condition` expression is satisfied for the given `token`, `context`, and `confidence` (a strategy with no condition always returns `True`).
 
-#### `get_replacement(filter_type, token, context="", classification="") -> str`
+#### `get_replacement(filter_type, token, context="", classification="", context_service=None) -> str`
 
-Return the replacement string for `token` based on the configured strategy. `classification` is the span's label, used for `%l` in a redaction format.
+Return the replacement string for `token` based on the configured strategy. `classification` is the span's label, used for `%l` in a redaction format. `context_service` holds values kept per context: `SHIFT` with `shiftRandom` and the `CONTEXT` scope keeps the context's random date shift there. Without one, each date gets its own shift.
 
 ---
 
@@ -306,6 +306,7 @@ class RedisContextService(AbstractContextService):
 | `put` | `(context, token, replacement) -> None` | Store a replacement value for a token under the given context |
 | `get` | `(context, token) -> str \| None` | Return the stored replacement, or `None` if not found |
 | `contains` | `(context, token) -> bool` | Return `True` if a replacement exists for the token in the given context |
+| `compute_value_if_absent` | `(context, key, supplier) -> str` | Return the context's value for `key`, storing `supplier()` first if it has none. `SHIFT` with `shiftRandom` and the `CONTEXT` scope keeps a context's random date shift this way, under a key containing a NUL character. The default calls `get` and then `put`, so two calls for the same new key at the same time can each store a value; override it to make the check and the store one atomic step |
 
 ---
 
@@ -313,7 +314,7 @@ class RedisContextService(AbstractContextService):
 
 `phileas.services.context.InMemoryContextService`
 
-Default implementation of `AbstractContextService` backed by a `dict[str, dict[str, str]]`. Suitable for single-process, in-memory use.
+Default implementation of `AbstractContextService` backed by a `dict[str, dict[str, str]]`. Suitable for single-process, in-memory use. Its `compute_value_if_absent` is atomic.
 
 ```python
 from phileas.services.context import InMemoryContextService
