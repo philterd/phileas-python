@@ -24,18 +24,48 @@ _MONTH_NAMES = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
 ]
-_MONTH_MAP = {m.lower(): i + 1 for i, m in enumerate(_MONTH_NAMES)}
-
-_MONTHS = "|".join(_MONTH_NAMES)
+# Spelled out or abbreviated to three letters (Sept for September too), as the date filter detects.
+_MONTHS = (
+    r"jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?"
+    r"|aug(?:ust)?|sep(?:tember|t)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?"
+)
 
 _RE_NUMERIC = re.compile(r"(0?[1-9]|1[0-2])([\/\-])(0?[1-9]|[12]\d|3[01])\2((19|20)\d{2})")
 _RE_ISO = re.compile(r"((19|20)\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])")
 _RE_MONTH_DAY_YEAR = re.compile(
-    rf"({_MONTHS})\s+(0?[1-9]|[12]\d|3[01]),?\s+((19|20)\d{{2}})", re.IGNORECASE
+    rf"(?P<month>{_MONTHS})(?P<period>\.?)\s+(?P<day>0?[1-9]|[12]\d|3[01]),?\s+(?P<year>(19|20)\d{{2}})",
+    re.IGNORECASE,
 )
 _RE_DAY_MONTH_YEAR = re.compile(
-    rf"(0?[1-9]|[12]\d|3[01])\s+({_MONTHS})\s+((19|20)\d{{2}})", re.IGNORECASE
+    rf"(?P<day>0?[1-9]|[12]\d|3[01])\s+(?P<month>{_MONTHS})(?P<period>\.?)\s+(?P<year>(19|20)\d{{2}})",
+    re.IGNORECASE,
 )
+
+
+def _month_number(name: str) -> int:
+    """The month (1-12) of a spelled-out or abbreviated month name."""
+    prefix = name[:3].lower()
+    return next(i + 1 for i, m in enumerate(_MONTH_NAMES) if m.lower().startswith(prefix))
+
+
+def _month_text(original: str, month: int) -> str:
+    """Another month's name, written the way *original* was, as in Phileas (Java).
+
+    It is abbreviated to three letters if *original* was (May counts as spelled out and Sept as
+    abbreviated), and upper or lower case if *original* was.
+    """
+    abbreviated = (len(original) == 3 and original.lower() != "may") or original.lower() == "sept"
+    name = _MONTH_NAMES[month - 1][:3] if abbreviated else _MONTH_NAMES[month - 1]
+    if original == original.upper():
+        return name.upper()
+    if original == original.lower():
+        return name.lower()
+    return name
+
+
+def _month_like(original: str, month: int) -> str:
+    """The month as written in *original* when it is unchanged, otherwise :func:`_month_text`."""
+    return original if _month_number(original) == month else _month_text(original, month)
 
 
 def _parse(token: str) -> Optional[date]:
@@ -54,12 +84,9 @@ def _parse_strict(token: str) -> Optional[date]:
     m = _RE_ISO.fullmatch(token)
     if m:
         return date(int(m.group(1)), int(m.group(3)), int(m.group(4)))
-    m = _RE_MONTH_DAY_YEAR.fullmatch(token)
+    m = _RE_MONTH_DAY_YEAR.fullmatch(token) or _RE_DAY_MONTH_YEAR.fullmatch(token)
     if m:
-        return date(int(m.group(3)), _MONTH_MAP[m.group(1).lower()], int(m.group(2)))
-    m = _RE_DAY_MONTH_YEAR.fullmatch(token)
-    if m:
-        return date(int(m.group(3)), _MONTH_MAP[m.group(2).lower()], int(m.group(1)))
+        return date(int(m.group("year")), _month_number(m.group("month")), int(m.group("day")))
     return None
 
 
@@ -99,16 +126,18 @@ def _shift_strict(token: str, years: int, months: int, days: int) -> Optional[st
 
     m = _RE_MONTH_DAY_YEAR.fullmatch(token)
     if m:
-        dt = date(int(m.group(3)), _MONTH_MAP[m.group(1).lower()], int(m.group(2)))
+        dt = date(int(m.group("year")), _month_number(m.group("month")), int(m.group("day")))
         shifted = _shift_value(dt, years, months, days)
+        month = _month_like(m.group("month"), shifted.month) + m.group("period")
         comma = "," if "," in token else ""
-        return f"{_MONTH_NAMES[shifted.month - 1]} {shifted.day}{comma} {shifted.year}"
+        return f"{month} {shifted.day}{comma} {shifted.year}"
 
     m = _RE_DAY_MONTH_YEAR.fullmatch(token)
     if m:
-        dt = date(int(m.group(3)), _MONTH_MAP[m.group(2).lower()], int(m.group(1)))
+        dt = date(int(m.group("year")), _month_number(m.group("month")), int(m.group("day")))
         shifted = _shift_value(dt, years, months, days)
-        return f"{shifted.day} {_MONTH_NAMES[shifted.month - 1]} {shifted.year}"
+        month = _month_like(m.group("month"), shifted.month) + m.group("period")
+        return f"{shifted.day} {month} {shifted.year}"
 
     return None
 

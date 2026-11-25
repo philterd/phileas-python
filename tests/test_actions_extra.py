@@ -228,6 +228,8 @@ class TestRelativeStrategy:
     def test_other_formats(self, fixed_today):
         assert replace({"strategy": "RELATIVE"}, "date", "March 3, 2026") == "8 months ago"
         assert replace({"strategy": "RELATIVE"}, "date", "3 March 2026") == "8 months ago"
+        assert replace({"strategy": "RELATIVE"}, "date", "Mar 3, 2026") == "8 months ago"
+        assert replace({"strategy": "RELATIVE"}, "date", "3 Mar. 2026") == "8 months ago"
 
     def test_today(self, fixed_today):
         assert replace({"strategy": "RELATIVE"}, "date", "2026-11-03") == "0 months ago"
@@ -376,6 +378,28 @@ class TestShiftDate:
     def test_day_month_year_format_preserved(self):
         assert shift_date("15 January 1990", 0, 0, 5) == "20 January 1990"
 
+    @pytest.mark.parametrize("token,offsets,expected", [
+        # An abbreviated month stays abbreviated, keeping its period and case, as in Phileas (Java).
+        ("Sep 30, 2020", (0, 1, 0), "Oct 30, 2020"),
+        ("Sep. 30, 2020", (0, 1, 0), "Oct. 30, 2020"),
+        ("SEP 3, 2020", (0, 1, 0), "OCT 3, 2020"),
+        ("sep 3 2020", (0, 0, 40), "oct 13 2020"),
+        ("3 Mar 1965", (0, 0, 30), "2 Apr 1965"),
+        ("Dec. 31, 1999", (0, 0, 1), "Jan. 1, 2000"),
+        # Sept is abbreviated: another month is written with three letters, the same month as written.
+        ("Sept 3, 2020", (0, 1, 0), "Oct 3, 2020"),
+        ("Sept 3, 2020", (0, 0, 2), "Sept 5, 2020"),
+        ("3 Sept. 2020", (0, 0, 2), "5 Sept. 2020"),
+        ("Aug 3, 2020", (0, 1, 0), "Sep 3, 2020"),
+        # May is spelled out, so the month after it is too.
+        ("May 31, 2020", (0, 1, 0), "June 30, 2020"),
+        # A spelled-out month keeps its case.
+        ("MARCH 5, 2020", (0, 1, 0), "APRIL 5, 2020"),
+        ("15 january 1990", (0, 1, 0), "15 february 1990"),
+    ])
+    def test_month_written_like_the_original(self, token, offsets, expected):
+        assert shift_date(token, *offsets) == expected
+
     def test_unparseable_none(self):
         assert shift_date("xyz", 1, 2, 3) is None
 
@@ -390,6 +414,10 @@ class TestTruncateToYear:
         ("2020-03-15", "2020"),
         ("January 15, 1990", "1990"),
         ("15 January 1990", "1990"),
+        ("Jan 15, 1990", "1990"),
+        ("Sept. 3, 2020", "2020"),
+        ("3 MAR 1965", "1965"),
+        ("dec 31 1999", "1999"),
     ])
     def test_supported_formats(self, token, expected):
         assert truncate_to_year(token) == expected

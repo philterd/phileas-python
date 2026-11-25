@@ -18,7 +18,7 @@ The table below lists every supported filter, the policy key used to enable it, 
 | `vin` | `vin` | `1HGBH41JXMN109186` |
 | `bitcoinAddress` | `bitcoin-address` | `1A1zP1eP5QGefi2DMPTfTL5SLmv7Divf…` |
 | `bankRoutingNumber` | `bank-routing-number` | `021000021` |
-| `date` | `date` | `01/15/1990`, `January 15, 1990`, `1990-01-15` |
+| `date` | `date` | `01/15/1990`, `January 15, 1990`, `Sep 10, 1950`, `1990-01-15` |
 | `macAddress` | `mac-address` | `00:1A:2B:3C:4D:5E`, `00-1A-2B-3C-4D-5E` |
 | `currency` | `currency` | `$1,234.56`, `$99.99` |
 | `streetAddress` | `street-address` | `123 Main St Apt 4B`, `456 Elm Avenue`, `PO Box 1234` |
@@ -295,6 +295,10 @@ Detects dates in several common formats:
 - `YYYY-MM-DD` (ISO 8601)
 - `Month DD, YYYY` (e.g. `January 15, 1990`)
 - `DD Month YYYY` (e.g. `15 January 1990`)
+
+A month may be spelled out or abbreviated to its first three letters (`Jan`, `Feb`, `Mar`, `Apr`, `May`, `Jun`, `Jul`, `Aug`, `Sep`, `Oct`, `Nov`, `Dec`), and September also to `Sept`, with or without a period and in any case: `Sep 10, 1950`, `Sept. 10 1950`, `10 Sep 1950`. A word that only begins with a month, such as `Marble` or `Septic`, is not read as one. `SHIFT` writes a shifted date with the month abbreviated if it was, as in Phileas (Java): `Sep. 30, 2020` shifted by one month is `Oct. 30, 2020`.
+
+A month and year with no day, such as `Sep 2020` or `September 2020`, is not detected yet. That is tracked in [#110](https://github.com/philterd/phileas-python/issues/110).
 
 ```python
 "identifiers": {
