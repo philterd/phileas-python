@@ -143,13 +143,13 @@ class TestLast4:
 
 class TestTruncate:
     def test_longer_than_4(self):
-        assert replace({"strategy": "TRUNCATE"}, "x", "abcdefgh") == "abcd"
+        assert replace({"strategy": "TRUNCATE"}, "x", "abcdefgh") == "abcd****"
 
-    def test_short_redacted(self):
-        assert replace({"strategy": "TRUNCATE"}, "x", "abc") == "{{{REDACTED-x}}}"
+    def test_short_keeps_all_but_one(self):
+        assert replace({"strategy": "TRUNCATE"}, "x", "abc") == "ab*"
 
-    def test_exactly_4_redacted(self):
-        assert replace({"strategy": "TRUNCATE"}, "x", "abcd") == "{{{REDACTED-x}}}"
+    def test_exactly_4_keeps_3(self):
+        assert replace({"strategy": "TRUNCATE"}, "x", "abcd") == "abc*"
 
 
 # --- ABBREVIATE --------------------------------------------------------------
@@ -301,7 +301,6 @@ class TestNeverReturnsToken:
     @pytest.mark.parametrize("config,filter_type,token", [
         ({"strategy": "RANDOM_REPLACE"}, "unknown-filter-type", "KEEPME"),
         ({"strategy": "LAST_4"}, "cc", "1234"),
-        ({"strategy": "TRUNCATE"}, "x", "abcd"),
         ({"strategy": "TRUNCATE_TO_YEAR"}, "date", "not-a-date"),
         ({"strategy": "SHIFT", "shiftDays": 1}, "date", "not-a-date"),
         ({"strategy": "RELATIVE"}, "date", "not-a-date"),
