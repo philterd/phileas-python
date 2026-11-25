@@ -138,6 +138,7 @@ Serialise the policy to a YAML string.
 | `identifiers` | `dict` | Raw Phileas-JSON `identifiers` object — a plain `dict` mapping each entity field name to its filter node |
 | `ignored` | `list[str]` | Global ignore list — a flat list of strings, parsed from the PhiSQL `ignored` shape (a list of `{"terms": [...]}` objects) |
 | `ignored_patterns` | `list[str]` | Global ignore patterns — a flat list of regex strings, parsed from the PhiSQL `ignoredPatterns` shape (a list of `{"pattern": "..."}` objects) |
+| `review_sampling_rate` | `float` | Read-only. `config.review.samplingRate`, or `0.0` when absent. A value that is not a number from `0.0` to `1.0` raises `ValueError` when the policy is constructed or loaded. See [Review sampling](policies.md#review-sampling) |
 
 `Policy.identifiers` is a plain `dict` holding the raw Phileas-JSON `identifiers` object (entity field name → filter node); there is no `Identifiers` class.
 
@@ -161,6 +162,7 @@ from phileas.models.filter_result import FilterResult
 | `spans` | `list[Span]` | One `Span` per detected piece of sensitive information |
 | `context` | `str` | The `context` value passed to `filter()` |
 | `document_id` | `str` | The `document_id` value passed to `filter()` |
+| `review_sampled` | `bool` | Whether the request was selected for human spot review by the policy's `config.review.samplingRate`. Always `False` when the rate is `0.0` (the default) and always `True` when it is `1.0`. Selection does not change `filtered_text` or `spans`. See [Review sampling](policies.md#review-sampling) |
 
 ---
 
