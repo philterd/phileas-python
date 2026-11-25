@@ -47,6 +47,9 @@ _NUMBER_WORD = (
 _NOT_AGO = r"(?!\s*ago\b)"
 
 
+# The span confidence, as in Phileas (Java) and phileas-dotnet (philterd/phileas-conformance#7).
+_CONFIDENCE = 0.9
+
 _PATTERNS = [
     re.compile(
         r"\b[0-9.]+[\s]*(year|years|yrs|yr|yo)(\.?)(\s)*(old)?\b" + _NOT_AGO, re.IGNORECASE
@@ -73,4 +76,4 @@ class AgeFilter(BaseFilter):
         super().__init__(FilterType.AGE, config)
 
     def detect(self, text: str, context: str = "default") -> List[Span]:
-        return self._detect_patterns(_PATTERNS, text, context)
+        return self._detect_patterns(_PATTERNS, text, context, confidence=_CONFIDENCE)

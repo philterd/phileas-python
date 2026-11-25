@@ -72,7 +72,7 @@ class TestBasicDetection:
     def test_span_attributes(self):
         f = PatternFilter({"classification": "MRN", "pattern": r"MRN-\d{6}"})
         span = f.detect("MRN-123456")[0]
-        assert span.confidence == 1.0
+        assert span.confidence == 0.9
         assert span.replacement == ""
         assert span.character_start == 0
         assert span.character_end == 10

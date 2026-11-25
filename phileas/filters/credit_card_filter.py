@@ -73,6 +73,20 @@ def _candidates(text: str):
                     )
 
 
+def _confidence(text: str, start: int, end: int) -> float:
+    """The span confidence, as in Phileas (Java) and phileas-dotnet
+    (philterd/phileas-conformance#7): 0.9, lowered to 0.6 by a hyphen right
+    before or after the number and to 0.5 by one on both sides, since a hyphen
+    there suggests the digits are part of a longer reference."""
+    before = start > 0 and text[start - 1] == "-"
+    after = end < len(text) and text[end] == "-"
+    if before and after:
+        return 0.5
+    if before or after:
+        return 0.6
+    return 0.9
+
+
 def _luhn_check(number: str) -> bool:
     """Return True if *number* (digits only) passes the Luhn algorithm."""
     digits = [int(d) for d in number]
@@ -99,7 +113,7 @@ class CreditCardFilter(BaseFilter):
                     character_end=end,
                     filter_type=self.filter_type,
                     context=context,
-                    confidence=1.0,
+                    confidence=_confidence(text, start, end),
                     text=text[start:end],
                     replacement="",
                     ignored=False,

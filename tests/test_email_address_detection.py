@@ -67,7 +67,7 @@ def test_positive_filter_type(email_filter, text, expected):
 @pytest.mark.parametrize("text,expected", POSITIVE_CASES)
 def test_positive_confidence(email_filter, text, expected):
     spans = email_filter.detect(text)
-    assert spans[0].confidence == 1.0
+    assert spans[0].confidence == 0.9
 
 
 @pytest.mark.parametrize("text,expected", POSITIVE_CASES)

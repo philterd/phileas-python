@@ -66,7 +66,7 @@ def test_span_attributes(filt, mac):
     assert span.filter_type == FILTER_TYPE
     assert span.character_start == 0
     assert span.character_end == len(mac)
-    assert span.confidence == 1.0
+    assert span.confidence == 0.9
     # detect() never sets a replacement
     assert span.replacement == ""
 

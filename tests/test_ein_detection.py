@@ -38,7 +38,7 @@ class TestEINPositive:
         span = spans[0]
         assert span.text == "12-3456789"
         assert span.filter_type == "ein"
-        assert span.confidence == 1.0
+        assert span.confidence == 0.95
         assert span.replacement == ""
         assert span.character_start == 11
         assert span.character_end == 21
@@ -99,10 +99,10 @@ class TestSSNDistinction:
     def test_ssn_does_not_claim_the_ein_form(self):
         assert SSNFilter().detect("12-3456789") == []
 
-    def test_ein_claims_the_form_at_full_confidence(self):
+    def test_ein_claims_the_form(self):
         spans = EINFilter().detect("12-3456789")
         assert [s.text for s in spans] == ["12-3456789"]
-        assert spans[0].confidence == 1.0
+        assert spans[0].confidence == 0.95
 
     def test_ssn_form_is_not_an_ein(self):
         assert EINFilter().detect("123-45-6789") == []

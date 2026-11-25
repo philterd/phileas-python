@@ -40,14 +40,13 @@ class Span:
 
     @staticmethod
     def drop_overlapping_spans(spans: List["Span"]) -> List["Span"]:
-        """Remove overlapping spans, keeping the highest-confidence span.
+        """Remove overlapping spans, keeping the longest span.
 
-        Spans are considered in descending confidence order, so a
-        higher-confidence span always wins over any span it overlaps —
-        regardless of their relative start positions. Ties (equal confidence)
-        are broken deterministically: the earliest-starting span wins, and
-        among equal starts the longest span wins. The result is independent of
-        the input order and is returned sorted by start position.
+        Spans are ranked as in Phileas (Java): longest first, then highest
+        confidence, then earliest start. A span is kept only if it overlaps no
+        span ranked above it, so a longer span wins over any span it overlaps,
+        and confidence decides between spans of the same length. The result is
+        independent of the input order and is returned sorted by start position.
         """
         if not spans:
             return spans
@@ -55,9 +54,9 @@ class Span:
         ordered = sorted(
             spans,
             key=lambda s: (
+                -(s.character_end - s.character_start),
                 -s.confidence,
                 s.character_start,
-                -(s.character_end - s.character_start),
             ),
         )
         result: List[Span] = []

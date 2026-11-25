@@ -21,6 +21,9 @@ from phileas.models.span import Span
 from .base import BaseFilter, FilterType
 
 
+# The span confidence, as in Phileas (Java) and phileas-dotnet (philterd/phileas-conformance#7).
+_CONFIDENCE = 0.8
+
 _PATTERNS = [
     re.compile(
         r"\$\s?[0-9]+(?:,[0-9]+)*(?:\.[0-9]+)?(?:\s?(?:million|billion|trillion|thousand))?",
@@ -34,4 +37,4 @@ class CurrencyFilter(BaseFilter):
         super().__init__(FilterType.CURRENCY, config)
 
     def detect(self, text: str, context: str = "default") -> List[Span]:
-        return self._detect_patterns(_PATTERNS, text, context)
+        return self._detect_patterns(_PATTERNS, text, context, confidence=_CONFIDENCE)
