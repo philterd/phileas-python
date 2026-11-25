@@ -33,6 +33,7 @@ from phileas.models.filter_result import FilterResult
 from phileas.models.span import Span
 from phileas.policy.policy import Policy
 from phileas.policy.strategy import Strategy
+from phileas.services import review_sampler
 from phileas.filters.base import BaseFilter
 from phileas.filters.age_filter import AgeFilter
 from phileas.filters.email_address_filter import EmailAddressFilter
@@ -118,6 +119,9 @@ class FilterService:
 
     def filter(self, policy: Policy, context: str, document_id: str, text: str) -> FilterResult:
         """Apply the policy to *text* and return a :class:`FilterResult`."""
+        # Drawn once per request, from its own random source, so it cannot change the output.
+        review_sampled = review_sampler.is_selected(policy)
+
         identifiers = policy.identifiers or {}
         spans: List[Span] = []
 
@@ -162,6 +166,7 @@ class FilterService:
             document_id=document_id,
             filtered_text=filtered_text,
             spans=spans,
+            review_sampled=review_sampled,
         )
 
     def _strategies(self, raw, policy: Policy) -> List[Strategy]:

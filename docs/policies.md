@@ -26,7 +26,7 @@ ignoredPatterns:
 | `identifiers` | object | Map of filter keys to their configuration |
 | `ignored` | array of strings | Terms that are never replaced, regardless of the filter that matched them |
 | `ignoredPatterns` | array of regex strings | Regex patterns whose full matches are never replaced |
-| `config` | object | Policy-wide settings. Preserved on load and save; see [Analysis settings](#analysis-settings) |
+| `config` | object | Policy-wide settings. Preserved on load and save; see [Analysis settings](#analysis-settings) and [Review sampling](#review-sampling) |
 | `generators` | object | Named replacement generators used by `MAP_REPLACE` |
 
 !!! note "Catalog-derived field names"
@@ -52,7 +52,31 @@ where it is disabled globally.
     Both are parsed, exposed as `policy.span_disambiguation` and `policy.identification`, and
     written back out unchanged, so a policy shared with the Java engine keeps its meaning.
 
-The rest of `config` — `splitting`, `pdf`, `postFilters` — is likewise preserved verbatim
+### Review sampling
+
+A policy can select a share of filter requests for human spot review, so a person can check
+whole documents for values that were not detected:
+
+```yaml
+config:
+  review:
+    samplingRate: 0.10
+```
+
+`samplingRate` is the probability, from `0.0` to `1.0`, that a request is selected. The default
+is `0.0`, which selects none; `1.0` selects every request. A request is selected when a value
+drawn uniformly from [0, 1) is below the rate. The draw is made once per call to
+`FilterService.filter()`, and no count is kept between calls, so the share selected converges on
+the rate but is not exact over a small number of requests. A rate outside `0.0` to `1.0`, or one
+that is not a number, raises `ValueError` when the policy is loaded. The rate is available as
+`policy.review_sampling_rate`. In PhiSQL, `CONFIGURE REVIEW (samplingRate = 0.10);` compiles to
+this setting.
+
+Selection does not change the redacted output. It is reported as `FilterResult.review_sampled`
+(`reviewSampled` in Phileas (Java)). What to do with a selected request, such as queuing it for a
+reviewer, is up to the application.
+
+The rest of `config` (`splitting`, `pdf`, `postFilters`) is likewise preserved verbatim
 rather than dropped, though this engine does not read it.
 
 ## Loading a policy

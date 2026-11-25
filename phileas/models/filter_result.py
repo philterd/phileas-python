@@ -26,3 +26,6 @@ class FilterResult:
     document_id: str
     filtered_text: str
     spans: List[Span] = field(default_factory=list)
+    #: Whether the request was selected for human spot review by the policy's
+    #: ``config.review.samplingRate``. Selection does not change the output.
+    review_sampled: bool = False
